@@ -7,8 +7,9 @@
 #include "stm32_lib/uart_debug.h"
 #include "stm32_lib/buttons.h"
 #include "machine.h"
+
+#include "disp_mipi_dcs.h"
 #include "periphery.h"
-#include "disp_ili9488.h"
 
 struct machine machine;
 extern UART_HandleTypeDef huart1;
@@ -31,21 +32,81 @@ void panic(char *cause)
 }
 
 
-struct __attribute__((packed)) pixel {
-	u8 b;
-	u8 g;
-	u8 r;
-};
+static void test_keypad(void)
+{
+    struct machine *m = &machine;
+    int x, y;
+    int key_width = 90;
+    int key_height = 90;
+    int key_num = 0;
+    int left_indent = 100;
+    int top_indent = 15;
+    int key_indent = 10;
+
+    struct text_style key_text_style = {
+            .bg_color = BLACK,
+            .color = BLUE,
+            .font = font_rus,
+            .fontsize = 4
+    };
+
+    for (x = 0; x < 3; x++) {
+        for (y = 0; y < 3; y++) {
+            key_num ++;
+            char buf[3];
+            disp_rect(m->disp, left_indent + x * (key_width + key_indent),
+                      top_indent + y * (key_height + key_indent),
+                      key_width, key_height,
+                      1, GREEN);
+            snprintf(buf, 3, "%d", key_num);
+            disp_text(m->disp, buf,
+                    left_indent + x * (key_width + key_indent) + key_width / 2 - 10,
+                    top_indent + y * (key_height + key_indent) + key_height / 2 - 10,
+                    &key_text_style);
+        }
+    }
+}
+
 
 static void disp_test(void)
 {
     struct machine *m = &machine;
+/*    struct img *img;
     struct color c = {
             .r = 0,
             .g = 0,
             .b = 255
     };
-    disp_ili9488_fill(m->disp, 100, 10, 6*4, 8*4, c);
+    struct color bgc = {
+            .r = 0,
+            .g = 0,
+            .b = 0
+    };
+
+    u8 ch = 0;
+    for (int y = 0; y < 13; y++) {
+        for (int x = 0; x < 20; x++) {
+            img = font_symbol_img(ch, font_rus, 2, c, bgc);
+            disp_fill_img(m->disp, x*6*2, y*10*2, img);
+            kmem_deref(&img);
+            ch ++;
+        }
+    }*/
+
+    /*struct text_style style = {
+            .font = font_rus,
+            .fontsize = 4,
+            .bg_color = {0, 0, 0},
+            .color = {0, 255, 0}
+    };
+    disp_text(m->disp, "Вентилятор: ", 50, 100, &style);
+
+    img = img_test1();
+    disp_fill_img(m->disp, 320, 90, img);
+    kmem_deref(&img);*/
+
+    test_keypad();
+
 }
 
 
@@ -54,7 +115,7 @@ void display_cb(void *priv)
 	struct machine *m = (struct machine *)priv;
 
 	printf("display_cb\r\n");
-	disp_ili9488_init(m->disp);
+	disp_init(m->disp);
 	disp_test();
 }
 

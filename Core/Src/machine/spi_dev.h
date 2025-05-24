@@ -22,5 +22,6 @@ struct spi_dev *spi_dev_register(char *name, SPI_HandleTypeDef *hspi,
 								 struct gpio *cs);
 
 void spi_send_sleep(struct spi_dev *dev, u8 *data, size_t len);
+void spi_send_sync(struct spi_dev *dev, u8 *data, size_t len);
 
 #endif /* SRC_SPI_DEV_H_ */

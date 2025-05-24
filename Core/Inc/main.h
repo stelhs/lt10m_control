@@ -59,6 +59,12 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define BUTTON_K0_Pin GPIO_PIN_4
 #define BUTTON_K0_GPIO_Port GPIOE
+#define TOUCH_IRQ_Pin GPIO_PIN_0
+#define TOUCH_IRQ_GPIO_Port GPIOC
+#define TOUCH_IRQ_EXTI_IRQn EXTI0_IRQn
+#define SPINDLE_ENC_Pin GPIO_PIN_1
+#define SPINDLE_ENC_GPIO_Port GPIOC
+#define SPINDLE_ENC_EXTI_IRQn EXTI1_IRQn
 #define SPI_TFT_CS_Pin GPIO_PIN_4
 #define SPI_TFT_CS_GPIO_Port GPIOA
 #define LED_D2_Pin GPIO_PIN_6

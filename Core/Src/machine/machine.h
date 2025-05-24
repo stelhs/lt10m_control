@@ -1,9 +1,9 @@
 #ifndef MACHINE_H_
 #define MACHINE_H_
+#include "disp_mipi_dcs.h"
 #include "stm32_lib/types.h"
 #include "stm32_lib/types.h"
 #include "timestamp.h"
-#include "disp_ili9488.h"
 
 #define BUILD_VERSION "0.1"
 
@@ -19,7 +19,7 @@ extern struct machine machine;
 struct machine {
     struct cmsis_thread *tid;
     struct button *btn_k0;
-    struct disp_ili9488 *disp;
+    struct disp *disp;
 };
 
 extern struct machine machine;

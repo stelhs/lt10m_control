@@ -6,9 +6,10 @@
 #include "main.h"
 #include "machine.h"
 #include "periphery.h"
+
+#include "disp_mipi_dcs.h"
 #include "stm32_lib/gpio.h"
 #include "stm32_lib/buttons.h"
-#include "disp_ili9488.h"
 
 extern struct machine machine;
 extern UART_HandleTypeDef huart1;
@@ -36,10 +37,22 @@ void periphery_init(void)
     m->btn_k0 = button_register("btn_k0", BUTTON_K0_GPIO_Port,
 								BUTTON_K0_Pin, 0, NULL, NULL);
 
-    m->disp = disp_ili9488_register("main", &gpio_disp_spi_cs,
+    m->disp = disp_register("main", &gpio_disp_spi_cs,
     								&gpio_disp_reset,
 									&gpio_disp_dc_rs,
 									&hspi1);
 }
 
+// IRQ context
+void HAL_GPIO_EXTI_Callback(u16 pin)
+{
+    struct machine *m = &machine;
+
+    switch (pin) {
+    case TOUCH_IRQ_Pin:
+        printf("EXTI %d\r\n", pin);
+        return;
+    }
+
+}
 
