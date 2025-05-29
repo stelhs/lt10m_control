@@ -1,6 +1,8 @@
 #ifndef MACHINE_H_
 #define MACHINE_H_
 #include "disp_mipi_dcs.h"
+#include "touch_xpt2046.h"
+#include "stepper_motor.h"
 #include "stm32_lib/types.h"
 #include "stm32_lib/types.h"
 #include "timestamp.h"
@@ -20,6 +22,9 @@ struct machine {
     struct cmsis_thread *tid;
     struct button *btn_k0;
     struct disp *disp;
+    struct touch_xpt2046 *touch;
+    struct stepper_motor *sm_longitudial_feed;
+    struct stepper_motor *sm_cross_feed;
 };
 
 extern struct machine machine;

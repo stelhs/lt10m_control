@@ -9,6 +9,7 @@
 #include "machine.h"
 
 #include "disp_mipi_dcs.h"
+#include "touch_xpt2046.h"
 #include "periphery.h"
 
 struct machine machine;
@@ -36,10 +37,10 @@ static void test_keypad(void)
 {
     struct machine *m = &machine;
     int x, y;
-    int key_width = 90;
-    int key_height = 90;
+    int key_width = 65;
+    int key_height = 65;
     int key_num = 0;
-    int left_indent = 100;
+    int left_indent = 60;
     int top_indent = 15;
     int key_indent = 10;
 
@@ -47,11 +48,11 @@ static void test_keypad(void)
             .bg_color = BLACK,
             .color = BLUE,
             .font = font_rus,
-            .fontsize = 4
+            .fontsize = 3
     };
 
-    for (x = 0; x < 3; x++) {
-        for (y = 0; y < 3; y++) {
+    for (x = 0; x < 5; x++) {
+        for (y = 0; y < 4; y++) {
             key_num ++;
             char buf[3];
             disp_rect(m->disp, left_indent + x * (key_width + key_indent),
@@ -105,20 +106,36 @@ static void disp_test(void)
     disp_fill_img(m->disp, 320, 90, img);
     kmem_deref(&img);*/
 
+    disp_clear(m->disp);
     test_keypad();
-
 }
 
-
-void display_cb(void *priv)
+void key_cb(void *priv)
 {
 	struct machine *m = (struct machine *)priv;
 
-	printf("display_cb\r\n");
-	disp_init(m->disp);
-	disp_test();
+	printf("key_d_cb\r\n");
+//	disp_init(m->disp);
+//	disp_test();
+//	touch_read(m->touch);
+    printf("cnt = %lu\r\n", stepper_motor_pos(m->sm_longitudial_feed));
+	stepper_motor_set_speed(m->sm_longitudial_feed, 300);
+	stepper_motor_reset_pos(m->sm_longitudial_feed);
+	stepper_motor_set_autostop(m->sm_longitudial_feed, 1200);
+	stepper_motor_run_backward(m->sm_longitudial_feed);
 }
 
+void key_cb2(void *priv)
+{
+    struct machine *m = (struct machine *)priv;
+
+    printf("key_f_cb2\r\n");
+//  disp_init(m->disp);
+//  disp_test();
+//  touch_read(m->touch);
+    stepper_motor_stop(m->sm_longitudial_feed);
+    printf("cnt = %lu\r\n", stepper_motor_pos(m->sm_longitudial_feed));
+}
 
 static void main_thread(void *priv)
 {
@@ -126,7 +143,8 @@ static void main_thread(void *priv)
     memset(m, 0, sizeof *m);
 
     uart_debug_plug(&huart1);
-    uart_dbg_key_register("display", 'd', display_cb, m);
+    uart_dbg_key_register("d_key", 'd', key_cb, m);
+    uart_dbg_key_register("f_key", 'f', key_cb2, m);
 
     printf("\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n");
     periphery_init();
@@ -135,11 +153,20 @@ static void main_thread(void *priv)
 
     disp_test();
     for(;;) {
-    	lde_d2_on();
-    	sleep(100);
+/*    	lde_d2_on();
+    	sleep(500);
     	lde_d2_off();
-    	sleep(100);
-    	printlog("is pressed = %d\r\n", is_button_clicked(m->btn_k0));
+    	sleep(500);
+    	printlog("is pressed = %d\r\n", is_button_clicked(m->btn_k0));*/
+
+        if (m->touch->is_touched) {
+            int x = 480 - 480 * m->touch->x / 4096;
+            int y = 320 - 320 * m->touch->y / 4096;
+            disp_fill(m->disp, x-4, y-4, 8, 8, YELLOW);
+            printf("%d %d\r\n", m->touch->x, m->touch->y);
+            m->touch->is_touched = 0;
+        }
+        yield();
     }
 }
 

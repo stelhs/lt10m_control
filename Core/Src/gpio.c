@@ -50,12 +50,22 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, SPI_TFT_CS_Pin|LED_D2_Pin|LED_D3_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(LONGITUDAL_FEED_EN_GPIO_Port, LONGITUDAL_FEED_EN_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, SPI_TFT_RESET_Pin|SPI_TFT_DC_RS_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, LONGITUDAL_FEED_DIR_Pin|SPI_TFT_CS_Pin|LED_D2_Pin|LED_D3_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOC, SPI_TFT_RESET_Pin|SPI_TFT_DC_RS_Pin|CROSS_FEED_DIR_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(CROSS_FEED_EN_GPIO_Port, CROSS_FEED_EN_Pin, GPIO_PIN_SET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(SPI_TOUCH_CS_GPIO_Port, SPI_TOUCH_CS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin : PtPin */
   GPIO_InitStruct.Pin = BUTTON_K0_Pin;
@@ -69,19 +79,33 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PAPin PAPin PAPin */
-  GPIO_InitStruct.Pin = SPI_TFT_CS_Pin|LED_D2_Pin|LED_D3_Pin;
+  /*Configure GPIO pins : PAPin PAPin PAPin PAPin */
+  GPIO_InitStruct.Pin = LONGITUDAL_FEED_EN_Pin|LONGITUDAL_FEED_DIR_Pin|LED_D2_Pin|LED_D3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PCPin PCPin */
-  GPIO_InitStruct.Pin = SPI_TFT_RESET_Pin|SPI_TFT_DC_RS_Pin;
+  /*Configure GPIO pin : PtPin */
+  GPIO_InitStruct.Pin = SPI_TFT_CS_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(SPI_TFT_CS_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PCPin PCPin PCPin PCPin */
+  GPIO_InitStruct.Pin = SPI_TFT_RESET_Pin|SPI_TFT_DC_RS_Pin|CROSS_FEED_EN_Pin|CROSS_FEED_DIR_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PtPin */
+  GPIO_InitStruct.Pin = SPI_TOUCH_CS_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(SPI_TOUCH_CS_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI0_IRQn, 5, 0);

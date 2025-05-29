@@ -25,6 +25,7 @@ struct spi_dev *spi_dev_register(char *name, SPI_HandleTypeDef *hspi,
 	dev = kzref_alloc(name, sizeof *dev, dev_destructor);
 	dev->hspi = hspi;
 	dev->cs = cs;
+	dev->lock = FALSE;
 	list_append(&spi_dev_list, &dev->le, dev);
 	return dev;
 }
@@ -33,12 +34,11 @@ struct spi_dev *spi_dev_register(char *name, SPI_HandleTypeDef *hspi,
 void spi_send_sleep(struct spi_dev *dev, u8 *data, size_t len)
 {
 	bool is_finished;
-	bool lock = FALSE;
 	irq_disable();
 	dev->is_finished = FALSE;
 	irq_enable();
 
-	thread_lock(lock);
+	thread_lock(dev->lock);
 	gpio_down(dev->cs);
 	HAL_SPI_Transmit_DMA(dev->hspi, data, len);
 	while(1) {
@@ -50,17 +50,26 @@ void spi_send_sleep(struct spi_dev *dev, u8 *data, size_t len)
 		yield();
 	}
 	gpio_up(dev->cs);
-	thread_unlock(lock);
+	thread_unlock(dev->lock);
 }
 
 void spi_send_sync(struct spi_dev *dev, u8 *data, size_t len)
 {
-    bool lock = FALSE;
-    thread_lock(lock);
+    thread_lock(dev->lock);
 	gpio_down(dev->cs);
 	HAL_SPI_Transmit(dev->hspi, data, len, HAL_MAX_DELAY);
 	gpio_up(dev->cs);
-	thread_unlock(lock);
+	thread_unlock(dev->lock);
+}
+
+void spi_send_recv_sync(struct spi_dev *dev, u8 *tx_data,
+                        u8 *rx_data, size_t len)
+{
+    thread_lock(dev->lock);
+    gpio_down(dev->cs);
+    HAL_SPI_TransmitReceive(dev->hspi, tx_data, rx_data, len, HAL_MAX_DELAY);
+    gpio_up(dev->cs);
+    thread_unlock(dev->lock);
 }
 
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)

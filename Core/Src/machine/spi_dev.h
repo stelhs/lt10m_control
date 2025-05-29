@@ -16,6 +16,7 @@ struct spi_dev {
 	SPI_HandleTypeDef *hspi;
 	struct gpio *cs;
 	bool is_finished;
+	bool lock;
 };
 
 struct spi_dev *spi_dev_register(char *name, SPI_HandleTypeDef *hspi,
@@ -23,5 +24,7 @@ struct spi_dev *spi_dev_register(char *name, SPI_HandleTypeDef *hspi,
 
 void spi_send_sleep(struct spi_dev *dev, u8 *data, size_t len);
 void spi_send_sync(struct spi_dev *dev, u8 *data, size_t len);
+void spi_send_recv_sync(struct spi_dev *dev, u8 *tx_data,
+                        u8 *rx_data, size_t len);
 
 #endif /* SRC_SPI_DEV_H_ */

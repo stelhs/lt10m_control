@@ -1,0 +1,98 @@
+/*
+ * stepper_motor.c
+ *
+ *  Created on: May 29, 2025
+ *      Author: stelhs
+ */
+
+#include "stm32_lib/gpio.h"
+#include "stm32_lib/cmsis_thread.h"
+#include "stm32_lib/kref_alloc.h"
+#include "stepper_motor.h"
+
+
+static void stepper_motor_destructor(void *mem)
+{
+    struct stepper_motor *sm = (struct stepper_motor *)mem;
+    UNUSED(sm);
+}
+
+
+struct stepper_motor *
+stepper_motor_register(char *name, TIM_HandleTypeDef *htim, u32 channel_num,
+                       struct gpio *dir, struct gpio *en, int timer_freq)
+{
+    struct stepper_motor *sm;
+
+    sm = kzref_alloc(name, sizeof *sm, stepper_motor_destructor);
+    sm->channel_num = channel_num;
+    sm->htim = htim;
+    sm->dir = dir;
+    sm->en = en;
+    sm->timer_freq = timer_freq;
+
+    gpio_down(sm->en);
+    return sm;
+}
+
+void stepper_motor_run_forward(struct stepper_motor *sm)
+{
+    if (!sm->freq)
+        return;
+    HAL_TIM_PWM_Start(sm->htim, sm->channel_num);
+    HAL_TIM_Base_Start_IT(sm->htim);
+    sm->is_run = TRUE;
+    gpio_up(sm->dir);
+}
+
+void stepper_motor_run_backward(struct stepper_motor *sm)
+{
+    if (!sm->freq)
+        return;
+    HAL_TIM_PWM_Start(sm->htim, sm->channel_num);
+    HAL_TIM_Base_Start_IT(sm->htim);
+    sm->is_run = TRUE;
+    gpio_down(sm->dir);
+}
+
+void stepper_motor_stop(struct stepper_motor *sm)
+{
+    HAL_TIM_PWM_Stop(sm->htim, sm->channel_num);
+    HAL_TIM_Base_Stop_IT(sm->htim);
+    sm->is_run = FALSE;
+}
+
+void stepper_motor_set_speed(struct stepper_motor *sm, int freq)
+{
+    sm->freq = freq;
+    u32 period = sm->timer_freq / freq;
+    __HAL_TIM_SET_AUTORELOAD(sm->htim, period - 1);
+    // Duty Cycle 50%
+    __HAL_TIM_SET_COMPARE(sm->htim, sm->channel_num, (period - 1) / 2);
+}
+
+void stepper_motor_set_autostop(struct stepper_motor *sm, int pulse)
+{
+    irq_disable();
+    sm->autostop_pulse_cnt = pulse;
+    irq_enable();
+}
+
+u32 stepper_motor_pos(struct stepper_motor *sm)
+{
+    u32 pulse_cnt;
+    irq_disable();
+    pulse_cnt = sm->pulse_cnt;
+    irq_enable();
+    return pulse_cnt;
+}
+
+void stepper_motor_reset_pos(struct stepper_motor *sm)
+{
+    irq_disable();
+    sm->pulse_cnt = 0;
+    irq_enable();
+}
+
+
+
