@@ -12,6 +12,7 @@
 
 
 struct stepper_motor {
+    char *name;
     TIM_HandleTypeDef *htim;
     u32 channel_num;
     int timer_freq;
@@ -26,8 +27,20 @@ struct stepper_motor {
 struct stepper_motor *
 stepper_motor_register(char *name, TIM_HandleTypeDef *htim, u32 channel_num,
                        struct gpio *dir, struct gpio *en, int timer_freq);
-void stepper_motor_run_forward(struct stepper_motor *sm);
-void stepper_motor_run_backward(struct stepper_motor *sm);
+
+void stepper_motor_enable(struct stepper_motor *sm);
+void stepper_motor_disable(struct stepper_motor *sm);
+
+void stepper_motor_run(struct stepper_motor *sm, int freq, bool dir);
+
+static inline void stepper_motor_run_forward(struct stepper_motor *sm, int freq) {
+    stepper_motor_run(sm, freq, 1);
+}
+
+static inline void stepper_motor_run_backward(struct stepper_motor *sm, int freq) {
+    stepper_motor_run(sm, freq, 0);
+}
+
 void stepper_motor_stop(struct stepper_motor *sm);
 void stepper_motor_set_speed(struct stepper_motor *sm, int freq);
 void stepper_motor_set_autostop(struct stepper_motor *sm, int pulse);

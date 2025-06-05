@@ -13,33 +13,33 @@ static struct cmsis_thread *buttons_tid = NULL;
 
 bool is_button_clicked(struct button *btn)
 {
-    bool pressed = btn->pressed;
+    bool pressed = btn->is_pressed;
     if (pressed)
-        btn->pressed = FALSE;
+        btn->is_pressed = FALSE;
     return pressed;
 }
 
 bool is_button_long_pressing(struct button *btn)
 {
-    return btn->long_pressed;
+    return btn->is_long_pressed;
 }
 
 bool is_button_being_pressed(struct button *btn)
 {
-    return btn->state == 0;
+    return btn->state == btn->pressed_state;
 }
 
 bool is_button_changed(struct button *btn)
 {
-    bool changed = btn->changed;
+    bool changed = btn->is_changed;
     if (changed)
-        btn->changed = FALSE;
+        btn->is_changed = FALSE;
     return changed;
 }
 
 void button_reset(struct button *btn)
 {
-    btn->pressed = FALSE;
+    btn->is_pressed = FALSE;
 }
 
 
@@ -55,7 +55,7 @@ static void processed_button(struct button *btn)
             is_timeout_elapsed(&btn->t_long) &&
             btn->state == btn->pressed_state) {
         timeout_stop(&btn->t_long);
-        btn->long_pressed = TRUE;
+        btn->is_long_pressed = TRUE;
     }
 
     if (is_timeout_started(&btn->t_bounce) &&
@@ -65,14 +65,14 @@ static void processed_button(struct button *btn)
         if (btn->state != btn->waiting_state)
             return;
 
-        btn->changed = TRUE;
+        btn->is_changed = TRUE;
         if (btn->state != btn->pressed_state) {
             btn->prev_state = btn->state;
 
-            if (!btn->long_pressed)
-                btn->pressed = TRUE;
+            if (!btn->is_long_pressed)
+                btn->is_pressed = TRUE;
 
-            btn->long_pressed = FALSE;
+            btn->is_long_pressed = FALSE;
             timeout_stop(&btn->t_long);
             if (btn->cb)
                 btn->cb(btn->priv);
@@ -134,6 +134,7 @@ struct button *button_register(char *name, GPIO_TypeDef *gpio_port,
     btn->state = -1;
     btn->cb = cb;
     btn->priv = priv;
+    btn->pressed_state = pressed_state;
     list_append(&buttons, &btn->le, btn);
     return btn;
 }

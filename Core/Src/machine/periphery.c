@@ -12,6 +12,7 @@
 #include "tim.h"
 #include "disp_mipi_dcs.h"
 #include "stepper_motor.h"
+#include "potentiometer.h"
 #include "touch_xpt2046.h"
 #include "stm32_lib/gpio.h"
 #include "stm32_lib/buttons.h"
@@ -20,10 +21,10 @@ extern struct machine machine;
 
 static struct gpio gpio_led_d2 = {LED_D2_GPIO_Port, LED_D2_Pin};
 static struct gpio gpio_disp_spi_cs = {SPI_TFT_CS_GPIO_Port, SPI_TFT_CS_Pin};
-static struct gpio gpio_disp_reset = {SPI_TFT_RESET_GPIO_Port,
-                                      SPI_TFT_RESET_Pin};
-static struct gpio gpio_disp_dc_rs = {SPI_TFT_DC_RS_GPIO_Port,
-                                      SPI_TFT_DC_RS_Pin};
+static struct gpio gpio_disp_reset = {TFT_RESET_GPIO_Port,
+                                      TFT_RESET_Pin};
+static struct gpio gpio_disp_dc_rs = {TFT_DC_RS_GPIO_Port,
+                                      TFT_DC_RS_Pin};
 static struct gpio gpio_touch_spi_cs = {SPI_TOUCH_CS_GPIO_Port,
                                         SPI_TOUCH_CS_Pin};
 static struct gpio gpio_longitudal_feed_en = {LONGITUDAL_FEED_EN_GPIO_Port,
@@ -50,8 +51,18 @@ void periphery_init(void)
 {
     struct machine *m = &machine;
 
-    m->btn_k0 = button_register("btn_k0", BUTTON_K0_GPIO_Port,
-                                BUTTON_K0_Pin, 0, NULL, NULL);
+    m->btn_left = button_register("btn_left", BUTTON_LEFT_GPIO_Port,
+                                  BUTTON_LEFT_Pin, 0, NULL, NULL);
+    m->btn_right = button_register("btn_right", BUTTON_RIGHT_GPIO_Port,
+                                   BUTTON_RIGHT_Pin, 0, NULL, NULL);
+    m->btn_up = button_register("btn_up", BUTTON_UP_GPIO_Port,
+                                BUTTON_UP_Pin, 0, NULL, NULL);
+    m->btn_down = button_register("btn_down", BUTTON_DOWN_GPIO_Port,
+                                  BUTTON_DOWN_Pin, 0, NULL, NULL);
+    m->btn_enc = button_register("btn_encoder", PANEL_ENC_BUTTON_GPIO_Port,
+                                 PANEL_ENC_BUTTON_Pin, 0, NULL, NULL);
+    m->switch_run = button_register("switch_run", SWITCH_RUN_GPIO_Port,
+                                    SWITCH_RUN_Pin, 0, NULL, NULL);
 
     m->disp = disp_register("main_display", &gpio_disp_spi_cs,
                             &gpio_disp_reset, &gpio_disp_dc_rs,
@@ -60,17 +71,19 @@ void periphery_init(void)
     m->touch = touch_xpt2046_register("main_touch", &gpio_touch_spi_cs,
                                       &hspi2);
 
+    m->pm_move_speed = potentiometer_register("pm_move_speed", &hadc1, 50);
+
     m->sm_longitudial_feed = stepper_motor_register("longitudial_feed_motor",
                                                     &htim2, TIM_CHANNEL_1,
                                                     &gpio_longitudal_feed_dir,
                                                     &gpio_longitudal_feed_en,
-                                                    1000000);
+                                                    100000);
 
     m->sm_cross_feed = stepper_motor_register("cross_feed_motor",
                                               &htim3, TIM_CHANNEL_1,
                                               &gpio_cross_feed_dir,
                                               &gpio_cross_feed_en,
-                                              1000000);
+                                              100000);
 }
 
 // IRQ context
@@ -97,6 +110,20 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
     if (htim == &htim3) {
         stepper_motor_isr(m->sm_cross_feed);
+        return;
+    }
+
+    if (htim == &htim4) {
+        printf("htim4.cnt = %lu\r\n", htim4.Instance->CNT);
+    }
+
+}
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
+    struct machine *m = &machine;
+
+    if (hadc == &hadc1) {
+        potentiometer_irq(m->pm_move_speed);
         return;
     }
 }

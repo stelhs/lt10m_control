@@ -23,9 +23,9 @@ struct button {
     u8 state: 1;
     u8 waiting_state: 1;
     u8 prev_state: 1;
-    u8 long_pressed:1;
-    u8 pressed:1;
-    u8 changed:1;
+    u8 is_long_pressed:1;
+    u8 is_pressed:1;
+    u8 is_changed:1;
 };
 
 bool is_button_clicked(struct button *btn);
