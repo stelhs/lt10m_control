@@ -19,15 +19,16 @@ static void disp_destructor(void *mem)
 }
 
 struct disp *
-disp_register(char *name, struct gpio *cs, struct gpio *reset,
-                      struct gpio *dc_rs, SPI_HandleTypeDef *hspi)
+disp_register(char *name, struct gpio *cs, struct gpio *dc_rs,
+              SPI_HandleTypeDef *hspi,
+              enum disp_orientation orient)
 {
     struct disp *disp;
     disp = kzref_alloc(name, sizeof *disp, disp_destructor);
 
     disp->spi = spi_dev_register(name, hspi, cs);
-    disp->reset = reset;
     disp->dc_rs = dc_rs;
+    disp->orient = orient;
 
     disp_init(disp);
     return disp;
@@ -80,15 +81,19 @@ static void set_window(struct disp *disp, int x, int y,
 void disp_ili9488_put_pixel(struct disp *disp,
                             int x, int y, struct color color)
 {
+    thread_lock(disp->lock);
     set_window(disp, x, y, 1, 1);
     data_send_sync(disp, (u8 *)&color, 3);
+    thread_unlock(disp->lock);
 }
 
 
 void disp_fill_img(struct disp *disp, int x, int y, struct img *img)
 {
+    thread_lock(disp->lock);
     set_window(disp, x, y, img->width, img->height);
     data_send_buf(disp, img->buf);
+    thread_unlock(disp->lock);
 }
 
 void disp_fill(struct disp *disp,
@@ -106,28 +111,23 @@ void disp_fill(struct disp *disp,
         *c = color;
     buf_put(row, width * sizeof (struct color));
 
+    thread_lock(disp->lock);
     set_window(disp, x, y, width, height);
     for (i = 0; i < height; i++)
         data_send_buf(disp, row);
+    thread_unlock(disp->lock);
+
     kmem_deref(&row);
 }
 
 
 void disp_clear(struct disp *disp)
 {
-    disp_fill(disp, 0, 0, 480, 320, (struct color){0, 0, 0});
+    disp_fill(disp, 0, 0, disp->width, disp->height, BLACK);
 }
-
 
 void disp_init(struct disp *disp)
 {
-    gpio_up(disp->reset);
-    sleep(50);
-    gpio_down(disp->reset);
-    sleep(50);
-    gpio_up(disp->reset);
-    sleep(50);
-
     // Сброс дисплея
     cmd_send(disp, 0x01); // Software Reset
     sleep(50);
@@ -141,53 +141,42 @@ void disp_init(struct disp *disp)
         data_send(disp, &data, 1);
     }
 
-/*    {
-        cmd_send(disp, 0xC2); // Power Control 3
-        u8 data = 0x44;
-        data_send(disp, &data, 1);
-    }
-
-    {
-        u8 buf[4];
-        buf[0] = 0x00;
-        buf[1] = 0x00;
-        buf[2] = 0x00;
-        buf[2] = 0x00;
-        cmd_send(disp, 0XC5);      //Power Control
-        data_send(disp, buf, 4);
-    }
-
-    {
-        uint8_t datas[] = {
-            0x0F, 0x1F, 0x1C, 0x0C,
-            0x0F, 0x08, 0x48, 0x98,
-            0x37, 0x0A, 0x13, 0x04,
-            0x11, 0x0D, 0x00};
-        cmd_send(disp, 0XE0);
-        data_send(disp, datas, sizeof(datas));
-    }
-
-    {
-        uint8_t datas[] = {
-            0x0F, 0x32, 0x2E, 0x0B,
-            0x0D, 0x05, 0x47, 0x75,
-            0x37, 0x06, 0x10, 0x03,
-            0x24, 0x20, 0x00};
-
-        cmd_send(disp, 0XE1);
-        data_send(disp, datas, sizeof(datas));
-    }
-*/
-    {
-        cmd_send(disp, 0x36); // MADCTL: setup orientation
-        u8 data = 0x20;
-        data_send(disp, &data, 1);
-    }
+    disp_set_orientation(disp, disp->orient);
 
     cmd_send(disp, 0x20);
     cmd_send(disp, 0x29); // DISPON: display enable
 
     disp_clear(disp);
+}
+
+void disp_set_orientation(struct disp *disp, enum disp_orientation orient)
+{
+    u8 data;
+    cmd_send(disp, 0x36); // MADCTL: setup orientation
+    switch(orient) {
+    case DISP_ORIENT_PORTRAIT:
+        data = 0x40;
+        disp->width = 320;
+        disp->height = 480;
+        break;
+    case DISP_ORIENT_PORTRAIT_MIRROR:
+        data = 0x80;
+        disp->width = 320;
+        disp->height = 480;
+        break;
+    case DISP_ORIENT_LANDSCAPE:
+        data = 0xE0;
+        disp->width = 480;
+        disp->height = 320;
+        break;
+    case DISP_ORIENT_LANDSCAPE_MIRROR:
+        data = 0x20;
+        disp->width = 480;
+        disp->height = 320;
+        break;
+    }
+    data |= (1 << 3);
+    data_send(disp, &data, 1);
 }
 
 

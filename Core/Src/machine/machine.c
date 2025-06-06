@@ -35,9 +35,8 @@ void panic(char *cause)
 }
 
 
-static void test_keypad(void)
+static void test_keypad(struct disp *disp)
 {
-    struct machine *m = &machine;
     int x, y;
     int key_width = 65;
     int key_height = 65;
@@ -53,16 +52,16 @@ static void test_keypad(void)
             .fontsize = 3
     };
 
-    for (x = 0; x < 5; x++) {
-        for (y = 0; y < 4; y++) {
+    for (x = 0; x < 3; x++) {
+        for (y = 0; y < 3; y++) {
             key_num ++;
             char buf[3];
-            disp_rect(m->disp, left_indent + x * (key_width + key_indent),
+            disp_rect(disp, left_indent + x * (key_width + key_indent),
                       top_indent + y * (key_height + key_indent),
                       key_width, key_height,
                       1, GREEN);
             snprintf(buf, 3, "%d", key_num);
-            disp_text(m->disp, buf,
+            disp_text(disp, buf,
                     left_indent + x * (key_width + key_indent) + key_width / 2 - 10,
                     top_indent + y * (key_height + key_indent) + key_height / 2 - 10,
                     &key_text_style);
@@ -74,27 +73,6 @@ static void test_keypad(void)
 static void disp_test(void)
 {
     struct machine *m = &machine;
-/*    struct img *img;
-    struct color c = {
-            .r = 0,
-            .g = 0,
-            .b = 255
-    };
-    struct color bgc = {
-            .r = 0,
-            .g = 0,
-            .b = 0
-    };
-
-    u8 ch = 0;
-    for (int y = 0; y < 13; y++) {
-        for (int x = 0; x < 20; x++) {
-            img = font_symbol_img(ch, font_rus, 2, c, bgc);
-            disp_fill_img(m->disp, x*6*2, y*10*2, img);
-            kmem_deref(&img);
-            ch ++;
-        }
-    }*/
 
     /*struct text_style style = {
             .font = font_rus,
@@ -108,15 +86,46 @@ static void disp_test(void)
     disp_fill_img(m->disp, 320, 90, img);
     kmem_deref(&img);*/
 
-    disp_clear(m->disp);
-    test_keypad();
+    disp_clear(m->disp2);
+    test_keypad(m->disp2);
+
+    disp_clear(m->disp1_touch);
+    test_keypad(m->disp1_touch);
+
+//    disp_clear(m->disp2);
+  //  test_keypad(m->disp2);
 }
 
+
+static void dbg_os_stat(void *priv)
+{
+    struct machine *m = &machine;
+    printlog("LT10M board ver: %s\r\n", BUILD_VERSION);
+    threads_stat_print();
+    timers_print();
+    kmem_print_stat();
+    printlog("timer: %lu\r\n", osKernelGetTickCount());
+}
+
+
+
 extern ADC_HandleTypeDef hadc1;
+extern SPI_HandleTypeDef hspi1;
+extern struct gpio gpio_disp2_spi_cs;
+extern struct gpio gpio_disp_dc_rs;
+
 void key_d(void *priv)
 {
 	struct machine *m = (struct machine *)priv;
     printf("key_d\r\n");
+
+    disp_clear(m->disp2);
+    test_keypad(m->disp2);
+
+    disp_clear(m->disp1_touch);
+    test_keypad(m->disp1_touch);
+
+    return;
 
     printf("start\r\n");
   //  stepper_motor_enable(m->sm_cross_feed);
@@ -126,7 +135,6 @@ void key_d(void *priv)
 	return;
 
 //	disp_init(m->disp);
-//	disp_test();
 	printf("htim4.cnt = %lu\r\n", htim4.Instance->CNT);
 
 
@@ -143,6 +151,10 @@ void key_f(void *priv)
     struct machine *m = (struct machine *)priv;
     printf("key_f\r\n");
 
+    disp_clear(m->disp1_touch);
+    test_keypad(m->disp1_touch);
+    return;
+
     printf("stop\r\n");
     stepper_motor_stop(m->sm_cross_feed);
     stepper_motor_stop(m->sm_longitudial_feed);
@@ -158,10 +170,13 @@ void key_f(void *priv)
     printf("cnt = %lu\r\n", stepper_motor_pos(m->sm_longitudial_feed));
 }
 
+extern struct gpio gpio_disp_reset;
 void key_g(void *priv)
 {
     struct machine *m = (struct machine *)priv;
     printf("key_g\r\n");
+
+    return;
 
     printf("cross_feed = %lu\r\n", stepper_motor_pos(m->sm_cross_feed));
     printf("longitudial_feed = %lu\r\n", stepper_motor_pos(m->sm_longitudial_feed));
@@ -181,6 +196,8 @@ static void main_thread(void *priv)
     memset(m, 0, sizeof *m);
 
     uart_debug_plug(&huart1);
+    uart_dbg_key_register("os_status", 's', dbg_os_stat, m);
+
     uart_dbg_key_register("d_key", 'd', key_d, m);
     uart_dbg_key_register("f_key", 'f', key_f, m);
     uart_dbg_key_register("g_key", 'g', key_g, m);
@@ -231,13 +248,13 @@ static void main_thread(void *priv)
     	sleep(500);
     	printlog("is pressed = %d\r\n", is_button_clicked(m->btn_k0));*/
 
-        if (m->touch->is_touched) {
-            int x = 480 - 480 * m->touch->x / 4096;
-            int y = 320 - 320 * m->touch->y / 4096;
-            disp_fill(m->disp, x-4, y-4, 8, 8, YELLOW);
-            printf("%d %d\r\n", m->touch->x, m->touch->y);
-            m->touch->is_touched = 0;
-        }
+/*        {
+            int x, y;
+            if(is_touched(m->touch, &x, &y)) {
+                disp_fill(m->disp1_touch, x-4, y-4, 8, 8, YELLOW);
+                printf("ret: x=%d, y=%d\r\n", x, y);
+            }
+        }*/
         yield();
     }
 }

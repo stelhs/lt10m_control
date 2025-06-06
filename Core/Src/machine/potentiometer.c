@@ -70,7 +70,7 @@ int potentiometer_val(struct potentiometer *pm)
 bool is_potentiometer_changed(struct potentiometer *pm)
 {
     int val = potentiometer_val(pm);
-    if (pm->last_val != val) {
+    if (abs(val - pm->last_val) > 1) {
         pm->last_val = val;
         return TRUE;
     }

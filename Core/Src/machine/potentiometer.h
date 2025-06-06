@@ -15,7 +15,7 @@ struct potentiometer {
     char *name;
     ADC_HandleTypeDef *hadc;
     int adc_offset;
-    u16 buf[32];
+    u16 buf[192];
     int buf_index;
     int last_val;
 };

@@ -20,7 +20,8 @@
 extern struct machine machine;
 
 static struct gpio gpio_led_d2 = {LED_D2_GPIO_Port, LED_D2_Pin};
-static struct gpio gpio_disp_spi_cs = {SPI_TFT_CS_GPIO_Port, SPI_TFT_CS_Pin};
+static struct gpio gpio_disp1_spi_cs = {SPI_TFT_CS_GPIO_Port, SPI_TFT_CS_Pin};
+static struct gpio gpio_disp2_spi_cs = {SPI_TFT2_CS_GPIO_Port, SPI_TFT2_CS_Pin};
 static struct gpio gpio_disp_reset = {TFT_RESET_GPIO_Port,
                                       TFT_RESET_Pin};
 static struct gpio gpio_disp_dc_rs = {TFT_DC_RS_GPIO_Port,
@@ -64,12 +65,28 @@ void periphery_init(void)
     m->switch_run = button_register("switch_run", SWITCH_RUN_GPIO_Port,
                                     SWITCH_RUN_Pin, 0, NULL, NULL);
 
-    m->disp = disp_register("main_display", &gpio_disp_spi_cs,
-                            &gpio_disp_reset, &gpio_disp_dc_rs,
-                            &hspi1);
+    gpio_up(&gpio_disp1_spi_cs);
+    gpio_up(&gpio_disp2_spi_cs);
+    gpio_up(&gpio_disp_reset);
+    sleep(50);
+    gpio_down(&gpio_disp_reset);
+    sleep(50);
+    gpio_up(&gpio_disp_reset);
+    sleep(50);
+
+    m->disp1_touch = disp_register("display_touch", &gpio_disp1_spi_cs,
+                                   &gpio_disp_dc_rs, &hspi1,
+                                   DISP_ORIENT_PORTRAIT);
+    sleep(10);
 
     m->touch = touch_xpt2046_register("main_touch", &gpio_touch_spi_cs,
-                                      &hspi2);
+                                      &hspi2, DISP_ORIENT_PORTRAIT);
+
+    m->disp2 = disp_register("display_2",
+                             &gpio_disp2_spi_cs,
+                             &gpio_disp_dc_rs,
+                             &hspi1, DISP_ORIENT_LANDSCAPE);
+
 
     m->pm_move_speed = potentiometer_register("pm_move_speed", &hadc1, 50);
 

@@ -10,23 +10,8 @@
 #include "stm32_lib/cmsis_thread.h"
 #include "stm32_lib/timers.h"
 
+static struct list areas = LIST_INIT;
 
-static void touch_destructor(void *mem)
-{
-    struct touch_xpt2046 *touch = (struct touch_xpt2046 *)mem;
-    kmem_deref(&touch->spi);
-}
-
-struct touch_xpt2046 *
-touch_xpt2046_register(char *name, struct gpio *cs, SPI_HandleTypeDef *hspi)
-{
-    struct touch_xpt2046 *touch;
-    touch = kzref_alloc(name, sizeof *touch, touch_destructor);
-
-    touch->spi = spi_dev_register(name, hspi, cs);
-    timeout_start(&touch->t, 300);
-    return touch;
-}
 
 static u16 read_x(struct touch_xpt2046 *touch)
 {
@@ -52,18 +37,25 @@ static u16 read_y(struct touch_xpt2046 *touch)
     return ((rx_data[1] << 8) | rx_data[2]) >> 3;
 }
 
-void touch_read(struct touch_xpt2046 *touch)
+bool is_touched(struct touch_xpt2046 *touch, int *x, int *y)
 {
     int i;
-    int sum_x;
-    int sum_y;
+    int sum_x, sum_y, round_x, round_y;
     const int number = 32;
+    bool is_touched;
+
+    irq_disable();
+    is_touched = touch->is_touched;
+    touch->is_touched = FALSE;
+    irq_enable();
+
+    if (!is_touched)
+        return FALSE;
+
     struct item {
         u16 x;
         u16 y;
     }queue[number];
-
-
 
     for (i = 0; i < number; i++) {
         queue[i].x = read_x(touch);
@@ -77,9 +69,128 @@ void touch_read(struct touch_xpt2046 *touch)
         sum_y += queue[i].y;
     }
 
-    touch->x = sum_x / number;
-    touch->y = sum_y / number;
-    touch->is_touched = TRUE;
+    round_x = sum_x / number;
+    round_y = sum_y / number;
 
+    switch(touch->orient) {
+    case DISP_ORIENT_PORTRAIT:
+        touch->width = 320;
+        touch->height = 480;
+        *x = touch->width * round_y / 4096;
+        *y = touch->height - touch->height * round_x / 4096;
+        break;
+    case DISP_ORIENT_PORTRAIT_MIRROR:
+        touch->width = 320;
+        touch->height = 480;
+        *x = touch->width - touch->width * round_y / 4096;
+        *y = touch->height * round_x / 4096;
+        break;
+    case DISP_ORIENT_LANDSCAPE:
+        touch->width = 480;
+        touch->height = 320;
+        *x = touch->width * round_x / 4096;
+        *y = touch->height * round_y / 4096;
+        break;
+    case DISP_ORIENT_LANDSCAPE_MIRROR:
+        touch->width = 480;
+        touch->height = 320;
+        *x = touch->width - touch->width * round_x / 4096;
+        *y = touch->height - touch->height * round_y / 4096;
+        break;
+    }
+    return TRUE;
 }
 
+static void touch_area_destructor(void *mem)
+{
+    struct touch_area *ta = (struct touch_area *)mem;
+    list_unlink(&ta->le);
+}
+
+struct touch_area *
+touch_area_register(struct touch_xpt2046 *dev,
+                    char *name,
+                    int x1, int y1,
+                    int x2, int y2)
+{
+    struct touch_area *ta;
+
+    ta = kzref_alloc(name, sizeof *ta, touch_area_destructor);
+    ta->dev = dev;
+    ta->x1 = x1;
+    ta->y1 = y1;
+    ta->x2 = x2;
+    ta->y2 = y2;
+    return ta;
+}
+
+bool is_area_touched(struct touch_area *ta)
+{
+    bool is_touched = ta->is_touched;
+    ta->is_touched = FALSE;
+    return is_touched;
+}
+
+static void touch_thread(void *priv)
+{
+    struct touch_xpt2046 *dev = (struct touch_xpt2046 *)priv;
+    int x, y;
+
+    while (1) {
+        struct le *le;
+        yield();
+        if(!is_touched(dev, &x, &y))
+            continue;
+
+        LIST_FOREACH(&areas, le) {
+            struct touch_area *ta = (struct touch_area *)list_ledata(le);
+            if (ta->dev != dev)
+                continue;
+            if (x >= ta->x1 && x <= ta->x2 &&
+                    y >= ta->y1 && y <= ta->y2)
+                ta->is_touched = TRUE;
+        }
+    }
+}
+
+static void touch_destructor(void *mem)
+{
+    struct touch_xpt2046 *touch = (struct touch_xpt2046 *)mem;
+    kmem_deref(&touch->spi);
+}
+
+struct touch_xpt2046 *
+touch_xpt2046_register(char *name, struct gpio *cs,
+                       SPI_HandleTypeDef *hspi,
+                       enum disp_orientation orient)
+{
+    struct touch_xpt2046 *touch;
+    touch = kzref_alloc(name, sizeof *touch, touch_destructor);
+
+    touch->spi = spi_dev_register(name, hspi, cs);
+    touch->orient = orient;
+
+    switch(orient) {
+    case DISP_ORIENT_PORTRAIT:
+        touch->width = 320;
+        touch->height = 480;
+        break;
+    case DISP_ORIENT_PORTRAIT_MIRROR:
+        touch->width = 320;
+        touch->height = 480;
+        break;
+    case DISP_ORIENT_LANDSCAPE:
+        touch->width = 480;
+        touch->height = 320;
+        break;
+    case DISP_ORIENT_LANDSCAPE_MIRROR:
+        touch->width = 480;
+        touch->height = 320;
+        break;
+    }
+
+    timeout_start(&touch->t, 300);
+    touch->tid = thread_register("touch_thread", 1500,
+                                    touch_thread, touch);
+    return touch;
+}

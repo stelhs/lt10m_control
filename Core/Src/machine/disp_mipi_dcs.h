@@ -11,24 +11,33 @@
 #include "stm32_lib/gpio.h"
 #include "spi_dev.h"
 
+enum disp_orientation {
+    DISP_ORIENT_PORTRAIT,
+    DISP_ORIENT_PORTRAIT_MIRROR,
+    DISP_ORIENT_LANDSCAPE,
+    DISP_ORIENT_LANDSCAPE_MIRROR,
+};
 
 struct disp {
-    struct gpio *reset;
     struct gpio *dc_rs;
     struct spi_dev *spi;
+    enum disp_orientation orient;
+    int width;
+    int height;
+    bool lock;
 };
 
 struct __attribute__((packed)) color {
-    u8 b;
-    u8 g;
     u8 r;
+    u8 g;
+    u8 b;
 };
 
-#define BLACK (struct color){.r=0, .g=0, .b=0}
-#define YELLOW (struct color){.r=255, .g=255, .b=0}
-#define GREEN (struct color){.r=0, .g=255, .b=0}
-#define RED (struct color){.r=255, .g=0, .b=0}
-#define BLUE (struct color){.r=0, .g=0, .b=255}
+#define BLACK (struct color){0, 0, 0}
+#define YELLOW (struct color){255, 255, 0}
+#define GREEN (struct color){0, 255, 0}
+#define RED (struct color){255, 0, 0}
+#define BLUE (struct color){0, 0, 255}
 
 extern u8 font_rus[];
 
@@ -46,11 +55,12 @@ struct img {
 };
 
 struct disp *disp_register(char *name, struct gpio *cs,
-                           struct gpio *reset,
                            struct gpio *dc_rs,
-                           SPI_HandleTypeDef *hspi);
+                           SPI_HandleTypeDef *hspi,
+                           enum disp_orientation orient);
 
 void disp_init(struct disp *disp);
+void disp_set_orientation(struct disp *disp, enum disp_orientation orient);
 void disp_fill_img(struct disp *disp, int x, int y, struct img *img);
 
 void disp_fill(struct disp *disp,
