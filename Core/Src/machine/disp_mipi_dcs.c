@@ -54,7 +54,7 @@ static void data_send_sync(struct disp *disp, u8 *data, size_t len)
 
 static void data_send_buf(struct disp *disp, struct buf *data)
 {
-    data_send(disp, data->d, buf_len(data));
+    data_send_sync(disp, data->d, buf_len(data));
 }
 
 static void set_window(struct disp *disp, int x, int y,
@@ -270,6 +270,7 @@ struct img *img_alloc(char *name, int width, int height)
     int buf_len = width * height * 3;
     img = kref_alloc(name, sizeof *img, img_destructor);
     img->buf = buf_alloc("img_buf", buf_len);
+    buf_memset(img->buf, 0);
     img->width = width;
     img->height = height;
     buf_put(img->buf, buf_len);
@@ -285,6 +286,8 @@ struct img *font_symbol_img(char ch, u8 *font, int fontsize,
                                 sym_height * fontsize);
 
     u8 *sym_bitmap = font + ch * sym_width;
+
+
 
     int buf_index = 0;
 
@@ -308,12 +311,31 @@ struct img *font_symbol_img(char ch, u8 *font, int fontsize,
                 }
             }
         }
-        pixel++;
-        *pixel = bg_color;
-        buf_index += 3;
+        // Draw space delimeter
+        for (int fx = 0; fx < fontsize; fx++) {
+            for (int fy = 0; fy < fontsize; fy++) {
+                int pixel_x = 5 * fontsize + fx;
+                int pixel_y = y * fontsize + fy;
+                int pixel_index = (pixel_y * (sym_width + 1) *
+                                   fontsize + pixel_x) * 3;
+                pixel = (struct color *)(img->buf->d + pixel_index);
+                *pixel = bg_color;
+                buf_index += 3;
+            }
+        }
     }
 
     return img;
+}
+
+int disp_text_width(struct text_style *ts, int text_len)
+{
+    return 6 * ts->fontsize * text_len;
+}
+
+int disp_text_height(struct text_style *ts, int text_len)
+{
+    return 8 * ts->fontsize;
 }
 
 

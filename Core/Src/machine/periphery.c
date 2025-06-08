@@ -74,12 +74,13 @@ void periphery_init(void)
     gpio_up(&gpio_disp_reset);
     sleep(50);
 
-    m->disp1_touch = disp_register("display_touch", &gpio_disp1_spi_cs,
+    m->disp1 = disp_register("display_touch", &gpio_disp1_spi_cs,
                                    &gpio_disp_dc_rs, &hspi1,
                                    DISP_ORIENT_PORTRAIT);
     sleep(10);
 
-    m->touch = touch_xpt2046_register("main_touch", &gpio_touch_spi_cs,
+    m->disp1->touch = touch_xpt2046_register("main_touch",
+                                      &gpio_touch_spi_cs,
                                       &hspi2, DISP_ORIENT_PORTRAIT);
 
     m->disp2 = disp_register("display_2",
@@ -110,7 +111,7 @@ void HAL_GPIO_EXTI_Callback(u16 pin)
 
     switch (pin) {
     case TOUCH_IRQ_Pin:
-        touch_isr(m->touch);
+        touch_isr(m->disp1->touch);
         return;
     }
 

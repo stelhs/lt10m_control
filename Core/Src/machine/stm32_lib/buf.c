@@ -339,3 +339,8 @@ int buf_cmp(const struct buf *b1, const struct buf *b2)
 
     return memcmp(b1->d, b2->d, l1);
 }
+
+void buf_memset(const struct buf *buf, int val)
+{
+    memset(buf->d, val, buf->len);
+}

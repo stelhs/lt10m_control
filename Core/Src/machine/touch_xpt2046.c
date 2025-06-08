@@ -121,6 +121,7 @@ touch_area_register(struct touch_xpt2046 *dev,
     ta->y1 = y1;
     ta->x2 = x2;
     ta->y2 = y2;
+    list_append(&areas, &ta->le, ta);
     return ta;
 }
 

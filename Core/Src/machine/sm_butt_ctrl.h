@@ -5,8 +5,8 @@
  *      Author: stelhs
  */
 
-#ifndef POSITIONING_H_
-#define POSITIONING_H_
+#ifndef SM_BUTT_CTRL_H_
+#define SM_BUTT_CTRL_H_
 
 #include "stepper_motor.h"
 #include "stm32_lib/buttons.h"
@@ -31,4 +31,4 @@ sm_butt_ctrl_register(struct button *bt, struct stepper_motor *sm,
 void sm_butt_ctrl_do(struct sm_butt_ctrl *sbc);
 void sm_butt_ctrl_set_max_freq(struct sm_butt_ctrl *sbc, int max_speed);
 
-#endif /* POSITIONING_H_ */
+#endif /* SM_BUTT_CTRL_H_ */

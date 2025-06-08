@@ -25,6 +25,7 @@ struct disp {
     int width;
     int height;
     bool lock;
+    struct touch_xpt2046 *touch;
 };
 
 struct __attribute__((packed)) color {
@@ -36,6 +37,9 @@ struct __attribute__((packed)) color {
 #define BLACK (struct color){0, 0, 0}
 #define YELLOW (struct color){255, 255, 0}
 #define GREEN (struct color){0, 255, 0}
+#define DARK_GREEN (struct color){0, 127, 0}
+#define GRAY (struct color){127, 127, 127}
+#define DARK_GRAY (struct color){50, 50, 50}
 #define RED (struct color){255, 0, 0}
 #define BLUE (struct color){0, 0, 255}
 
@@ -89,6 +93,8 @@ struct img *img_alloc(char *name, int width, int height);
 struct img *font_symbol_img(char ch, u8 *font, int fontsize,
                             struct color color, struct color bg_color);
 
+int disp_text_width(struct text_style *ts, int text_len);
+int disp_text_height(struct text_style *ts, int text_len);
 
 
 #endif /* SRC_MACHINE_DISP_MIPI_DCS_H_ */

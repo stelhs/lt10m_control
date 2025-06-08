@@ -38,12 +38,12 @@ void panic(char *cause)
 static void test_keypad(struct disp *disp)
 {
     int x, y;
-    int key_width = 65;
-    int key_height = 65;
+    int key_width = 80;
+    int key_height = 80;
     int key_num = 0;
-    int left_indent = 60;
-    int top_indent = 15;
-    int key_indent = 10;
+    int left_indent = 20;
+    int top_indent = 80;
+    int key_indent = 15;
 
     struct text_style key_text_style = {
             .bg_color = BLACK,
@@ -53,7 +53,7 @@ static void test_keypad(struct disp *disp)
     };
 
     for (x = 0; x < 3; x++) {
-        for (y = 0; y < 3; y++) {
+        for (y = 0; y < 4; y++) {
             key_num ++;
             char buf[3];
             disp_rect(disp, left_indent + x * (key_width + key_indent),
@@ -89,8 +89,8 @@ static void disp_test(void)
     disp_clear(m->disp2);
     test_keypad(m->disp2);
 
-    disp_clear(m->disp1_touch);
-    test_keypad(m->disp1_touch);
+    disp_clear(m->disp1);
+    test_keypad(m->disp1);
 
 //    disp_clear(m->disp2);
   //  test_keypad(m->disp2);
@@ -119,11 +119,18 @@ void key_d(void *priv)
 	struct machine *m = (struct machine *)priv;
     printf("key_d\r\n");
 
+    float val = 12.75;
+    int rc;
+    rc = disp_keyboard_run("Cross feed", &val);
+    printf("rc = %d\r\n", rc);
+    printf("val = %.2f\r\n", val);
+    return;
+
     disp_clear(m->disp2);
     test_keypad(m->disp2);
 
-    disp_clear(m->disp1_touch);
-    test_keypad(m->disp1_touch);
+    disp_clear(m->disp1);
+    test_keypad(m->disp1);
 
     return;
 
@@ -151,8 +158,7 @@ void key_f(void *priv)
     struct machine *m = (struct machine *)priv;
     printf("key_f\r\n");
 
-    disp_clear(m->disp1_touch);
-    test_keypad(m->disp1_touch);
+    disp_main_run();
     return;
 
     printf("stop\r\n");

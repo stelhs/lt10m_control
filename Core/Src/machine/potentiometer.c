@@ -7,7 +7,7 @@
 #include "potentiometer.h"
 #include "stm32_lib/cmsis_thread.h"
 #include "stm32_lib/kref_alloc.h"
-
+#include <stdlib.h>
 
 
 static void potentiometer_destructor(void *mem)

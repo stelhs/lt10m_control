@@ -27,9 +27,8 @@ struct machine {
     struct button *btn_down;
     struct button *btn_enc;
     struct button *switch_run;
-    struct disp *disp1_touch;
+    struct disp *disp1;
     struct disp *disp2;
-    struct touch_xpt2046 *touch;
 
     struct stepper_motor *sm_longitudial_feed;
     struct stepper_motor *sm_cross_feed;
