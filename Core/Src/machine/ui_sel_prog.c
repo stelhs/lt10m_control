@@ -4,8 +4,9 @@
  *  Created on: Jun 9, 2025
  *      Author: stelhs
  */
+#include "ui_sel_prog.h"
+
 #include "stm32_lib/kref_alloc.h"
-#include "disp_sel_prog.h"
 #include "disp_mipi_dcs.h"
 #include "disp_button.h"
 #include "images.h"
@@ -150,7 +151,7 @@ static void disp_sel_prog_destructor(void *mem)
 }
 
 
-int disp_sel_prog_run(void)
+int ui_sel_prog_run(void)
 {
     struct machine *m = &machine;
     struct disp_sel_prog *dsp = disp_sel_prog;

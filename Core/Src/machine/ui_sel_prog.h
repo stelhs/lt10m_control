@@ -5,8 +5,8 @@
  *      Author: stelhs
  */
 
-#ifndef DISP_SEL_PROG_H_
-#define DISP_SEL_PROG_H_
+#ifndef UI_SEL_PROG_H_
+#define UI_SEL_PROG_H_
 
 enum progs {
     PROG_FEED_LEFT,
@@ -25,7 +25,7 @@ enum progs {
     PROG_THREAD_RIGHT
 };
 
-int disp_sel_prog_run(void);
+int ui_sel_prog_run(void);
 struct img *img_prog_by_num(enum progs prog);
 
-#endif /* DISP_SEL_PROG_H_ */
+#endif /* UI_SEL_PROG_H_ */

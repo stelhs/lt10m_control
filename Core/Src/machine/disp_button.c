@@ -53,6 +53,8 @@ void disp_button_redraw(struct disp_button *db)
 
 bool is_disp_button_touched(struct disp_button *db)
 {
+    if (!db)
+        return FALSE;
     return is_area_touched(db->ta);
 }
 

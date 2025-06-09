@@ -119,13 +119,6 @@ void key_d(void *priv)
 	struct machine *m = (struct machine *)priv;
     printf("key_d\r\n");
 
-    float val = 12.75;
-    int rc;
-    rc = disp_keyboard_run("Cross feed", &val);
-    printf("rc = %d\r\n", rc);
-    printf("val = %.2f\r\n", val);
-    return;
-
     disp_clear(m->disp2);
     test_keypad(m->disp2);
 
@@ -158,7 +151,7 @@ void key_f(void *priv)
     struct machine *m = (struct machine *)priv;
     printf("key_f\r\n");
 
-    disp_main_run();
+    ui_main_start();
     return;
 
     printf("stop\r\n");
@@ -214,7 +207,7 @@ static void main_thread(void *priv)
     HAL_TIM_Base_Start_IT(&htim4);
     printlog("Machine initializing success\r\n");
 
-    disp_test();
+//    disp_test();
 
     stepper_motor_enable(m->sm_cross_feed);
     stepper_motor_enable(m->sm_longitudial_feed);
@@ -232,6 +225,7 @@ static void main_thread(void *priv)
                                          kmem_ref(m->sm_longitudial_feed),
                                          1, 10, 50, 1);
 
+    ui_main_start();
 
     for(;;) {
         sm_butt_ctrl_do(m->sbc_up);

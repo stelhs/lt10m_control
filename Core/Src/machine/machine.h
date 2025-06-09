@@ -21,6 +21,7 @@ extern struct machine machine;
 
 struct machine {
     struct cmsis_thread *tid;
+    struct cmsis_thread *ui_tid;
     struct button *btn_left;
     struct button *btn_right;
     struct button *btn_up;

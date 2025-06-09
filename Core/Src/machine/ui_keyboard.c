@@ -5,12 +5,13 @@
  *      Author: stelhs
  */
 
+#include "ui_keyboard.h"
+
 #include "stm32_lib/cmsis_thread.h"
 #include "stm32_lib/kref_alloc.h"
 #include "disp_mipi_dcs.h"
 #include "touch_xpt2046.h"
 #include "disp_button.h"
-#include "disp_keyboard.h"
 #include "machine.h"
 
 struct disp_keyboard {
@@ -221,7 +222,7 @@ static void disp_keyboard_destructor(void *mem)
     kmem_deref(&dk->key_del);
 }
 
-int disp_keyboard_run(char *field_name, float *val)
+int ui_keyboard_run(char *field_name, float *val)
 {
     struct disp_keyboard *dk = disp_keyboard;
     struct machine *m = &machine;
