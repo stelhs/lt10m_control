@@ -13,6 +13,7 @@
 #include "touch_xpt2046.h"
 #include "periphery.h"
 #include "sm_butt_ctrl.h"
+#include "ui_main.h"
 
 struct machine machine;
 extern UART_HandleTypeDef huart1;
@@ -119,12 +120,8 @@ void key_d(void *priv)
 	struct machine *m = (struct machine *)priv;
     printf("key_d\r\n");
 
-    disp_clear(m->disp2);
-    test_keypad(m->disp2);
-
-    disp_clear(m->disp1);
-    test_keypad(m->disp1);
-
+    stepper_motor_reset_pos(m->sm_cross_feed);
+    stepper_motor_run(m->sm_cross_feed, 10, 1);
     return;
 
     printf("start\r\n");
@@ -151,7 +148,8 @@ void key_f(void *priv)
     struct machine *m = (struct machine *)priv;
     printf("key_f\r\n");
 
-    ui_main_start();
+    stepper_motor_reset_pos(m->sm_cross_feed);
+    stepper_motor_run(m->sm_cross_feed, 10, 0);
     return;
 
     printf("stop\r\n");
@@ -175,6 +173,9 @@ void key_g(void *priv)
     struct machine *m = (struct machine *)priv;
     printf("key_g\r\n");
 
+    stepper_motor_stop(m->sm_cross_feed);
+    u32 pos = stepper_motor_pos(m->sm_cross_feed);
+    printf("pos = %lu\r\n", pos);
     return;
 
     printf("cross_feed = %lu\r\n", stepper_motor_pos(m->sm_cross_feed));
@@ -214,48 +215,41 @@ static void main_thread(void *priv)
 
     m->sbc_up = sm_butt_ctrl_register(kmem_ref(m->btn_up),
                                       kmem_ref(m->sm_cross_feed),
-                                      0, 10, 50, 1);
+                                      0, 1300, 100, 500);
     m->sbc_down = sm_butt_ctrl_register(kmem_ref(m->btn_down),
                                         kmem_ref(m->sm_cross_feed),
-                                        1, 10, 50, 1);
+                                        1, 1300, 100, 500);
     m->sbc_left = sm_butt_ctrl_register(kmem_ref(m->btn_left),
                                         kmem_ref(m->sm_longitudial_feed),
-                                        0, 10, 50, 1);
+                                        1, 2500, 100, 500);
     m->sbc_right = sm_butt_ctrl_register(kmem_ref(m->btn_right),
                                          kmem_ref(m->sm_longitudial_feed),
-                                         1, 10, 50, 1);
+                                         0, 2500, 100, 500);
 
     ui_main_start();
 
     for(;;) {
-        sm_butt_ctrl_do(m->sbc_up);
-        sm_butt_ctrl_do(m->sbc_down);
-        sm_butt_ctrl_do(m->sbc_left);
-        sm_butt_ctrl_do(m->sbc_right);
-
-        if (is_potentiometer_changed(m->pm_move_speed)) {
-            u16 val = potentiometer_val(m->pm_move_speed);
-            printf("potentiometer = %d\r\n", val);
-
-            sm_butt_ctrl_set_max_freq(m->sbc_up, 10 + 12000 * val / 100);
-            sm_butt_ctrl_set_max_freq(m->sbc_down, 10 + 12000 * val / 100);
-            sm_butt_ctrl_set_max_freq(m->sbc_left, 10 + 10000 * val / 100);
-            sm_butt_ctrl_set_max_freq(m->sbc_right, 10 + 10000 * val / 100);
-        }
-/*    	lde_d2_on();
-    	sleep(500);
-    	lde_d2_off();
-    	sleep(500);
-    	printlog("is pressed = %d\r\n", is_button_clicked(m->btn_k0));*/
-
-/*        {
-            int x, y;
-            if(is_touched(m->touch, &x, &y)) {
-                disp_fill(m->disp1_touch, x-4, y-4, 8, 8, YELLOW);
-                printf("ret: x=%d, y=%d\r\n", x, y);
-            }
-        }*/
         yield();
+
+        if (!button_state(m->switch_run)) {
+            sm_butt_ctrl_do(m->sbc_up);
+            sm_butt_ctrl_do(m->sbc_down);
+            sm_butt_ctrl_do(m->sbc_left);
+            sm_butt_ctrl_do(m->sbc_right);
+
+            if (is_potentiometer_changed(m->pm_move_speed)) {
+                u16 val = potentiometer_val(m->pm_move_speed);
+                printf("potentiometer = %d\r\n", val);
+
+                sm_butt_ctrl_set_max_freq(m->sbc_up, 10 + 7000 * val / 100);
+                sm_butt_ctrl_set_max_freq(m->sbc_down, 10 + 7000 * val / 100);
+                sm_butt_ctrl_set_max_freq(m->sbc_left, 10 + 12000 * val / 100);
+                sm_butt_ctrl_set_max_freq(m->sbc_right, 10 + 12000 * val / 100);
+            }
+        }
+
+
+
     }
 }
 

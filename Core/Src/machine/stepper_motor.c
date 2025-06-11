@@ -101,5 +101,8 @@ void stepper_motor_reset_pos(struct stepper_motor *sm)
     irq_enable();
 }
 
-
+bool is_stepper_motor_run(struct stepper_motor *sm)
+{
+    return sm->is_run;
+}
 

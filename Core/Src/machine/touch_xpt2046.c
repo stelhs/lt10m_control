@@ -132,27 +132,24 @@ bool is_area_touched(struct touch_area *ta)
     return is_touched;
 }
 
-static void touch_thread(void *priv)
+void touch_handler(struct touch_xpt2046 *dev)
 {
-    struct touch_xpt2046 *dev = (struct touch_xpt2046 *)priv;
     int x, y;
+    struct le *le;
 
-    while (1) {
-        struct le *le;
-        yield();
-        if(!is_touched(dev, &x, &y))
+    if(!is_touched(dev, &x, &y))
+        return;
+
+    LIST_FOREACH(&areas, le) {
+        struct touch_area *ta = (struct touch_area *)list_ledata(le);
+        if (ta->dev != dev)
             continue;
-
-        LIST_FOREACH(&areas, le) {
-            struct touch_area *ta = (struct touch_area *)list_ledata(le);
-            if (ta->dev != dev)
-                continue;
-            if (x >= ta->x1 && x <= ta->x2 &&
-                    y >= ta->y1 && y <= ta->y2)
-                ta->is_touched = TRUE;
-        }
+        if (x >= ta->x1 && x <= ta->x2 &&
+                y >= ta->y1 && y <= ta->y2)
+            ta->is_touched = TRUE;
     }
 }
+
 
 static void touch_destructor(void *mem)
 {
@@ -191,7 +188,19 @@ touch_xpt2046_register(char *name, struct gpio *cs,
     }
 
     timeout_start(&touch->t, 300);
-    touch->tid = thread_register("touch_thread", 1500,
-                                    touch_thread, touch);
     return touch;
+}
+
+void touch_enable(struct touch_xpt2046 *touch)
+{
+    irq_disable();
+    touch->is_enabled = TRUE;
+    irq_enable();
+}
+
+void touch_disable(struct touch_xpt2046 *touch)
+{
+    irq_disable();
+    touch->is_enabled = FALSE;
+    irq_enable();
 }

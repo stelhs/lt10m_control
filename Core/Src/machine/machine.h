@@ -28,6 +28,7 @@ struct machine {
     struct button *btn_down;
     struct button *btn_enc;
     struct button *switch_run;
+    struct button *switch_touch_lock;
     struct disp *disp1;
     struct disp *disp2;
 

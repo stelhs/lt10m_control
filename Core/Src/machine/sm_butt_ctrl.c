@@ -36,7 +36,7 @@ sm_butt_ctrl_register(struct button *bt, struct stepper_motor *sm,
 void sm_butt_ctrl_do(struct sm_butt_ctrl *sbc)
 {
     if (is_button_changed(sbc->bt)) {
-        if (is_button_being_pressed(sbc->bt)) {
+        if (button_state(sbc->bt)) {
             sbc->step = 1;
             sbc->inc_freq = sbc->start_inc_freq;
             timeout_start(&sbc->t, sbc->inc_interval);
@@ -53,7 +53,7 @@ void sm_butt_ctrl_do(struct sm_butt_ctrl *sbc)
         return;
     }
 
-    if (is_button_being_pressed(sbc->bt)) {
+    if (button_state(sbc->bt)) {
         if (is_timeout_elapsed(&sbc->t)) {
             if (sbc->sm->freq == sbc->max_freq)
                 return;
@@ -64,7 +64,7 @@ void sm_butt_ctrl_do(struct sm_butt_ctrl *sbc)
             }
 
             timeout_start(&sbc->t, sbc->inc_interval);
-            sbc->inc_freq += ((sbc->step * 1000) / 3500);
+            sbc->inc_freq += ((sbc->step * 1000) / 5500);
             stepper_motor_set_speed(sbc->sm, sbc->sm->freq + sbc->inc_freq);
             sbc->step += 1;
         }

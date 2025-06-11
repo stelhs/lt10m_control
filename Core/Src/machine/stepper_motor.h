@@ -46,6 +46,7 @@ void stepper_motor_set_speed(struct stepper_motor *sm, int freq);
 void stepper_motor_set_autostop(struct stepper_motor *sm, int pulse);
 u32 stepper_motor_pos(struct stepper_motor *sm);
 void stepper_motor_reset_pos(struct stepper_motor *sm);
+bool is_stepper_motor_run(struct stepper_motor *sm);
 
 // IRQ context
 static inline void stepper_motor_isr(struct stepper_motor *sm)

@@ -24,7 +24,7 @@ bool is_button_long_pressing(struct button *btn)
     return btn->is_long_pressed;
 }
 
-bool is_button_being_pressed(struct button *btn)
+bool button_state(struct button *btn)
 {
     return btn->state == btn->pressed_state;
 }

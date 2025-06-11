@@ -64,6 +64,9 @@ void periphery_init(void)
                                  PANEL_ENC_BUTTON_Pin, 0, NULL, NULL);
     m->switch_run = button_register("switch_run", SWITCH_RUN_GPIO_Port,
                                     SWITCH_RUN_Pin, 0, NULL, NULL);
+    m->switch_touch_lock = button_register("switch_touch_lock",
+                                           SWITCH_TOUCH_LOCK_GPIO_Port,
+                                           SWITCH_TOUCH_LOCK_Pin, 0, NULL, NULL);
 
     gpio_up(&gpio_disp1_spi_cs);
     gpio_up(&gpio_disp2_spi_cs);

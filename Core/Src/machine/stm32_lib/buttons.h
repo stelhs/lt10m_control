@@ -30,7 +30,7 @@ struct button {
 
 bool is_button_clicked(struct button *btn);
 bool is_button_long_pressing(struct button *btn);
-bool is_button_being_pressed(struct button *btn);
+bool button_state(struct button *btn);
 bool is_button_changed(struct button *btn);
 struct button *button_register(char *name, GPIO_TypeDef *gpio_port,
                                uint gpio_pin, int pressed_state,

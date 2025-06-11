@@ -9,6 +9,7 @@
 
 #include "stm32_lib/cmsis_thread.h"
 #include "stm32_lib/kref_alloc.h"
+#include "stm32_lib/buttons.h"
 #include "machine.h"
 #include "disp_mipi_dcs.h"
 #include "touch_xpt2046.h"
@@ -302,6 +303,14 @@ static void ui_main_thread(void *priv)
 
     while (1) {
         yield();
+        touch_handler(m->disp1->touch);
+
+        if (is_button_changed(m->switch_touch_lock)) {
+            if (button_state(m->switch_touch_lock))
+                touch_enable(m->disp1->touch);
+            else
+                touch_disable(m->disp1->touch);
+        }
 
         if (is_disp_button_touched(umb->sel_prog)) {
             hide(um);
