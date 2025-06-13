@@ -113,6 +113,9 @@ void periphery_init(void)
                                               &gpio_cross_feed_en,
                                               1000000);
     m->sm_cross_feed->gap = 150;
+
+ //   HAL_TIM_Base_Start_IT(&htim8);
+   // HAL_TIM_Base_Start_IT(&htim9);
 }
 
 // IRQ context
@@ -132,20 +135,38 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     struct machine *m = &machine;
 
-    if (htim == &htim2) {
+    if (htim == &htim1) { // Period = 10ms (100Hz)
+        printf("htim1 irq\r\n");
+        return;
+    }
+
+/*    if (htim == &htim2) {
+        printf("htim2 irq\r\n");
         stepper_motor_isr(m->sm_longitudial_feed);
         return;
     }
 
     if (htim == &htim3) {
+        printf("htim3 irq\r\n");
         stepper_motor_isr(m->sm_cross_feed);
+        return;
+    }*/
+
+    if (htim == &htim4) { // Panel encoder
+        printf("htim4.cnt = %lu\r\n", htim4.Instance->CNT);
         return;
     }
 
-    if (htim == &htim4) {
-        printf("htim4.cnt = %lu\r\n", htim4.Instance->CNT);
+    if (htim == &htim8) { // longitudial feed counter
+        printf("htim8 irq\r\n");
+        HAL_TIM_Base_Stop_IT(&htim8);
+        return;
     }
 
+    if (htim == &htim9) { // cross feed counter
+        printf("htim9 irq\r\n");
+        return;
+    }
 }
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {

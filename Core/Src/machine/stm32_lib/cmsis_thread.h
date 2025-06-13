@@ -77,8 +77,9 @@ static inline bool is_timeout_started(struct timeout *timeout)
 
 static inline void delay_us(u16 us)
 {
-    __HAL_TIM_SET_COUNTER(&htim1, 0);
-    while (__HAL_TIM_GET_COUNTER(&htim1) < us);
+    u16 end = __HAL_TIM_GET_COUNTER(&htim1) + us;
+//    __HAL_TIM_SET_COUNTER(&htim1, 0);
+    while (__HAL_TIM_GET_COUNTER(&htim1) < end);
 }
 
 struct stopwatch {

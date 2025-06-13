@@ -126,6 +126,14 @@ void key_f(void *priv)
     printf("key_f\r\n");
 
     printf("run 1 turn longitudial\r\n");
+
+    __HAL_TIM_SET_PRESCALER(&htim8, 10 - 1);
+    htim8.Instance->EGR |= TIM_EGR_UG;
+    __HAL_TIM_SET_COUNTER(&htim8, 0);
+    __HAL_TIM_SET_AUTORELOAD(&htim8, 1000);
+    HAL_TIM_Base_Start_IT(&htim8);
+
+
     stepper_motor_reset_pos(m->sm_longitudial_feed);
     stepper_motor_set_autostop(m->sm_longitudial_feed, 400 * 25);
     stepper_motor_run(m->sm_longitudial_feed, 1000, 1000, MOVE_RIGHT);
@@ -137,14 +145,44 @@ void key_f(void *priv)
 //  touch_read(m->touch);
 }
 
-extern struct gpio gpio_disp_reset;
 void key_g(void *priv)
 {
     struct machine *m = (struct machine *)priv;
     printf("key_g\r\n");
     printf("stop");
+    HAL_TIM_Base_Stop_IT(&htim8);
     stepper_motor_stop(m->sm_cross_feed);
+    stepper_motor_stop(m->sm_longitudial_feed);
 }
+
+void key_j(void *priv)
+{
+    struct machine *m = (struct machine *)priv;
+    printf("key_j\r\n");
+
+    __HAL_TIM_SET_AUTORELOAD(&htim8, 1500);
+    __HAL_TIM_SET_AUTORELOAD(&htim9, 750);
+}
+
+void key_k(void *priv)
+{
+    struct machine *m = (struct machine *)priv;
+    printf("key_j\r\n");
+
+    __HAL_TIM_SET_AUTORELOAD(&htim8, 1000);
+    __HAL_TIM_SET_AUTORELOAD(&htim9, 2000);
+}
+
+void key_l(void *priv)
+{
+    struct machine *m = (struct machine *)priv;
+    printf("key_l\r\n");
+
+    printf("htim8.cnt = %lu\r\n", htim8.Instance->CNT); // __HAL_TIM_GET_COUNTER(&htim8)
+    printf("htim9.cnt = %lu\r\n", htim9.Instance->CNT);
+
+}
+
 
 // IRQ context
 static void sm_cross_high_speed_freq_changer(struct stepper_motor *sm)
@@ -421,6 +459,9 @@ static void main_thread(void *priv)
     uart_dbg_key_register("d_key", 'd', key_d, m);
     uart_dbg_key_register("f_key", 'f', key_f, m);
     uart_dbg_key_register("g_key", 'g', key_g, m);
+    uart_dbg_key_register("j_key", 'j', key_j, m);
+    uart_dbg_key_register("k_key", 'k', key_k, m);
+    uart_dbg_key_register("l_key", 'l', key_l, m);
 
     printf("\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n");
     periphery_init();
