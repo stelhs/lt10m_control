@@ -300,13 +300,16 @@ static void ui_main_thread(void *priv)
     um->disp = kmem_ref(m->disp1);
     show(um);
     umb = um->umb;
+    if (is_button_held_down(m->switch_touch_lock))
+        touch_enable(m->disp1->touch);
+    else
+        touch_disable(m->disp1->touch);
 
     while (1) {
         yield();
-        touch_handler(m->disp1->touch);
 
         if (is_button_changed(m->switch_touch_lock)) {
-            if (button_state(m->switch_touch_lock))
+            if (is_button_held_down(m->switch_touch_lock))
                 touch_enable(m->disp1->touch);
             else
                 touch_disable(m->disp1->touch);

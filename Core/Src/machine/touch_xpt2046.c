@@ -150,6 +150,15 @@ void touch_handler(struct touch_xpt2046 *dev)
     }
 }
 
+static void touch_thread(void *priv)
+{
+    struct touch_xpt2046 *dev = (struct touch_xpt2046 *)priv;
+
+    for(;;) {
+        yield();
+        touch_handler(dev);
+    }
+}
 
 static void touch_destructor(void *mem)
 {
@@ -162,33 +171,35 @@ touch_xpt2046_register(char *name, struct gpio *cs,
                        SPI_HandleTypeDef *hspi,
                        enum disp_orientation orient)
 {
-    struct touch_xpt2046 *touch;
-    touch = kzref_alloc(name, sizeof *touch, touch_destructor);
+    struct touch_xpt2046 *dev;
+    dev = kzref_alloc(name, sizeof *dev, touch_destructor);
 
-    touch->spi = spi_dev_register(name, hspi, cs);
-    touch->orient = orient;
+    dev->spi = spi_dev_register(name, hspi, cs);
+    dev->orient = orient;
 
     switch(orient) {
     case DISP_ORIENT_PORTRAIT:
-        touch->width = 320;
-        touch->height = 480;
+        dev->width = 320;
+        dev->height = 480;
         break;
     case DISP_ORIENT_PORTRAIT_MIRROR:
-        touch->width = 320;
-        touch->height = 480;
+        dev->width = 320;
+        dev->height = 480;
         break;
     case DISP_ORIENT_LANDSCAPE:
-        touch->width = 480;
-        touch->height = 320;
+        dev->width = 480;
+        dev->height = 320;
         break;
     case DISP_ORIENT_LANDSCAPE_MIRROR:
-        touch->width = 480;
-        touch->height = 320;
+        dev->width = 480;
+        dev->height = 320;
         break;
     }
 
-    timeout_start(&touch->t, 300);
-    return touch;
+    timeout_start(&dev->t, 300);
+
+    thread_register("touch_thread", 1500, touch_thread, dev);
+    return dev;
 }
 
 void touch_enable(struct touch_xpt2046 *touch)

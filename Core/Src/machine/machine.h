@@ -8,7 +8,7 @@
 #include "stm32_lib/types.h"
 #include "timestamp.h"
 
-#define BUILD_VERSION "0.1"
+#define BUILD_VERSION "0.2"
 
 extern struct machine machine;
 
@@ -29,17 +29,19 @@ struct machine {
     struct button *btn_enc;
     struct button *switch_run;
     struct button *switch_touch_lock;
+    struct button *switch_high_speed;
+    struct button *switch_gap_compensation;
     struct disp *disp1;
     struct disp *disp2;
 
     struct stepper_motor *sm_longitudial_feed;
     struct stepper_motor *sm_cross_feed;
-    struct sm_butt_ctrl *sbc_up;
-    struct sm_butt_ctrl *sbc_down;
-    struct sm_butt_ctrl *sbc_left;
-    struct sm_butt_ctrl *sbc_right;
 
     struct potentiometer *pm_move_speed;
+
+    bool is_last_move_up;
+    bool is_last_move_left;
+
 };
 
 extern struct machine machine;

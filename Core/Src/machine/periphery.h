@@ -11,4 +11,9 @@ void periphery_init(void);
 void lde_d2_on(void);
 void lde_d2_off(void);
 
+#define MOVE_LEFT 1
+#define MOVE_RIGHT 0
+#define MOVE_UP 0
+#define MOVE_DOWN 1
+
 #endif /* PERIPHERY_H_ */

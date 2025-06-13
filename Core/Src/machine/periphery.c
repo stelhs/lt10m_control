@@ -67,6 +67,12 @@ void periphery_init(void)
     m->switch_touch_lock = button_register("switch_touch_lock",
                                            SWITCH_TOUCH_LOCK_GPIO_Port,
                                            SWITCH_TOUCH_LOCK_Pin, 0, NULL, NULL);
+    m->switch_high_speed = button_register("switch_high_speed",
+                                           SWITCH_HIGH_SPEED_GPIO_Port,
+                                           SWITCH_HIGH_SPEED_Pin, 0, NULL, NULL);
+    m->switch_gap_compensation = button_register("switch_gap_compensation",
+                                                 SWITCH_GAP_COMPENSATION_GPIO_Port,
+                                                 SWITCH_GAP_COMPENSATION_Pin, 0, NULL, NULL);
 
     gpio_up(&gpio_disp1_spi_cs);
     gpio_up(&gpio_disp2_spi_cs);
@@ -98,13 +104,15 @@ void periphery_init(void)
                                                     &htim2, TIM_CHANNEL_1,
                                                     &gpio_longitudal_feed_dir,
                                                     &gpio_longitudal_feed_en,
-                                                    100000);
+                                                    1000000);
+    m->sm_longitudial_feed->gap = 1300;
 
     m->sm_cross_feed = stepper_motor_register("cross_feed_motor",
                                               &htim3, TIM_CHANNEL_1,
                                               &gpio_cross_feed_dir,
                                               &gpio_cross_feed_en,
-                                              100000);
+                                              1000000);
+    m->sm_cross_feed->gap = 150;
 }
 
 // IRQ context

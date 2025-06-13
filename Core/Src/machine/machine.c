@@ -12,7 +12,6 @@
 #include "disp_mipi_dcs.h"
 #include "touch_xpt2046.h"
 #include "periphery.h"
-#include "sm_butt_ctrl.h"
 #include "ui_main.h"
 
 struct machine machine;
@@ -110,37 +109,15 @@ static void dbg_os_stat(void *priv)
 
 
 
-extern ADC_HandleTypeDef hadc1;
-extern SPI_HandleTypeDef hspi1;
-extern struct gpio gpio_disp2_spi_cs;
-extern struct gpio gpio_disp_dc_rs;
-
 void key_d(void *priv)
 {
 	struct machine *m = (struct machine *)priv;
     printf("key_d\r\n");
 
+    printf("run 1 turn cross\r\n");
     stepper_motor_reset_pos(m->sm_cross_feed);
-    stepper_motor_run(m->sm_cross_feed, 10, 1);
-    return;
-
-    printf("start\r\n");
-  //  stepper_motor_enable(m->sm_cross_feed);
-    stepper_motor_enable(m->sm_longitudial_feed);
-	//stepper_motor_run(m->sm_cross_feed, 1, 1);
-    stepper_motor_run(m->sm_longitudial_feed, 10, 1);
-	return;
-
-//	disp_init(m->disp);
-	printf("htim4.cnt = %lu\r\n", htim4.Instance->CNT);
-
-
-//	touch_read(m->touch);
-/*    printf("cnt = %lu\r\n", stepper_motor_pos(m->sm_longitudial_feed));
-	stepper_motor_set_speed(m->sm_longitudial_feed, 300);
-	stepper_motor_reset_pos(m->sm_longitudial_feed);
-	stepper_motor_set_autostop(m->sm_longitudial_feed, 1200);
-	stepper_motor_run_backward(m->sm_longitudial_feed);*/
+    stepper_motor_set_autostop(m->sm_cross_feed, 400 * 10);
+    stepper_motor_run(m->sm_cross_feed, 500, 500, MOVE_UP);
 }
 
 void key_f(void *priv)
@@ -148,23 +125,16 @@ void key_f(void *priv)
     struct machine *m = (struct machine *)priv;
     printf("key_f\r\n");
 
-    stepper_motor_reset_pos(m->sm_cross_feed);
-    stepper_motor_run(m->sm_cross_feed, 10, 0);
+    printf("run 1 turn longitudial\r\n");
+    stepper_motor_reset_pos(m->sm_longitudial_feed);
+    stepper_motor_set_autostop(m->sm_longitudial_feed, 400 * 25);
+    stepper_motor_run(m->sm_longitudial_feed, 1000, 1000, MOVE_RIGHT);
     return;
 
-    printf("stop\r\n");
-    stepper_motor_stop(m->sm_cross_feed);
-    stepper_motor_stop(m->sm_longitudial_feed);
-    stepper_motor_disable(m->sm_cross_feed);
-    stepper_motor_disable(m->sm_longitudial_feed);
-    return;
-
-    htim4.Instance->CNT = 0;
+//    htim4.Instance->CNT = 0;
 //  disp_init(m->disp);
 //  disp_test();
 //  touch_read(m->touch);
-    stepper_motor_stop(m->sm_longitudial_feed);
-    printf("cnt = %lu\r\n", stepper_motor_pos(m->sm_longitudial_feed));
 }
 
 extern struct gpio gpio_disp_reset;
@@ -172,22 +142,272 @@ void key_g(void *priv)
 {
     struct machine *m = (struct machine *)priv;
     printf("key_g\r\n");
-
+    printf("stop");
     stepper_motor_stop(m->sm_cross_feed);
-    u32 pos = stepper_motor_pos(m->sm_cross_feed);
-    printf("pos = %lu\r\n", pos);
-    return;
+}
 
-    printf("cross_feed = %lu\r\n", stepper_motor_pos(m->sm_cross_feed));
-    printf("longitudial_feed = %lu\r\n", stepper_motor_pos(m->sm_longitudial_feed));
+// IRQ context
+static void sm_cross_high_speed_freq_changer(struct stepper_motor *sm)
+{
+    int freq = sm->freq;
+    if (sm->freq < sm->target_freq) {
+        if (sm->freq < 6000)
+            freq += 50;
+        else
+            freq ++;
+        if (sm->freq > sm->target_freq)
+            sm->freq = sm->target_freq;
+    }
 
-    stepper_motor_reset_pos(m->sm_cross_feed);
-    stepper_motor_reset_pos(m->sm_longitudial_feed);
+    if (sm->freq > sm->target_freq) {
+        if (sm->freq < 6000)
+            freq -= 50;
+        else
+            freq --;
+        if (sm->freq < sm->target_freq)
+            sm->freq = sm->target_freq;
+    }
 
-//    stepper_motor_set_speed(m->sm_cross_feed,
-  //                          m->sm_cross_feed->freq + 1);
-    stepper_motor_set_speed(m->sm_longitudial_feed,
-                            m->sm_longitudial_feed->freq + 1);
+    if (freq != sm->freq)
+        stepper_motor_set_freq(sm, freq);
+}
+
+// IRQ context
+static void sm_longitudial_high_speed_freq_changer(struct stepper_motor *sm)
+{
+    int freq = sm->freq;
+    if (sm->freq < sm->target_freq) {
+        if (sm->freq < 10000)
+            freq += 120;
+        else
+            freq ++;
+        if (sm->freq > sm->target_freq)
+            sm->freq = sm->target_freq;
+    }
+
+    if (sm->freq > sm->target_freq) {
+        if (sm->freq < 10000)
+            freq -= 120;
+        else
+            freq --;
+        if (sm->freq < sm->target_freq)
+            sm->freq = sm->target_freq;
+    }
+
+    if (freq != sm->freq)
+        stepper_motor_set_freq(sm, freq);
+}
+
+volatile int test = 0;
+// IRQ context
+static void sm_low_speed_freq_changer(struct stepper_motor *sm)
+{
+    int freq = sm->freq;
+
+   // test ++;
+   // if (test <= 5)
+   //     return;
+   // test = 0;
+
+    if (sm->freq < sm->target_freq) {
+        freq += 1;
+        if (sm->freq > sm->target_freq)
+            sm->freq = sm->target_freq;
+    }
+
+    if (sm->freq > sm->target_freq) {
+        freq -= 1;
+        if (sm->freq < sm->target_freq)
+            sm->freq = sm->target_freq;
+    }
+
+    if (freq != sm->freq)
+        stepper_motor_set_freq(sm, freq);
+}
+
+static void set_low_speed(void)
+{
+    struct machine *m = &machine;
+    stepper_motor_enable(m->sm_cross_feed);
+    stepper_motor_enable(m->sm_longitudial_feed);
+    stepper_motor_set_freq_changer_handler(m->sm_cross_feed,
+                                      sm_low_speed_freq_changer);
+    stepper_motor_set_freq_changer_handler(m->sm_longitudial_feed,
+                                sm_low_speed_freq_changer);
+}
+
+static void set_high_speed(void)
+{
+    struct machine *m = &machine;
+    stepper_motor_disable(m->sm_cross_feed);
+    stepper_motor_disable(m->sm_longitudial_feed);
+    stepper_motor_set_freq_changer_handler(m->sm_cross_feed,
+                                      sm_cross_high_speed_freq_changer);
+    stepper_motor_set_freq_changer_handler(m->sm_longitudial_feed,
+                                sm_longitudial_high_speed_freq_changer);
+}
+
+
+static void move_button_high_speed_handler(void)
+{
+    struct machine *m = &machine;
+
+    if (is_button_changed(m->btn_up)) {
+        if (is_button_held_down(m->btn_up)) {
+            stepper_motor_enable(m->sm_cross_feed);
+            stepper_motor_run(m->sm_cross_feed, 100, 10000, MOVE_UP);
+            m->is_last_move_up = TRUE;
+        }
+        else {
+            stepper_motor_disable(m->sm_cross_feed);
+            stepper_motor_stop(m->sm_cross_feed);
+        }
+    }
+
+    if (is_button_changed(m->btn_down)) {
+        if (is_button_held_down(m->btn_down)) {
+            stepper_motor_enable(m->sm_cross_feed);
+            stepper_motor_run(m->sm_cross_feed, 100, 10000, MOVE_DOWN);
+            m->is_last_move_up = FALSE;
+        }
+        else {
+            stepper_motor_disable(m->sm_cross_feed);
+            stepper_motor_stop(m->sm_cross_feed);
+        }
+    }
+
+    if (is_button_changed(m->btn_left)) {
+        if (is_button_held_down(m->btn_left)) {
+            stepper_motor_enable(m->sm_longitudial_feed);
+            stepper_motor_run(m->sm_longitudial_feed, 16, 15000, MOVE_LEFT);
+            m->is_last_move_left = TRUE;
+        }
+        else {
+            stepper_motor_disable(m->sm_longitudial_feed);
+            stepper_motor_stop(m->sm_longitudial_feed);
+        }
+    }
+
+    if (is_button_changed(m->btn_right)) {
+        if (is_button_held_down(m->btn_right)) {
+            stepper_motor_enable(m->sm_longitudial_feed);
+            stepper_motor_run(m->sm_longitudial_feed, 16, 15000, MOVE_RIGHT);
+            m->is_last_move_left = FALSE;
+        }
+        else {
+            stepper_motor_disable(m->sm_longitudial_feed);
+            stepper_motor_stop(m->sm_longitudial_feed);
+        }
+    }
+}
+
+static void move_button_low_speed_handler(void)
+{
+    struct machine *m = &machine;
+
+    int freq = potentiometer_val(m->pm_move_speed) * 5;
+    if (freq < 16)
+        freq = 16;
+
+    if (is_button_changed(m->btn_up)) {
+        if (is_button_held_down(m->btn_up)) {
+            if (is_switch_on(m->switch_gap_compensation) &&
+                             (!m->is_last_move_up)) {
+                stepper_motor_reset_pos(m->sm_cross_feed);
+                stepper_motor_set_autostop(m->sm_cross_feed, m->sm_cross_feed->gap);
+                stepper_motor_run(m->sm_cross_feed, 500, 500, MOVE_UP);
+                stepper_motor_wait_autostop(m->sm_cross_feed);
+                m->is_last_move_up = TRUE;
+                return;
+            }
+
+            m->is_last_move_up = TRUE;
+            stepper_motor_run(m->sm_cross_feed, freq, freq, MOVE_UP);
+        }
+        else
+            stepper_motor_stop(m->sm_cross_feed);
+    }
+
+    if (is_button_changed(m->btn_down)) {
+        if (is_button_held_down(m->btn_down)) {
+            if (is_switch_on(m->switch_gap_compensation) &&
+                             m->is_last_move_up) {
+                stepper_motor_reset_pos(m->sm_cross_feed);
+                stepper_motor_set_autostop(m->sm_cross_feed, m->sm_cross_feed->gap);
+                stepper_motor_run(m->sm_cross_feed, 500, 500, MOVE_DOWN);
+                stepper_motor_wait_autostop(m->sm_cross_feed);
+                m->is_last_move_up = FALSE;
+                return;
+            }
+
+            m->is_last_move_up = FALSE;
+            stepper_motor_run(m->sm_cross_feed, freq, freq, MOVE_DOWN);
+        }
+        else
+            stepper_motor_stop(m->sm_cross_feed);
+    }
+
+    if (is_button_changed(m->btn_left)) {
+        if (is_button_held_down(m->btn_left)) {
+            if (is_switch_on(m->switch_gap_compensation) &&
+                             (!m->is_last_move_left)) {
+                stepper_motor_reset_pos(m->sm_longitudial_feed);
+                stepper_motor_set_autostop(m->sm_longitudial_feed,
+                                           m->sm_longitudial_feed->gap);
+                stepper_motor_run(m->sm_longitudial_feed, 2000, 2000, MOVE_LEFT);
+                stepper_motor_wait_autostop(m->sm_longitudial_feed);
+                m->is_last_move_left = TRUE;
+                return;
+            }
+
+            m->is_last_move_left = TRUE;
+            stepper_motor_run(m->sm_longitudial_feed, freq, freq, MOVE_LEFT);
+        }
+        else
+            stepper_motor_stop(m->sm_longitudial_feed);
+    }
+
+    if (is_button_changed(m->btn_right)) {
+        if (is_button_held_down(m->btn_right)) {
+            if (is_switch_on(m->switch_gap_compensation) &&
+                             m->is_last_move_left) {
+                stepper_motor_reset_pos(m->sm_longitudial_feed);
+                stepper_motor_set_autostop(m->sm_longitudial_feed,
+                                           m->sm_longitudial_feed->gap);
+                stepper_motor_run(m->sm_longitudial_feed, 2000, 2000, MOVE_RIGHT);
+                stepper_motor_wait_autostop(m->sm_longitudial_feed);
+                m->is_last_move_left = FALSE;
+                return;
+            }
+
+            m->is_last_move_left = FALSE;
+            stepper_motor_run(m->sm_longitudial_feed, freq, freq, MOVE_RIGHT);
+        }
+        else
+            stepper_motor_stop(m->sm_longitudial_feed);
+    }
+}
+
+static void program_idle_handler(void)
+{
+    struct machine *m = &machine;
+
+    if (is_button_changed(m->switch_high_speed)) {
+        if (is_switch_on(m->switch_high_speed))
+            set_high_speed();
+        else
+            set_low_speed();
+    }
+
+    if (is_switch_on(m->switch_high_speed))
+        move_button_high_speed_handler();
+    else
+        move_button_low_speed_handler();
+
+    if (is_potentiometer_changed(m->pm_move_speed)) {
+        u16 val = potentiometer_val(m->pm_move_speed);
+        printf("potentiometer = %d\r\n", val);
+    }
 }
 
 static void main_thread(void *priv)
@@ -205,50 +425,22 @@ static void main_thread(void *priv)
     printf("\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n");
     periphery_init();
 
-    HAL_TIM_Base_Start_IT(&htim4);
-    printlog("Machine initializing success\r\n");
-
-//    disp_test();
-
-    stepper_motor_enable(m->sm_cross_feed);
-    stepper_motor_enable(m->sm_longitudial_feed);
-
-    m->sbc_up = sm_butt_ctrl_register(kmem_ref(m->btn_up),
-                                      kmem_ref(m->sm_cross_feed),
-                                      0, 1300, 100, 500);
-    m->sbc_down = sm_butt_ctrl_register(kmem_ref(m->btn_down),
-                                        kmem_ref(m->sm_cross_feed),
-                                        1, 1300, 100, 500);
-    m->sbc_left = sm_butt_ctrl_register(kmem_ref(m->btn_left),
-                                        kmem_ref(m->sm_longitudial_feed),
-                                        1, 2500, 100, 500);
-    m->sbc_right = sm_butt_ctrl_register(kmem_ref(m->btn_right),
-                                         kmem_ref(m->sm_longitudial_feed),
-                                         0, 2500, 100, 500);
+    HAL_TIM_Base_Start_IT(&htim4); // TODO - panel encoder
+    printlog("Machine ver: %s\r\n", BUILD_VERSION);
 
     ui_main_start();
+
+    if (is_switch_on(m->switch_high_speed))
+        set_high_speed();
+    else
+        set_low_speed();
 
     for(;;) {
         yield();
 
-        if (!button_state(m->switch_run)) {
-            sm_butt_ctrl_do(m->sbc_up);
-            sm_butt_ctrl_do(m->sbc_down);
-            sm_butt_ctrl_do(m->sbc_left);
-            sm_butt_ctrl_do(m->sbc_right);
-
-            if (is_potentiometer_changed(m->pm_move_speed)) {
-                u16 val = potentiometer_val(m->pm_move_speed);
-                printf("potentiometer = %d\r\n", val);
-
-                sm_butt_ctrl_set_max_freq(m->sbc_up, 10 + 7000 * val / 100);
-                sm_butt_ctrl_set_max_freq(m->sbc_down, 10 + 7000 * val / 100);
-                sm_butt_ctrl_set_max_freq(m->sbc_left, 10 + 12000 * val / 100);
-                sm_butt_ctrl_set_max_freq(m->sbc_right, 10 + 12000 * val / 100);
-            }
+        if (!is_button_held_down(m->switch_run)) {
+            program_idle_handler();
         }
-
-
 
     }
 }

@@ -30,11 +30,13 @@ struct button {
 
 bool is_button_clicked(struct button *btn);
 bool is_button_long_pressing(struct button *btn);
-bool button_state(struct button *btn);
+bool is_button_held_down(struct button *btn);
 bool is_button_changed(struct button *btn);
 struct button *button_register(char *name, GPIO_TypeDef *gpio_port,
                                uint gpio_pin, int pressed_state,
                                void (*cb)(void *), void *priv);
 void button_reset(struct button *btn);
+
+#define is_switch_on(btn) is_button_held_down(btn)
 
 #endif /* BUTTONS_H_ */

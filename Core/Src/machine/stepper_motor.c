@@ -36,6 +36,24 @@ stepper_motor_register(char *name, TIM_HandleTypeDef *htim, u32 channel_num,
     return sm;
 }
 
+void
+stepper_motor_set_freq_changer_handler(struct stepper_motor *sm,
+               void (*freq_changer_handler)(struct stepper_motor *))
+{
+    irq_disable();
+    sm->freq_changer_handler = freq_changer_handler;
+    irq_enable();
+}
+
+// IRQ context
+void stepper_motor_set_freq(struct stepper_motor *sm, int freq)
+{
+    u32 period = sm->timer_freq / freq;
+    __HAL_TIM_SET_AUTORELOAD(sm->htim, period - 1);
+    __HAL_TIM_SET_COMPARE(sm->htim, sm->channel_num, (period - 1) / 2); // Duty Cycle 50%
+    sm->freq = freq;
+}
+
 void stepper_motor_enable(struct stepper_motor *sm)
 {
     gpio_down(sm->en);
@@ -46,13 +64,20 @@ void stepper_motor_disable(struct stepper_motor *sm)
     gpio_up(sm->en);
 }
 
-void stepper_motor_run(struct stepper_motor *sm, int freq, bool dir)
+void stepper_motor_run(struct stepper_motor *sm, int start_freq,
+                       int target_freq, bool dir)
 {
-    printf("%s: stepper_motor_run %d %d\r\n", sm->name, freq, dir);
-    if (!freq)
-        return;
-    stepper_motor_set_speed(sm, freq);
-    __HAL_TIM_SET_COUNTER(sm->htim, 0);  // Сбросить счётчик
+    printf("%s: stepper_motor_run %d->%d %d\r\n",
+           sm->name, start_freq, target_freq, dir);
+
+    sm->target_freq = target_freq;
+    sm->freq = start_freq;
+    // TODO
+    u32 period = sm->timer_freq / start_freq;
+    __HAL_TIM_SET_AUTORELOAD(sm->htim, period - 1);
+    __HAL_TIM_SET_COMPARE(sm->htim, sm->channel_num, (period - 1) / 2); // Duty Cycle 50%
+
+    __HAL_TIM_SET_COUNTER(sm->htim, 0);
     HAL_TIM_PWM_Start(sm->htim, sm->channel_num);
     HAL_TIM_Base_Start_IT(sm->htim);
     sm->is_run = TRUE;
@@ -68,14 +93,12 @@ void stepper_motor_stop(struct stepper_motor *sm)
     gpio_down(sm->dir);
 }
 
-void stepper_motor_set_speed(struct stepper_motor *sm, int freq)
+void stepper_motor_set_speed(struct stepper_motor *sm, int target_freq)
 {
     printf("%s: freq = %d\r\n", sm->name, sm->freq);
-    sm->freq = freq;
-    u32 period = sm->timer_freq / freq;
-    __HAL_TIM_SET_AUTORELOAD(sm->htim, period - 1);
-    // Duty Cycle 50%
-    __HAL_TIM_SET_COMPARE(sm->htim, sm->channel_num, (period - 1) / 2);
+    irq_disable();
+    sm->target_freq = target_freq;
+    irq_enable();
 }
 
 void stepper_motor_set_autostop(struct stepper_motor *sm, int pulse)
@@ -83,6 +106,13 @@ void stepper_motor_set_autostop(struct stepper_motor *sm, int pulse)
     irq_disable();
     sm->autostop_pulse_cnt = pulse;
     irq_enable();
+}
+
+void stepper_motor_wait_autostop(struct stepper_motor *sm)
+{
+    while (is_stepper_motor_run(sm)) {
+        yield();
+    }
 }
 
 u32 stepper_motor_pos(struct stepper_motor *sm)
@@ -103,6 +133,10 @@ void stepper_motor_reset_pos(struct stepper_motor *sm)
 
 bool is_stepper_motor_run(struct stepper_motor *sm)
 {
-    return sm->is_run;
+    bool is_run;
+    irq_disable();
+    is_run = sm->is_run;
+    irq_enable();
+    return is_run;
 }
 
