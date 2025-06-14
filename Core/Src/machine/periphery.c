@@ -101,21 +101,20 @@ void periphery_init(void)
     m->pm_move_speed = potentiometer_register("pm_move_speed", &hadc1, 50);
 
     m->sm_longitudial_feed = stepper_motor_register("longitudial_feed_motor",
-                                                    &htim2, TIM_CHANNEL_1,
+                                                    &htim2, &htim1, TIM_CHANNEL_1,
                                                     &gpio_longitudal_feed_dir,
                                                     &gpio_longitudal_feed_en,
-                                                    1000000);
+                                                    1000000, 16, 15000);
     m->sm_longitudial_feed->gap = 1300;
 
     m->sm_cross_feed = stepper_motor_register("cross_feed_motor",
-                                              &htim3, TIM_CHANNEL_1,
+                                              &htim5, &htim3, TIM_CHANNEL_1,
                                               &gpio_cross_feed_dir,
                                               &gpio_cross_feed_en,
-                                              1000000);
-    m->sm_cross_feed->gap = 150;
+                                              1000000, 16, 10000);
+    m->sm_cross_feed->gap = 140;
 
- //   HAL_TIM_Base_Start_IT(&htim8);
-   // HAL_TIM_Base_Start_IT(&htim9);
+    HAL_TIM_Base_Start_IT(&htim6);
 }
 
 // IRQ context
@@ -135,36 +134,24 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     struct machine *m = &machine;
 
-    if (htim == &htim1) { // Period = 10ms (100Hz)
-        printf("htim1 irq\r\n");
+    if (htim == &htim6) { // Period = 10ms (100Hz)
+        stepper_motor_timer_isr(m->sm_longitudial_feed);
+        stepper_motor_timer_isr(m->sm_cross_feed);
         return;
     }
-
-/*    if (htim == &htim2) {
-        printf("htim2 irq\r\n");
-        stepper_motor_isr(m->sm_longitudial_feed);
-        return;
-    }
-
-    if (htim == &htim3) {
-        printf("htim3 irq\r\n");
-        stepper_motor_isr(m->sm_cross_feed);
-        return;
-    }*/
 
     if (htim == &htim4) { // Panel encoder
         printf("htim4.cnt = %lu\r\n", htim4.Instance->CNT);
         return;
     }
 
-    if (htim == &htim8) { // longitudial feed counter
-        printf("htim8 irq\r\n");
-        HAL_TIM_Base_Stop_IT(&htim8);
+    if (htim == &htim2) { // longitudial feed counter
+        stepper_motor_stop_isr(m->sm_longitudial_feed);
         return;
     }
 
-    if (htim == &htim9) { // cross feed counter
-        printf("htim9 irq\r\n");
+    if (htim == &htim5) { // cross feed counter
+        stepper_motor_stop_isr(m->sm_cross_feed);
         return;
     }
 }

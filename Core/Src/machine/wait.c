@@ -13,6 +13,7 @@ extern struct machine machine;
 int wait(u32 flags, uint timeout_ms)
 {
     struct machine *m = &machine;
+    UNUSED(m);
 
     struct timeout timeout;
     if (timeout_ms)

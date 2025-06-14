@@ -70,36 +70,8 @@ static void test_keypad(struct disp *disp)
 }
 
 
-static void disp_test(void)
-{
-    struct machine *m = &machine;
-
-    /*struct text_style style = {
-            .font = font_rus,
-            .fontsize = 4,
-            .bg_color = {0, 0, 0},
-            .color = {0, 255, 0}
-    };
-    disp_text(m->disp, "Вентилятор: ", 50, 100, &style);
-
-    img = img_test1();
-    disp_fill_img(m->disp, 320, 90, img);
-    kmem_deref(&img);*/
-
-    disp_clear(m->disp2);
-    test_keypad(m->disp2);
-
-    disp_clear(m->disp1);
-    test_keypad(m->disp1);
-
-//    disp_clear(m->disp2);
-  //  test_keypad(m->disp2);
-}
-
-
 static void dbg_os_stat(void *priv)
 {
-    struct machine *m = &machine;
     printlog("LT10M board ver: %s\r\n", BUILD_VERSION);
     threads_stat_print();
     timers_print();
@@ -107,17 +79,13 @@ static void dbg_os_stat(void *priv)
     printlog("timer: %lu\r\n", osKernelGetTickCount());
 }
 
-
-
 void key_d(void *priv)
 {
 	struct machine *m = (struct machine *)priv;
     printf("key_d\r\n");
 
     printf("run 1 turn cross\r\n");
-    stepper_motor_reset_pos(m->sm_cross_feed);
-    stepper_motor_set_autostop(m->sm_cross_feed, 400 * 10);
-    stepper_motor_run(m->sm_cross_feed, 500, 500, MOVE_UP);
+    stepper_motor_run(m->sm_cross_feed, 16, 100, MOVE_DOWN, 400 * 10 * 5);
 }
 
 void key_f(void *priv)
@@ -125,24 +93,15 @@ void key_f(void *priv)
     struct machine *m = (struct machine *)priv;
     printf("key_f\r\n");
 
-    printf("run 1 turn longitudial\r\n");
+    printf("run 1 turn cross\r\n");
 
-    __HAL_TIM_SET_PRESCALER(&htim8, 10 - 1);
-    htim8.Instance->EGR |= TIM_EGR_UG;
-    __HAL_TIM_SET_COUNTER(&htim8, 0);
-    __HAL_TIM_SET_AUTORELOAD(&htim8, 1000);
-    HAL_TIM_Base_Start_IT(&htim8);
+/*    __HAL_TIM_SET_PRESCALER(&htim5, 10 - 1);
+    htim5.Instance->EGR |= TIM_EGR_UG;
+    __HAL_TIM_SET_COUNTER(&htim5, 0);
+    __HAL_TIM_SET_AUTORELOAD(&htim5, 1000);
+    HAL_TIM_Base_Start_IT(&htim5);*/
 
-
-    stepper_motor_reset_pos(m->sm_longitudial_feed);
-    stepper_motor_set_autostop(m->sm_longitudial_feed, 400 * 25);
-    stepper_motor_run(m->sm_longitudial_feed, 1000, 1000, MOVE_RIGHT);
-    return;
-
-//    htim4.Instance->CNT = 0;
-//  disp_init(m->disp);
-//  disp_test();
-//  touch_read(m->touch);
+    stepper_motor_run(m->sm_cross_feed, 16, 4000, MOVE_DOWN, 400 * 10 * 10);
 }
 
 void key_g(void *priv)
@@ -150,7 +109,6 @@ void key_g(void *priv)
     struct machine *m = (struct machine *)priv;
     printf("key_g\r\n");
     printf("stop");
-    HAL_TIM_Base_Stop_IT(&htim8);
     stepper_motor_stop(m->sm_cross_feed);
     stepper_motor_stop(m->sm_longitudial_feed);
 }
@@ -160,50 +118,46 @@ void key_j(void *priv)
     struct machine *m = (struct machine *)priv;
     printf("key_j\r\n");
 
-    __HAL_TIM_SET_AUTORELOAD(&htim8, 1500);
-    __HAL_TIM_SET_AUTORELOAD(&htim9, 750);
+    m->sm_cross_feed->gap --;
+    printf("gap = %d\r\n", m->sm_longitudial_feed->gap);
 }
 
 void key_k(void *priv)
 {
     struct machine *m = (struct machine *)priv;
     printf("key_j\r\n");
-
-    __HAL_TIM_SET_AUTORELOAD(&htim8, 1000);
-    __HAL_TIM_SET_AUTORELOAD(&htim9, 2000);
+    m->sm_cross_feed->gap ++;
+    printf("gap = %d\r\n", m->sm_longitudial_feed->gap);
 }
 
 void key_l(void *priv)
 {
     struct machine *m = (struct machine *)priv;
     printf("key_l\r\n");
-
-    printf("htim8.cnt = %lu\r\n", htim8.Instance->CNT); // __HAL_TIM_GET_COUNTER(&htim8)
-    printf("htim9.cnt = %lu\r\n", htim9.Instance->CNT);
-
+    printf("pos = %lu\r\n", stepper_motor_pos(m->sm_longitudial_feed));
 }
 
 
 // IRQ context
-static void sm_cross_high_speed_freq_changer(struct stepper_motor *sm)
+static void
+sm_cross_high_speed_freq_changer(struct stepper_motor *sm, bool is_init)
 {
     int freq = sm->freq;
     if (sm->freq < sm->target_freq) {
-        if (sm->freq < 6000)
+        if (sm->freq < 1000)
+            freq += 20;
+        else if (sm->freq < 2000)
+            freq += 100;
+        else if (sm->freq < 5000)
+            freq += 200;
+        else if (sm->freq < 8000)
             freq += 50;
+        else if (sm->freq < 10000)
+            freq += 20;
         else
             freq ++;
-        if (sm->freq > sm->target_freq)
-            sm->freq = sm->target_freq;
-    }
-
-    if (sm->freq > sm->target_freq) {
-        if (sm->freq < 6000)
-            freq -= 50;
-        else
-            freq --;
-        if (sm->freq < sm->target_freq)
-            sm->freq = sm->target_freq;
+        if (freq > sm->target_freq)
+            freq = sm->target_freq;
     }
 
     if (freq != sm->freq)
@@ -211,57 +165,92 @@ static void sm_cross_high_speed_freq_changer(struct stepper_motor *sm)
 }
 
 // IRQ context
-static void sm_longitudial_high_speed_freq_changer(struct stepper_motor *sm)
+static void
+sm_longitudial_high_speed_freq_changer(struct stepper_motor *sm, bool is_init)
 {
     int freq = sm->freq;
     if (sm->freq < sm->target_freq) {
-        if (sm->freq < 10000)
-            freq += 120;
+        if (sm->freq < 1000)
+            freq += 100;
+        else if (sm->freq < 2000)
+            freq += 800;
+        else if (sm->freq < 6000)
+            freq += 500;
+        else if (sm->freq < 12000)
+            freq += 100;
         else
-            freq ++;
-        if (sm->freq > sm->target_freq)
-            sm->freq = sm->target_freq;
-    }
-
-    if (sm->freq > sm->target_freq) {
-        if (sm->freq < 10000)
-            freq -= 120;
-        else
-            freq --;
-        if (sm->freq < sm->target_freq)
-            sm->freq = sm->target_freq;
+            freq += 20;
+        if (freq > sm->target_freq)
+            freq = sm->target_freq;
     }
 
     if (freq != sm->freq)
         stepper_motor_set_freq(sm, freq);
 }
 
-volatile int test = 0;
 // IRQ context
-static void sm_low_speed_freq_changer(struct stepper_motor *sm)
+static void sm_low_speed_freq_changer(struct stepper_motor *sm, bool is_init)
 {
-    int freq = sm->freq;
+    int freq = sm->freq; // Текущая частота
+    u32 pos;
 
-   // test ++;
-   // if (test <= 5)
-   //     return;
-   // test = 0;
-
-    if (sm->freq < sm->target_freq) {
-        freq += 1;
-        if (sm->freq > sm->target_freq)
-            sm->freq = sm->target_freq;
+    if (is_init) {
+        // Длина участка разгона
+        u32 accel_distance = (((sm->target_freq - sm->start_freq) *
+                               (sm->target_freq - sm->start_freq))) /
+                                      (sm->start_acceleration * 1000);
+        sm->acceleration = sm->start_acceleration;
+        printf("sm->acceleration = %lu\r\n", sm->acceleration);
+        printf("sm->distance = %lu\r\n", sm->distance);
+        printf("1 accel_distance = %lu\r\n", accel_distance);
+        if (accel_distance > sm->distance / 2)
+            accel_distance = sm->distance / 2;
+        printf("2 accel_distance = %lu\r\n", accel_distance);
+        sm->start_braking_point = sm->distance - accel_distance; // Точка начала торможения
+        printf("sm->start_braking_point = %lu\r\n", sm->start_braking_point);
+        sm->accel_prescaller_cnt = 0;
+        return;
     }
 
-    if (sm->freq > sm->target_freq) {
-        freq -= 1;
-        if (sm->freq < sm->target_freq)
-            sm->freq = sm->target_freq;
+    pos = stepper_motor_pos(sm); // Текущее положение двигателя
+
+    if (pos >= sm->start_braking_point) { // Торможение
+        sm->accel_prescaller_cnt++;
+        if (sm->accel_prescaller_cnt >= 10) {
+            sm->accel_prescaller_cnt = 0;
+            sm->acceleration = ((freq * freq) / (sm->distance - pos)) / 1000;
+            if (sm->acceleration > sm->start_acceleration)
+                sm->acceleration = sm->start_acceleration;
+        }
+
+        freq -= sm->acceleration;
+        if (freq <= sm->start_freq)
+            freq = sm->start_freq;
+        if (freq != sm->freq)
+            stepper_motor_set_freq(sm, freq);
+        return;
     }
 
-    if (freq != sm->freq)
+    if (sm->freq < sm->target_freq) { // Разгон
+        sm->accel_prescaller_cnt++;
+        if (sm->accel_prescaller_cnt >= 10) {
+            sm->accel_prescaller_cnt = 0;
+            sm->acceleration = (sm->start_acceleration /
+                                (sm->max_freq / (sm->target_freq - freq))) * 2;
+        }
+
+        freq += sm->acceleration; // Увеличиваем частоту линейно
+        if (freq >= sm->target_freq) {
+            freq = sm->target_freq;
+            sm->accel_prescaller_cnt = 0;
+        }
+    }
+
+    if (freq != sm->freq) {
         stepper_motor_set_freq(sm, freq);
+    }
 }
+
 
 static void set_low_speed(void)
 {
@@ -293,7 +282,8 @@ static void move_button_high_speed_handler(void)
     if (is_button_changed(m->btn_up)) {
         if (is_button_held_down(m->btn_up)) {
             stepper_motor_enable(m->sm_cross_feed);
-            stepper_motor_run(m->sm_cross_feed, 100, 10000, MOVE_UP);
+            stepper_motor_run(m->sm_cross_feed, 200, 10000,
+                              MOVE_UP, NO_AUTO_STOP);
             m->is_last_move_up = TRUE;
         }
         else {
@@ -305,7 +295,8 @@ static void move_button_high_speed_handler(void)
     if (is_button_changed(m->btn_down)) {
         if (is_button_held_down(m->btn_down)) {
             stepper_motor_enable(m->sm_cross_feed);
-            stepper_motor_run(m->sm_cross_feed, 100, 10000, MOVE_DOWN);
+            stepper_motor_run(m->sm_cross_feed, 200, 10000,
+                              MOVE_DOWN, NO_AUTO_STOP);
             m->is_last_move_up = FALSE;
         }
         else {
@@ -317,7 +308,8 @@ static void move_button_high_speed_handler(void)
     if (is_button_changed(m->btn_left)) {
         if (is_button_held_down(m->btn_left)) {
             stepper_motor_enable(m->sm_longitudial_feed);
-            stepper_motor_run(m->sm_longitudial_feed, 16, 15000, MOVE_LEFT);
+            stepper_motor_run(m->sm_longitudial_feed, 300, 15000,
+                              MOVE_LEFT, NO_AUTO_STOP);
             m->is_last_move_left = TRUE;
         }
         else {
@@ -329,7 +321,8 @@ static void move_button_high_speed_handler(void)
     if (is_button_changed(m->btn_right)) {
         if (is_button_held_down(m->btn_right)) {
             stepper_motor_enable(m->sm_longitudial_feed);
-            stepper_motor_run(m->sm_longitudial_feed, 16, 15000, MOVE_RIGHT);
+            stepper_motor_run(m->sm_longitudial_feed, 300, 15000,
+                              MOVE_RIGHT, NO_AUTO_STOP);
             m->is_last_move_left = FALSE;
         }
         else {
@@ -351,16 +344,16 @@ static void move_button_low_speed_handler(void)
         if (is_button_held_down(m->btn_up)) {
             if (is_switch_on(m->switch_gap_compensation) &&
                              (!m->is_last_move_up)) {
-                stepper_motor_reset_pos(m->sm_cross_feed);
-                stepper_motor_set_autostop(m->sm_cross_feed, m->sm_cross_feed->gap);
-                stepper_motor_run(m->sm_cross_feed, 500, 500, MOVE_UP);
+                stepper_motor_run(m->sm_cross_feed, 500, 1000,
+                                  MOVE_UP, m->sm_cross_feed->gap);
                 stepper_motor_wait_autostop(m->sm_cross_feed);
                 m->is_last_move_up = TRUE;
                 return;
             }
 
             m->is_last_move_up = TRUE;
-            stepper_motor_run(m->sm_cross_feed, freq, freq, MOVE_UP);
+            stepper_motor_run(m->sm_cross_feed, freq, freq,
+                              MOVE_UP, NO_AUTO_STOP);
         }
         else
             stepper_motor_stop(m->sm_cross_feed);
@@ -370,16 +363,16 @@ static void move_button_low_speed_handler(void)
         if (is_button_held_down(m->btn_down)) {
             if (is_switch_on(m->switch_gap_compensation) &&
                              m->is_last_move_up) {
-                stepper_motor_reset_pos(m->sm_cross_feed);
-                stepper_motor_set_autostop(m->sm_cross_feed, m->sm_cross_feed->gap);
-                stepper_motor_run(m->sm_cross_feed, 500, 500, MOVE_DOWN);
+                stepper_motor_run(m->sm_cross_feed, 500, 1000,
+                                  MOVE_DOWN, m->sm_cross_feed->gap);
                 stepper_motor_wait_autostop(m->sm_cross_feed);
                 m->is_last_move_up = FALSE;
                 return;
             }
 
             m->is_last_move_up = FALSE;
-            stepper_motor_run(m->sm_cross_feed, freq, freq, MOVE_DOWN);
+            stepper_motor_run(m->sm_cross_feed, freq, freq,
+                              MOVE_DOWN, NO_AUTO_STOP);
         }
         else
             stepper_motor_stop(m->sm_cross_feed);
@@ -389,17 +382,16 @@ static void move_button_low_speed_handler(void)
         if (is_button_held_down(m->btn_left)) {
             if (is_switch_on(m->switch_gap_compensation) &&
                              (!m->is_last_move_left)) {
-                stepper_motor_reset_pos(m->sm_longitudial_feed);
-                stepper_motor_set_autostop(m->sm_longitudial_feed,
-                                           m->sm_longitudial_feed->gap);
-                stepper_motor_run(m->sm_longitudial_feed, 2000, 2000, MOVE_LEFT);
+                stepper_motor_run(m->sm_longitudial_feed, 2000, 5000,
+                                  MOVE_LEFT, m->sm_longitudial_feed->gap);
                 stepper_motor_wait_autostop(m->sm_longitudial_feed);
                 m->is_last_move_left = TRUE;
                 return;
             }
 
             m->is_last_move_left = TRUE;
-            stepper_motor_run(m->sm_longitudial_feed, freq, freq, MOVE_LEFT);
+            stepper_motor_run(m->sm_longitudial_feed, freq, freq,
+                              MOVE_LEFT, NO_AUTO_STOP);
         }
         else
             stepper_motor_stop(m->sm_longitudial_feed);
@@ -409,17 +401,16 @@ static void move_button_low_speed_handler(void)
         if (is_button_held_down(m->btn_right)) {
             if (is_switch_on(m->switch_gap_compensation) &&
                              m->is_last_move_left) {
-                stepper_motor_reset_pos(m->sm_longitudial_feed);
-                stepper_motor_set_autostop(m->sm_longitudial_feed,
-                                           m->sm_longitudial_feed->gap);
-                stepper_motor_run(m->sm_longitudial_feed, 2000, 2000, MOVE_RIGHT);
+                stepper_motor_run(m->sm_longitudial_feed, 2000, 5000,
+                                  MOVE_RIGHT, m->sm_longitudial_feed->gap);
                 stepper_motor_wait_autostop(m->sm_longitudial_feed);
                 m->is_last_move_left = FALSE;
                 return;
             }
 
             m->is_last_move_left = FALSE;
-            stepper_motor_run(m->sm_longitudial_feed, freq, freq, MOVE_RIGHT);
+            stepper_motor_run(m->sm_longitudial_feed, freq, freq,
+                              MOVE_RIGHT, NO_AUTO_STOP);
         }
         else
             stepper_motor_stop(m->sm_longitudial_feed);

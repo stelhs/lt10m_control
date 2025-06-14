@@ -15,5 +15,6 @@ void lde_d2_off(void);
 #define MOVE_RIGHT 0
 #define MOVE_UP 0
 #define MOVE_DOWN 1
+#define NO_AUTO_STOP (0xFFFFFFFF - 1)
 
 #endif /* PERIPHERY_H_ */
