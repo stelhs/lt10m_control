@@ -37,7 +37,7 @@ stepper_motor_register(char *name, TIM_HandleTypeDef *cnt_htim,
     sm->timer_freq = timer_freq;
     sm->min_freq = min_freq;
     sm->max_freq = max_freq;
-    sm->start_acceleration = 10;
+    sm->start_acceleration = 5;
 
     stepper_motor_disable(sm);
     return sm;
@@ -72,7 +72,7 @@ void stepper_motor_disable(struct stepper_motor *sm)
 }
 
 void stepper_motor_run(struct stepper_motor *sm, int start_freq,
-                       int target_freq, bool dir, u32 distance)
+                       int target_freq, bool dir, u32 distance_um)
 {
     printf("%s: stepper_motor_run %d->%d %d\r\n",
            sm->name, start_freq, target_freq, dir);
@@ -86,13 +86,19 @@ void stepper_motor_run(struct stepper_motor *sm, int start_freq,
     sm->start_freq = start_freq;
     sm->target_freq = target_freq;
     sm->freq = start_freq;
-    sm->distance = distance;
+    sm->distance_um = distance_um;
 
     if (sm->freq_changer_handler)
         sm->freq_changer_handler(sm, TRUE);
 
+    if (!dir)
+        sm->cnt_htim->Instance->CCER |= TIM_CCER_CC1P;
+    else
+        sm->cnt_htim->Instance->CCER &= ~TIM_CCER_CC1P;
+
     __HAL_TIM_SET_COUNTER(sm->cnt_htim, 0);
-    __HAL_TIM_SET_AUTORELOAD(sm->cnt_htim, distance);
+
+    __HAL_TIM_SET_AUTORELOAD(sm->cnt_htim, distance_um / 5);
     HAL_TIM_Base_Start_IT(sm->cnt_htim);
 
     stepper_motor_set_freq(sm, start_freq);
@@ -129,7 +135,8 @@ void stepper_motor_wait_autostop(struct stepper_motor *sm)
 
 u32 stepper_motor_pos(struct stepper_motor *sm)
 {
-    return __HAL_TIM_GET_COUNTER(sm->cnt_htim);
+    // 5 micron per impulse
+    return __HAL_TIM_GET_COUNTER(sm->cnt_htim) * 5;
 }
 
 void stepper_motor_reset_pos(struct stepper_motor *sm)

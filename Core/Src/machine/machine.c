@@ -85,7 +85,7 @@ void key_d(void *priv)
     printf("key_d\r\n");
 
     printf("run 1 turn cross\r\n");
-    stepper_motor_run(m->sm_cross_feed, 16, 100, MOVE_DOWN, 400 * 10 * 5);
+    stepper_motor_run(m->sm_longitudial_feed, 18, 9000, MOVE_RIGHT, 5000);
 }
 
 void key_f(void *priv)
@@ -98,10 +98,10 @@ void key_f(void *priv)
 /*    __HAL_TIM_SET_PRESCALER(&htim5, 10 - 1);
     htim5.Instance->EGR |= TIM_EGR_UG;
     __HAL_TIM_SET_COUNTER(&htim5, 0);
-    __HAL_TIM_SET_AUTORELOAD(&htim5, 1000);
+    __HAL_TIM_SET_AUTORELOAD(f&htim5, 1000);
     HAL_TIM_Base_Start_IT(&htim5);*/
 
-    stepper_motor_run(m->sm_cross_feed, 16, 4000, MOVE_DOWN, 400 * 10 * 10);
+    stepper_motor_run(m->sm_longitudial_feed, 18, 9000, MOVE_RIGHT, 40000);
 }
 
 void key_g(void *priv)
@@ -134,7 +134,11 @@ void key_l(void *priv)
 {
     struct machine *m = (struct machine *)priv;
     printf("key_l\r\n");
-    printf("pos = %lu\r\n", stepper_motor_pos(m->sm_longitudial_feed));
+    printf("reset\r\n");
+    __HAL_TIM_SET_COUNTER(&htim12, 0);
+    __HAL_TIM_SET_AUTORELOAD(&htim12, 5000);
+    HAL_TIM_Base_Start_IT(&htim12);
+
 }
 
 
@@ -201,12 +205,12 @@ static void sm_low_speed_freq_changer(struct stepper_motor *sm, bool is_init)
                                       (sm->start_acceleration * 1000);
         sm->acceleration = sm->start_acceleration;
         printf("sm->acceleration = %lu\r\n", sm->acceleration);
-        printf("sm->distance = %lu\r\n", sm->distance);
+        printf("sm->distance = %lu\r\n", sm->distance_um);
         printf("1 accel_distance = %lu\r\n", accel_distance);
-        if (accel_distance > sm->distance / 2)
-            accel_distance = sm->distance / 2;
+        if (accel_distance > sm->distance_um / 2)
+            accel_distance = sm->distance_um / 2;
         printf("2 accel_distance = %lu\r\n", accel_distance);
-        sm->start_braking_point = sm->distance - accel_distance; // Точка начала торможения
+        sm->start_braking_point = sm->distance_um - accel_distance; // Точка начала торможения
         printf("sm->start_braking_point = %lu\r\n", sm->start_braking_point);
         sm->accel_prescaller_cnt = 0;
         return;
@@ -216,9 +220,9 @@ static void sm_low_speed_freq_changer(struct stepper_motor *sm, bool is_init)
 
     if (pos >= sm->start_braking_point) { // Торможение
         sm->accel_prescaller_cnt++;
-        if (sm->accel_prescaller_cnt >= 10) {
+        if (sm->accel_prescaller_cnt >= 1) {
             sm->accel_prescaller_cnt = 0;
-            sm->acceleration = ((freq * freq) / (sm->distance - pos)) / 1000;
+            sm->acceleration = ((freq * freq) / (sm->distance_um - pos)) / 500;
             if (sm->acceleration > sm->start_acceleration)
                 sm->acceleration = sm->start_acceleration;
         }
@@ -226,8 +230,9 @@ static void sm_low_speed_freq_changer(struct stepper_motor *sm, bool is_init)
         freq -= sm->acceleration;
         if (freq <= sm->start_freq)
             freq = sm->start_freq;
-        if (freq != sm->freq)
+        if (freq != sm->freq) {
             stepper_motor_set_freq(sm, freq);
+        }
         return;
     }
 
@@ -236,7 +241,7 @@ static void sm_low_speed_freq_changer(struct stepper_motor *sm, bool is_init)
         if (sm->accel_prescaller_cnt >= 10) {
             sm->accel_prescaller_cnt = 0;
             sm->acceleration = (sm->start_acceleration /
-                                (sm->max_freq / (sm->target_freq - freq))) * 2;
+                                (sm->max_freq / (sm->target_freq - freq)));
         }
 
         freq += sm->acceleration; // Увеличиваем частоту линейно
@@ -467,11 +472,18 @@ static void main_thread(void *priv)
     else
         set_low_speed();
 
+    u32 prev_val = 0;
     for(;;) {
         yield();
 
         if (!is_button_held_down(m->switch_run)) {
             program_idle_handler();
+
+            u32 val = __HAL_TIM_GET_COUNTER(&htim12);
+            if (prev_val != val) {
+                printf("enc: %lu\r\n", val * 5);
+            }
+            prev_val = val;
         }
 
     }

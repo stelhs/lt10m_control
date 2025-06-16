@@ -24,7 +24,7 @@ struct stepper_motor {
     int freq;
     int start_freq;
     int target_freq;
-    u32 distance;
+    u32 distance_um; // in micro-meters
     bool is_run;
     u32 start_braking_point;
     void (*freq_changer_handler)(struct stepper_motor *, bool);
@@ -32,7 +32,6 @@ struct stepper_motor {
     u32 acceleration;
     int accel_prescaller_cnt;
     int gap;
-
 };
 
 struct stepper_motor *
