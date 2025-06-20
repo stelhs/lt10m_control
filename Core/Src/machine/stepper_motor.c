@@ -37,7 +37,6 @@ stepper_motor_register(char *name, TIM_HandleTypeDef *cnt_htim,
     sm->timer_freq = timer_freq;
     sm->min_freq = min_freq;
     sm->max_freq = max_freq;
-    sm->start_acceleration = 5;
 
     stepper_motor_disable(sm);
     return sm;
@@ -76,6 +75,12 @@ void stepper_motor_run(struct stepper_motor *sm, int start_freq,
 {
     printf("%s: stepper_motor_run %d->%d %d\r\n",
            sm->name, start_freq, target_freq, dir);
+
+    if (!start_freq)
+        start_freq = sm->min_freq;
+
+    if (!target_freq)
+        target_freq = sm->max_freq;
 
     if (start_freq < sm->min_freq)
         panic("attempt to set frequency below allowed");

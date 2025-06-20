@@ -38,7 +38,6 @@ void spi_send_sleep(struct spi_dev *dev, u8 *data, size_t len)
 	dev->is_finished = FALSE;
 	irq_enable();
 
-	thread_lock(dev->lock);
 	gpio_down(dev->cs);
 	HAL_SPI_Transmit_DMA(dev->hspi, data, len);
 	while(1) {
@@ -50,26 +49,21 @@ void spi_send_sleep(struct spi_dev *dev, u8 *data, size_t len)
 //		yield();
 	}
 	gpio_up(dev->cs);
-	thread_unlock(dev->lock);
 }
 
 void spi_send_sync(struct spi_dev *dev, u8 *data, size_t len)
 {
-    thread_lock(dev->lock);
 	gpio_down(dev->cs);
 	HAL_SPI_Transmit(dev->hspi, data, len, HAL_MAX_DELAY);
 	gpio_up(dev->cs);
-	thread_unlock(dev->lock);
 }
 
 void spi_send_recv_sync(struct spi_dev *dev, u8 *tx_data,
                         u8 *rx_data, size_t len)
 {
-    thread_lock(dev->lock);
     gpio_down(dev->cs);
     HAL_SPI_TransmitReceive(dev->hspi, tx_data, rx_data, len, HAL_MAX_DELAY);
     gpio_up(dev->cs);
-    thread_unlock(dev->lock);
 }
 
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)

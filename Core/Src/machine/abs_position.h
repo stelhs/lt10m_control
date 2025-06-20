@@ -1,0 +1,37 @@
+/*
+ * abs_position.h
+ *
+ *  Created on: Jun 17, 2025
+ *      Author: stelhs
+ */
+
+#ifndef SRC_MACHINE_ABS_POSITION_H_
+#define SRC_MACHINE_ABS_POSITION_H_
+
+#include "spi_dev.h"
+
+#define LINEAR_CROSS_RESOLUTION 5
+#define LINEAR_LONGITUDAL_RESOLUTION 5
+
+struct xy {
+    int longitudal;
+    int cross;
+};
+
+struct abs_position {
+    struct spi_dev *dev;
+    bool is_longitudal_inc_right;
+    bool is_cross_inc_up;
+    struct xy raw;
+    struct xy offset_tools[4];
+};
+struct abs_position *
+abs_position_dev_register(char *name, SPI_HandleTypeDef *hspi,
+                          struct gpio *cs);
+void abs_position_update(struct abs_position *ap);
+int abs_longitudal(struct abs_position *ap, int tool_num);
+int abs_cross(struct abs_position *ap, int tool_num);
+void abs_cross_set(struct abs_position *ap, int tool_num, int val);
+void abs_longitudal_set(struct abs_position *ap, int tool_num, int val);
+
+#endif /* SRC_MACHINE_ABS_POSITION_H_ */

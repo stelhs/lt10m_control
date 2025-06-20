@@ -7,6 +7,7 @@
 #include "stm32_lib/uart_debug.h"
 #include "stm32_lib/buttons.h"
 #include "machine.h"
+#include "abs_position.h"
 #include "wait.h"
 
 #include "disp_mipi_dcs.h"
@@ -118,16 +119,16 @@ void key_j(void *priv)
     struct machine *m = (struct machine *)priv;
     printf("key_j\r\n");
 
-    m->sm_cross_feed->gap --;
-    printf("gap = %d\r\n", m->sm_longitudial_feed->gap);
+//    m->ap->raw.cross ++;
+    m->ap->raw.longitudal ++;
 }
 
 void key_k(void *priv)
 {
     struct machine *m = (struct machine *)priv;
     printf("key_j\r\n");
-    m->sm_cross_feed->gap ++;
-    printf("gap = %d\r\n", m->sm_longitudial_feed->gap);
+    m->ap->raw.cross --;
+  //  m->ap->raw.longitudal --;
 }
 
 void key_l(void *priv)
@@ -195,7 +196,7 @@ sm_longitudial_high_speed_freq_changer(struct stepper_motor *sm, bool is_init)
 // IRQ context
 static void sm_low_speed_freq_changer(struct stepper_motor *sm, bool is_init)
 {
-    int freq = sm->freq; // Текущая частота
+    int freq = sm->freq;
     u32 pos;
 
     if (is_init) {
@@ -204,19 +205,16 @@ static void sm_low_speed_freq_changer(struct stepper_motor *sm, bool is_init)
                                (sm->target_freq - sm->start_freq))) /
                                       (sm->start_acceleration * 1000);
         sm->acceleration = sm->start_acceleration;
-        printf("sm->acceleration = %lu\r\n", sm->acceleration);
-        printf("sm->distance = %lu\r\n", sm->distance_um);
-        printf("1 accel_distance = %lu\r\n", accel_distance);
+        sm->start_acceleration = 5;
+
         if (accel_distance > sm->distance_um / 2)
             accel_distance = sm->distance_um / 2;
-        printf("2 accel_distance = %lu\r\n", accel_distance);
         sm->start_braking_point = sm->distance_um - accel_distance; // Точка начала торможения
-        printf("sm->start_braking_point = %lu\r\n", sm->start_braking_point);
         sm->accel_prescaller_cnt = 0;
         return;
     }
 
-    pos = stepper_motor_pos(sm); // Текущее положение двигателя
+    pos = stepper_motor_pos(sm);
 
     if (pos >= sm->start_braking_point) { // Торможение
         sm->accel_prescaller_cnt++;
@@ -244,16 +242,15 @@ static void sm_low_speed_freq_changer(struct stepper_motor *sm, bool is_init)
                                 (sm->max_freq / (sm->target_freq - freq)));
         }
 
-        freq += sm->acceleration; // Увеличиваем частоту линейно
+        freq += sm->acceleration;
         if (freq >= sm->target_freq) {
             freq = sm->target_freq;
             sm->accel_prescaller_cnt = 0;
         }
     }
 
-    if (freq != sm->freq) {
+    if (freq != sm->freq)
         stepper_motor_set_freq(sm, freq);
-    }
 }
 
 
@@ -279,6 +276,12 @@ static void set_high_speed(void)
                                 sm_longitudial_high_speed_freq_changer);
 }
 
+static void move_to(struct stepper_motor *sm, int pos)
+{
+    //abs_longitudal(ap, tool_num p);
+    // TODO
+}
+
 
 static void move_button_high_speed_handler(void)
 {
@@ -287,9 +290,8 @@ static void move_button_high_speed_handler(void)
     if (is_button_changed(m->btn_up)) {
         if (is_button_held_down(m->btn_up)) {
             stepper_motor_enable(m->sm_cross_feed);
-            stepper_motor_run(m->sm_cross_feed, 200, 10000,
+            stepper_motor_run(m->sm_cross_feed, 200, 0,
                               MOVE_UP, NO_AUTO_STOP);
-            m->is_last_move_up = TRUE;
         }
         else {
             stepper_motor_disable(m->sm_cross_feed);
@@ -300,9 +302,8 @@ static void move_button_high_speed_handler(void)
     if (is_button_changed(m->btn_down)) {
         if (is_button_held_down(m->btn_down)) {
             stepper_motor_enable(m->sm_cross_feed);
-            stepper_motor_run(m->sm_cross_feed, 200, 10000,
+            stepper_motor_run(m->sm_cross_feed, 200, 0,
                               MOVE_DOWN, NO_AUTO_STOP);
-            m->is_last_move_up = FALSE;
         }
         else {
             stepper_motor_disable(m->sm_cross_feed);
@@ -313,9 +314,8 @@ static void move_button_high_speed_handler(void)
     if (is_button_changed(m->btn_left)) {
         if (is_button_held_down(m->btn_left)) {
             stepper_motor_enable(m->sm_longitudial_feed);
-            stepper_motor_run(m->sm_longitudial_feed, 300, 15000,
+            stepper_motor_run(m->sm_longitudial_feed, 300, 0,
                               MOVE_LEFT, NO_AUTO_STOP);
-            m->is_last_move_left = TRUE;
         }
         else {
             stepper_motor_disable(m->sm_longitudial_feed);
@@ -326,9 +326,8 @@ static void move_button_high_speed_handler(void)
     if (is_button_changed(m->btn_right)) {
         if (is_button_held_down(m->btn_right)) {
             stepper_motor_enable(m->sm_longitudial_feed);
-            stepper_motor_run(m->sm_longitudial_feed, 300, 15000,
+            stepper_motor_run(m->sm_longitudial_feed, 300, 0,
                               MOVE_RIGHT, NO_AUTO_STOP);
-            m->is_last_move_left = FALSE;
         }
         else {
             stepper_motor_disable(m->sm_longitudial_feed);
@@ -346,80 +345,53 @@ static void move_button_low_speed_handler(void)
         freq = 16;
 
     if (is_button_changed(m->btn_up)) {
-        if (is_button_held_down(m->btn_up)) {
-            if (is_switch_on(m->switch_gap_compensation) &&
-                             (!m->is_last_move_up)) {
-                stepper_motor_run(m->sm_cross_feed, 500, 1000,
-                                  MOVE_UP, m->sm_cross_feed->gap);
-                stepper_motor_wait_autostop(m->sm_cross_feed);
-                m->is_last_move_up = TRUE;
-                return;
-            }
-
-            m->is_last_move_up = TRUE;
+        if (is_button_held_down(m->btn_up))
             stepper_motor_run(m->sm_cross_feed, freq, freq,
                               MOVE_UP, NO_AUTO_STOP);
-        }
         else
             stepper_motor_stop(m->sm_cross_feed);
     }
 
     if (is_button_changed(m->btn_down)) {
-        if (is_button_held_down(m->btn_down)) {
-            if (is_switch_on(m->switch_gap_compensation) &&
-                             m->is_last_move_up) {
-                stepper_motor_run(m->sm_cross_feed, 500, 1000,
-                                  MOVE_DOWN, m->sm_cross_feed->gap);
-                stepper_motor_wait_autostop(m->sm_cross_feed);
-                m->is_last_move_up = FALSE;
-                return;
-            }
-
-            m->is_last_move_up = FALSE;
+        if (is_button_held_down(m->btn_down))
             stepper_motor_run(m->sm_cross_feed, freq, freq,
                               MOVE_DOWN, NO_AUTO_STOP);
-        }
         else
             stepper_motor_stop(m->sm_cross_feed);
     }
 
     if (is_button_changed(m->btn_left)) {
-        if (is_button_held_down(m->btn_left)) {
-            if (is_switch_on(m->switch_gap_compensation) &&
-                             (!m->is_last_move_left)) {
-                stepper_motor_run(m->sm_longitudial_feed, 2000, 5000,
-                                  MOVE_LEFT, m->sm_longitudial_feed->gap);
-                stepper_motor_wait_autostop(m->sm_longitudial_feed);
-                m->is_last_move_left = TRUE;
-                return;
-            }
-
-            m->is_last_move_left = TRUE;
+        if (is_button_held_down(m->btn_left))
             stepper_motor_run(m->sm_longitudial_feed, freq, freq,
                               MOVE_LEFT, NO_AUTO_STOP);
-        }
         else
             stepper_motor_stop(m->sm_longitudial_feed);
     }
 
     if (is_button_changed(m->btn_right)) {
-        if (is_button_held_down(m->btn_right)) {
-            if (is_switch_on(m->switch_gap_compensation) &&
-                             m->is_last_move_left) {
-                stepper_motor_run(m->sm_longitudial_feed, 2000, 5000,
-                                  MOVE_RIGHT, m->sm_longitudial_feed->gap);
-                stepper_motor_wait_autostop(m->sm_longitudial_feed);
-                m->is_last_move_left = FALSE;
-                return;
-            }
-
-            m->is_last_move_left = FALSE;
+        if (is_button_held_down(m->btn_right))
             stepper_motor_run(m->sm_longitudial_feed, freq, freq,
                               MOVE_RIGHT, NO_AUTO_STOP);
-        }
         else
             stepper_motor_stop(m->sm_longitudial_feed);
     }
+}
+
+static void move_button_go_to_handler(void)
+{
+    struct machine *m = &machine;
+
+    if (is_button_clicked(m->btn_up))
+        stepper_motor_run(m->sm_cross_feed, 0, 0, MOVE_UP, m->move_step);
+
+    if (is_button_clicked(m->btn_down))
+        stepper_motor_run(m->sm_cross_feed, 0, 0, MOVE_DOWN, m->move_step);
+
+    if (is_button_clicked(m->btn_left))
+        stepper_motor_run(m->sm_longitudial_feed, 0, 0, MOVE_LEFT, m->move_step);
+
+    if (is_button_clicked(m->btn_right))
+        stepper_motor_run(m->sm_longitudial_feed, 0, 0, MOVE_RIGHT, m->move_step);
 }
 
 static void program_idle_handler(void)
@@ -435,12 +407,59 @@ static void program_idle_handler(void)
 
     if (is_switch_on(m->switch_high_speed))
         move_button_high_speed_handler();
+    else if (is_switch_on(m->switch_go_to))
+        move_button_go_to_handler();
     else
         move_button_low_speed_handler();
 
     if (is_potentiometer_changed(m->pm_move_speed)) {
         u16 val = potentiometer_val(m->pm_move_speed);
         printf("potentiometer = %d\r\n", val);
+    }
+}
+
+
+void display_status_handler(void)
+{
+    struct machine *m = &machine;
+    struct ui_status *us = &m->ui_stat;
+    struct abs_position *ap = m->ap;
+    int val;
+
+    abs_position_update(m->ap);
+    if (m->curr_tool_num != us->curr_tool_num) {
+        us->curr_tool_num = m->curr_tool_num;
+        ui_status_tool_update();
+    }
+
+    val = abs_cross(ap, m->curr_tool_num);
+    if (val != us->cross_pos) {
+        char buf[10];
+        int len1, len2;
+        len1 = sprintf(buf, "%.3f", (float)us->cross_pos / 1000);
+        len2 = sprintf(buf, "%.3f", (float)val / 1000);
+        us->cross_pos = val;
+        ui_status_cross_update(len1 != len2);
+    }
+
+    val = abs_longitudal(ap, m->curr_tool_num);
+    if (val != us->longitudal_pos) {
+        char buf[10];
+        int len1, len2;
+        len1 = sprintf(buf, "%.3f", (float)us->longitudal_pos / 1000);
+        len2 = sprintf(buf, "%.3f", (float)val / 1000);
+        us->longitudal_pos = val;
+        ui_status_longitudal_update(len1 != len2);
+    }
+
+    if (ap->is_cross_inc_up != us->is_cross_inc_up) {
+        us->is_cross_inc_up = ap->is_cross_inc_up;
+        ui_status_cross_dir_update();
+    }
+
+    if (ap->is_longitudal_inc_right != us->is_longitudal_inc_right) {
+        us->is_longitudal_inc_right = ap->is_longitudal_inc_right;
+        ui_status_longitudal_dir_update();
     }
 }
 
@@ -472,9 +491,13 @@ static void main_thread(void *priv)
     else
         set_low_speed();
 
+    ui_status_show();
+
     u32 prev_val = 0;
     for(;;) {
         yield();
+
+        display_status_handler();
 
         if (!is_button_held_down(m->switch_run)) {
             program_idle_handler();

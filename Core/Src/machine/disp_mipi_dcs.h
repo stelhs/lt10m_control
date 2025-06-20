@@ -24,7 +24,6 @@ struct disp {
     enum disp_orientation orient;
     int width;
     int height;
-    bool lock;
     struct touch_xpt2046 *touch;
 };
 
@@ -38,6 +37,7 @@ struct __attribute__((packed)) color {
 #define YELLOW (struct color){255, 255, 0}
 #define GREEN (struct color){0, 255, 0}
 #define DARK_GREEN (struct color){0, 127, 0}
+#define EMERALD (struct color){0, 255, 255}
 #define GRAY (struct color){127, 127, 127}
 #define DARK_GRAY (struct color){50, 50, 50}
 #define RED (struct color){255, 0, 0}

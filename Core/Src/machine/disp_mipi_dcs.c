@@ -12,6 +12,9 @@
 #include "stm32_lib/buf.h"
 #include "spi_dev.h"
 
+static bool lock = FALSE;
+static struct disp *last_disp = NULL;
+
 static void disp_destructor(void *mem)
 {
     struct disp *disp = (struct disp *)mem;
@@ -36,20 +39,31 @@ disp_register(char *name, struct gpio *cs, struct gpio *dc_rs,
 
 static void cmd_send(struct disp *disp, u8 cmd)
 {
+    if (last_disp != disp)
+        sleep(5);
+    last_disp = disp;
     gpio_down(disp->dc_rs);
     spi_send_sync(disp->spi, &cmd, 1);
 }
 
 static void data_send(struct disp *disp, u8 *data, size_t len)
 {
+    if (last_disp != disp)
+        sleep(5);
+    last_disp = disp;
     gpio_up(disp->dc_rs);
     spi_send_sleep(disp->spi, data, len);
+    gpio_down(disp->dc_rs);
 }
 
 static void data_send_sync(struct disp *disp, u8 *data, size_t len)
 {
+    if (last_disp != disp)
+        sleep(5);
+    last_disp = disp;
     gpio_up(disp->dc_rs);
     spi_send_sync(disp->spi, data, len);
+    gpio_down(disp->dc_rs);
 }
 
 static void data_send_buf(struct disp *disp, struct buf *data)
@@ -81,19 +95,17 @@ static void set_window(struct disp *disp, int x, int y,
 void disp_ili9488_put_pixel(struct disp *disp,
                             int x, int y, struct color color)
 {
-    thread_lock(disp->lock);
     set_window(disp, x, y, 1, 1);
     data_send_sync(disp, (u8 *)&color, 3);
-    thread_unlock(disp->lock);
 }
 
 
 void disp_fill_img(struct disp *disp, int x, int y, struct img *img)
 {
-    thread_lock(disp->lock);
+    thread_lock(lock);
     set_window(disp, x, y, img->width, img->height);
     data_send_buf(disp, img->buf);
-    thread_unlock(disp->lock);
+    thread_unlock(lock);
 }
 
 void disp_fill(struct disp *disp,
@@ -111,11 +123,12 @@ void disp_fill(struct disp *disp,
         *c = color;
     buf_put(row, width * sizeof (struct color));
 
-    thread_lock(disp->lock);
+    thread_lock(lock);
     set_window(disp, x, y, width, height);
     for (i = 0; i < height; i++)
         data_send_buf(disp, row);
-    thread_unlock(disp->lock);
+    //cmd_send(disp, 0x00);
+    thread_unlock(lock);
 
     kmem_deref(&row);
 }
@@ -152,6 +165,7 @@ void disp_init(struct disp *disp)
 void disp_set_orientation(struct disp *disp, enum disp_orientation orient)
 {
     u8 data;
+    thread_lock(lock);
     cmd_send(disp, 0x36); // MADCTL: setup orientation
     switch(orient) {
     case DISP_ORIENT_PORTRAIT:
@@ -177,12 +191,14 @@ void disp_set_orientation(struct disp *disp, enum disp_orientation orient)
     }
     data |= (1 << 3);
     data_send(disp, &data, 1);
+    thread_unlock(lock);
 }
 
 
 void disp_line(struct disp *disp,
                int x0, int y0, int x1, int y1,
                int thickness, struct color color) {
+    thread_lock(lock);
     // Разница по координатам
     int dx = abs(x1 - x0);
     int dy = abs(y1 - y0);
@@ -226,6 +242,7 @@ void disp_line(struct disp *disp,
             y0 += sy;
         }
     }
+    thread_unlock(lock);
 }
 
 

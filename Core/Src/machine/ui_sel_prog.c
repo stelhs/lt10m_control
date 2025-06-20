@@ -13,16 +13,12 @@
 #include "machine.h"
 
 
-struct disp_sel_prog {
+struct ui_sel_prog {
     struct disp *disp;
     struct disp_button *progs[14];
 };
 
-static struct disp_sel_prog *disp_sel_prog = NULL;
-
-struct key_prog {
-    enum progs prog;
-};
+static struct ui_sel_prog *ui_sel_prog = NULL;
 
 struct img *img_prog_by_num(enum progs prog)
 {
@@ -65,19 +61,17 @@ struct img *img_prog_by_num(enum progs prog)
 
 static void key_prog_draw(struct disp_button *db)
 {
-    struct key_prog *kp = (struct key_prog *)db->priv;
+    enum progs prog = (enum progs)db->priv;
     struct img *img;
     disp_rect(db->disp, db->x, db->y, db->width, db->height, 1, GRAY);
-    img = img_prog_by_num(kp->prog);
+    img = img_prog_by_num(prog);
     disp_fill_img(db->disp, db->x + 2, db->y + 3, img);
     kmem_deref(&img);
 }
 
 
-static void show(struct disp_sel_prog *dsp)
+static void show(struct ui_sel_prog *usp)
 {
-    struct disp_button *db;
-    struct key_prog *kp;
     const int left_ident = 35;
     const int right_butt_ident = 180;
     const int top_ident = 2;
@@ -85,7 +79,7 @@ static void show(struct disp_sel_prog *dsp)
     const int key_width = 100;
     const int key_height = 55;
     int i;
-    disp_clear(dsp->disp);
+    disp_clear(usp->disp);
 
     for (i = 0; i < 7; i++) {
         char *left, *right;
@@ -119,56 +113,53 @@ static void show(struct disp_sel_prog *dsp)
             right = "key_prog_thread_right";
             break;
         }
-        db = disp_button_create(left, dsp->disp, key_width, key_height,
-                                sizeof *kp);
-        kp = (struct key_prog *)db->priv;
-        kp->prog = (enum progs)i * 2;
-        disp_button_show(db, left_ident,
-                         top_ident + i * (key_height + key_ident),
-                         key_prog_draw);
-        dsp->progs[kp->prog] = db;
 
-        db = disp_button_create(right, dsp->disp, key_width, key_height,
-                                sizeof *kp);
-        kp = (struct key_prog *)db->priv;
-        kp->prog = (enum progs)i * 2 + 1;
-        disp_button_show(db, right_butt_ident,
-                         top_ident + i * (key_height + key_ident),
-                         key_prog_draw);
-        dsp->progs[kp->prog] = db;
+        usp->progs[i * 2] =
+                disp_button_register(left, usp->disp,
+                                     left_ident,
+                                     top_ident + i * (key_height + key_ident),
+                                     key_width, key_height, (void *)(i * 2),
+                                     key_prog_draw, NULL);
+
+        usp->progs[i * 2 + 1] =
+                disp_button_register(right, usp->disp,
+                                     right_butt_ident,
+                                     top_ident + i * (key_height + key_ident),
+                                     key_width, key_height, (void *)(i * 2 + 1),
+                                     key_prog_draw, NULL);
     }
 
 }
 
-static void disp_sel_prog_destructor(void *mem)
+static void ui_sel_prog_destructor(void *mem)
 {
-    struct disp_sel_prog *dsp = (struct disp_sel_prog *)mem;
+    struct ui_sel_prog *usp = (struct ui_sel_prog *)mem;
     int i;
 
-    kmem_deref(&dsp->disp);
-    for (i = 0; i < ARRAY_SIZE(dsp->progs); i++)
-        kmem_deref(dsp->progs + i);
+    kmem_deref(&usp->disp);
+    for (i = 0; i < ARRAY_SIZE(usp->progs); i++)
+        kmem_deref(usp->progs + i);
 }
 
 
 int ui_sel_prog_run(void)
 {
     struct machine *m = &machine;
-    struct disp_sel_prog *dsp = disp_sel_prog;
+    struct ui_sel_prog *usp = ui_sel_prog;
 
-    dsp = kzref_alloc("disp_sel_prog", sizeof *dsp, disp_sel_prog_destructor);
-    dsp->disp = kmem_ref(m->disp1);
+    usp = kzref_alloc("ui_sel_prog", sizeof *usp, ui_sel_prog_destructor);
+    usp->disp = kmem_ref(m->disp1);
 
-    show(dsp);
+    show(usp);
 
     while (1) {
         int i;
         yield();
 
-        for (i = 0; i < ARRAY_SIZE(dsp->progs); i++) {
-            struct disp_button *db = dsp->progs[i];
+        for (i = 0; i < ARRAY_SIZE(usp->progs); i++) {
+            struct disp_button *db = usp->progs[i];
             if (is_disp_button_touched(db)) {
-                kmem_deref(&dsp);
+                kmem_deref(&usp);
                 return i;
             }
         }

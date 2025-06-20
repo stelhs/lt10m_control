@@ -7,8 +7,10 @@
 #include "stm32_lib/types.h"
 #include "stm32_lib/types.h"
 #include "timestamp.h"
+#include "ui_status.h"
 
-#define BUILD_VERSION "0.2"
+
+#define BUILD_VERSION "0.4"
 
 extern struct machine machine;
 
@@ -30,7 +32,7 @@ struct machine {
     struct button *switch_run;
     struct button *switch_touch_lock;
     struct button *switch_high_speed;
-    struct button *switch_gap_compensation;
+    struct button *switch_go_to;
     struct disp *disp1;
     struct disp *disp2;
 
@@ -39,9 +41,10 @@ struct machine {
 
     struct potentiometer *pm_move_speed;
 
-    bool is_last_move_up;
-    bool is_last_move_left;
-
+    int move_step;
+    struct abs_position *ap;
+    struct ui_status ui_stat;
+    int curr_tool_num;
 };
 
 extern struct machine machine;

@@ -59,7 +59,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOA, SPI_TFT_CS_Pin|LONGITUDAL_FEED_EN_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, LED_D2_Pin|LED_D3_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, LED_D2_Pin|LED_D3_Pin|ABS_POS_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, TFT_RESET_Pin|TFT_DC_RS_Pin|CROSS_FEED_DIR_Pin|LONGITUDAL_FEED_DIR_Pin, GPIO_PIN_RESET);
@@ -73,8 +73,8 @@ void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(SPI_TOUCH_CS_GPIO_Port, SPI_TOUCH_CS_Pin, GPIO_PIN_SET);
 
-  /*Configure GPIO pins : PEPin PEPin PEPin */
-  GPIO_InitStruct.Pin = MOTOR_POWER_Pin|SPI_TFT2_CS_Pin|SPEAKER_Pin;
+  /*Configure GPIO pins : PEPin PEPin */
+  GPIO_InitStruct.Pin = MOTOR_POWER_Pin|SPEAKER_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -96,11 +96,11 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = SPI_TFT_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(SPI_TFT_CS_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PAPin PAPin PAPin */
-  GPIO_InitStruct.Pin = LED_D2_Pin|LED_D3_Pin|LONGITUDAL_FEED_EN_Pin;
+  /*Configure GPIO pins : PAPin PAPin PAPin PAPin */
+  GPIO_InitStruct.Pin = LED_D2_Pin|LED_D3_Pin|LONGITUDAL_FEED_EN_Pin|ABS_POS_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -116,6 +116,13 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PtPin */
+  GPIO_InitStruct.Pin = SPI_TFT2_CS_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  HAL_GPIO_Init(SPI_TFT2_CS_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PtPin */
   GPIO_InitStruct.Pin = BUTTON_UP_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
@@ -124,7 +131,7 @@ void MX_GPIO_Init(void)
   /*Configure GPIO pins : PDPin PDPin PDPin PDPin
                            PDPin PDPin */
   GPIO_InitStruct.Pin = BUTTON_DOWN_Pin|BUTTON_LEFT_Pin|BUTTON_RIGHT_Pin|PANEL_ENC_BUTTON_Pin
-                          |SWITCH_GAP_COMPENSATION_Pin|SWITCH_HIGH_SPEED_Pin;
+                          |SWITCH_GO_TO_MODE_Pin|SWITCH_HIGH_SPEED_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);

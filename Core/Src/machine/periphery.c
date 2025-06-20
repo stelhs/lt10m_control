@@ -7,6 +7,8 @@
 #include "machine.h"
 #include "periphery.h"
 
+#include "stm32_lib/gpio.h"
+#include "stm32_lib/buttons.h"
 #include "spi.h"
 #include "usart.h"
 #include "tim.h"
@@ -14,8 +16,7 @@
 #include "stepper_motor.h"
 #include "potentiometer.h"
 #include "touch_xpt2046.h"
-#include "stm32_lib/gpio.h"
-#include "stm32_lib/buttons.h"
+#include "abs_position.h"
 
 extern struct machine machine;
 
@@ -36,6 +37,8 @@ static struct gpio gpio_cross_feed_en = {CROSS_FEED_EN_GPIO_Port,
                                          CROSS_FEED_EN_Pin};
 static struct gpio gpio_cross_feed_dir = {CROSS_FEED_DIR_GPIO_Port,
                                           CROSS_FEED_DIR_Pin};
+static struct gpio gpio_abs_pos_cs = {ABS_POS_CS_GPIO_Port,
+                                          ABS_POS_CS_Pin};
 
 
 void lde_d2_on(void)
@@ -51,6 +54,8 @@ void lde_d2_off(void)
 void periphery_init(void)
 {
     struct machine *m = &machine;
+    HAL_TIM_Base_Start_IT(&htim6); // Run system timer 1kHz
+    HAL_TIM_Base_Start_IT(&htim7); // Run delay timer
 
     m->btn_left = button_register("btn_left", BUTTON_LEFT_GPIO_Port,
                                   BUTTON_LEFT_Pin, 0, NULL, NULL);
@@ -70,9 +75,9 @@ void periphery_init(void)
     m->switch_high_speed = button_register("switch_high_speed",
                                            SWITCH_HIGH_SPEED_GPIO_Port,
                                            SWITCH_HIGH_SPEED_Pin, 0, NULL, NULL);
-    m->switch_gap_compensation = button_register("switch_gap_compensation",
-                                                 SWITCH_GAP_COMPENSATION_GPIO_Port,
-                                                 SWITCH_GAP_COMPENSATION_Pin, 0, NULL, NULL);
+    m->switch_go_to = button_register("switch_gap_compensation",
+                                                 SWITCH_GO_TO_MODE_GPIO_Port,
+                                                 SWITCH_GO_TO_MODE_Pin, 0, NULL, NULL);
 
     gpio_up(&gpio_disp1_spi_cs);
     gpio_up(&gpio_disp2_spi_cs);
@@ -114,7 +119,9 @@ void periphery_init(void)
                                               1000000, 18, 10000);
     m->sm_cross_feed->gap = 140;
 
-    HAL_TIM_Base_Start_IT(&htim6); // Run system timer 1kHz
+    m->ap = abs_position_dev_register("abs_position_dev",
+                                           &hspi2, &gpio_abs_pos_cs);
+
     HAL_TIM_Base_Start_IT(&htim4); // Panel Encoder
 //    HAL_TIM_Base_Start_IT(&htim12);
     //HAL_TIM_IC_Start(&htim12, TIM_CHANNEL_1); // Spindle Encoder
