@@ -42,6 +42,7 @@ struct __attribute__((packed)) color {
 #define DARK_GRAY (struct color){50, 50, 50}
 #define RED (struct color){255, 0, 0}
 #define BLUE (struct color){0, 0, 255}
+#define DARK_BLUE (struct color){0, 0, 64}
 
 extern u8 font_rus[];
 

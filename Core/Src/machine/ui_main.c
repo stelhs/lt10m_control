@@ -363,15 +363,12 @@ static void ui_main_thread(void *priv)
 
     while (1) {
         yield();
-
-        if (is_button_changed(m->switch_touch_lock)) {
-            if (is_button_held_down(m->switch_touch_lock))
-                touch_enable(m->disp1->touch);
-            else
-                touch_disable(m->disp1->touch);
-        }
-
         disp_button_handler();
+        if (is_switch_on(m->switch_move_to)) {
+            hide(um);
+            ui_move_to_run();
+            show(um);
+        }
     }
 }
 

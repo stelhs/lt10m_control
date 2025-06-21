@@ -45,6 +45,16 @@ static void hide(void)
     kmem_deref(&usx->buttons);
 }
 
+void onclick_tool_num(void *priv)
+{
+    int tool_num = (int)priv;
+    struct ui_set_xy *usx = ui_set_xy;
+    if (usx->tool_num == tool_num)
+        return;
+    hide();
+    usx->tool_num = tool_num;
+    show();
+}
 
 void onclick_up_down(void *priv)
 {
@@ -78,7 +88,7 @@ void onclick_longitudal_pos(void *priv)
     struct ui_set_xy *usx = (struct ui_set_xy *)priv;
     float pos = (float)usx->longitudal_pos[usx->tool_num] / 1000;
     hide();
-    if (!ui_keyboard_run("diameter: ", &pos)) {
+    if (!ui_keyboard_run("Longitudal: ", &pos)) {
         usx->longitudal_pos[usx->tool_num] = (int)(pos * 1000);
     }
     show();
@@ -97,27 +107,41 @@ static void key_esc_draw(struct disp_button *db)
     disp_rect(db->disp, db->x, db->y, db->width, db->height, 1, RED);
     disp_text(db->disp, "Esc",
             db->x + db->width / 2 - 25,
-            db->y + db->height / 2 - 10,
+            db->y + db->height / 2 - 9,
             &ts);
 }
 
 static void key_tool_num_draw(struct disp_button *db)
 {
-    static struct text_style ts = {
+    struct ui_set_xy *usx = ui_set_xy;
+    static struct text_style non_selected_ts = {
             .bg_color = BLACK,
             .color = EMERALD,
             .font = font_rus,
             .fontsize = 3
     };
+    static struct text_style selected_ts = {
+            .bg_color = DARK_BLUE,
+            .color = YELLOW,
+            .font = font_rus,
+            .fontsize = 3
+    };
+    struct text_style *ts = &non_selected_ts;
+
     int tool_num = (int)db->priv;
     char str[3];
 
-    sprintf(str, "%d", tool_num);
+    sprintf(str, "%d", tool_num + 1);
     disp_rect(db->disp, db->x, db->y, db->width, db->height, 1, EMERALD);
+
+    if (usx->tool_num == tool_num) {
+        disp_fill(db->disp, db->x + 1, db->y + 1,
+                  db->width - 2, db->height - 2, DARK_BLUE);
+        ts = &selected_ts;
+    }
     disp_text(db->disp, str,
-            db->x + db->width / 2 - 8,
-            db->y + db->height / 2 - 10,
-            &ts);
+              db->x + db->width / 2 - 8,
+              db->y + db->height / 2 - 10, ts);
 }
 
 static void key_up_down_draw(struct disp_button *db)
@@ -234,8 +258,8 @@ static void show(void)
         buttons->key_tools[i] =
                 disp_button_register("key_tool_num", usx->disp_touch,
                                      12 + (65 + 11) * i, 138,
-                                     65, 65, (void *)(i + 1),
-                                     key_tool_num_draw, NULL);
+                                     65, 65, (void *)i,
+                                     key_tool_num_draw, onclick_tool_num);
     }
 
     buttons->key_up_down =
@@ -287,6 +311,7 @@ int ui_set_xy_run(void)
     int i;
 
     usx = kzref_alloc("ui_set_xy", sizeof *usx, ui_set_xy_destructor);
+    ui_set_xy = usx;
     usx->disp_touch = kmem_ref(m->disp1);
     usx->disp_info = kmem_ref(m->disp2);
     usx->tool_num = m->curr_tool_num;
@@ -297,21 +322,24 @@ int ui_set_xy_run(void)
     usx->is_cross_inc_up = m->ap->is_cross_inc_up;
     usx->is_longitudal_inc_right = m->ap->is_longitudal_inc_right;
 
-    usx->tool_num = 0;
-    ui_set_xy = usx;
-
     show();
 
     while (1) {
         yield();
 
         if (is_disp_button_touched(usx->buttons->key_ok)) {
-            for (i = 0; i < 4; i++) {
-                abs_cross_set(m->ap, i, usx->cross_pos[i]);
-                abs_longitudal_set(m->ap, i, usx->longitudal_pos[i]);
-            }
             m->ap->is_cross_inc_up = usx->is_cross_inc_up;
             m->ap->is_longitudal_inc_right = usx->is_longitudal_inc_right;
+            for (i = 0; i < 4; i++) {
+                int cross_pos = abs_cross(m->ap, i);
+                int longitudal_pos = abs_longitudal(m->ap, i);
+                if (i == usx->tool_num) {
+                    cross_pos = usx->cross_pos[i];
+                    longitudal_pos = usx->longitudal_pos[i];
+                }
+                abs_cross_set(m->ap, i, cross_pos);
+                abs_longitudal_set(m->ap, i, longitudal_pos);
+            }
             m->curr_tool_num = usx->tool_num;
             kmem_deref(&usx);
             return 0;

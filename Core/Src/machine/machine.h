@@ -32,7 +32,7 @@ struct machine {
     struct button *switch_run;
     struct button *switch_touch_lock;
     struct button *switch_high_speed;
-    struct button *switch_go_to;
+    struct button *switch_move_to;
     struct disp *disp1;
     struct disp *disp2;
 

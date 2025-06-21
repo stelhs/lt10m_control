@@ -19,6 +19,7 @@ struct ui_keyboard {
     struct disp_button *keys_num[10];
     struct disp_button *key_point;
     struct disp_button *key_del;
+    struct disp_button *key_minus;
     struct disp_button *key_ok;
     struct disp_button *key_cancel;
     int max_len;
@@ -96,6 +97,16 @@ static void key_esc_draw(struct disp_button *db)
             &ts);
 }
 
+static void key_minus_draw(struct disp_button *db)
+{
+    disp_rect(db->disp, db->x, db->y, db->width, db->height, 1, GRAY);
+    disp_text(db->disp, "-",
+            db->x + db->width / 2 - 7,
+            db->y + db->height / 2 - 10,
+            &key_text_style);
+}
+
+
 static void show(struct ui_keyboard *uk)
 {
     const int key_width = 90;
@@ -109,19 +120,26 @@ static void show(struct ui_keyboard *uk)
 
     disp_clear(uk->disp_touch);
 
-    uk->key_del =
-            disp_button_register("key_del", uk->disp_touch,
-                                 left_indent + (key_width + key_indent) * 1,
-                                 top_indent + (key_height + key_indent) * 0,
-                                 key_width * 2 + key_indent, key_height, 0,
-                                 key_del_draw, NULL);
-
     uk->key_cancel =
             disp_button_register("key_esc", uk->disp_touch,
                                  left_indent,
                                  top_indent + (key_height + key_indent) * 0,
                                  key_width, key_height, 0,
                                  key_esc_draw, NULL);
+
+    uk->key_minus =
+            disp_button_register("key_minus", uk->disp_touch,
+                                 left_indent + (key_width + key_indent) * 1,
+                                 top_indent + (key_height + key_indent) * 0,
+                                 key_width, key_height, 0,
+                                 key_minus_draw, NULL);
+
+    uk->key_del =
+            disp_button_register("key_del", uk->disp_touch,
+                                 left_indent + (key_width + key_indent) * 2,
+                                 top_indent + (key_height + key_indent) * 0,
+                                 key_width, key_height, 0,
+                                 key_del_draw, NULL);
 
     key_num = 0;
     for (i = 3; i >= 1; i--)
@@ -200,6 +218,7 @@ static void ui_keyboard_destructor(void *mem)
 
     for (i = 0; i < ARRAY_SIZE(uk->keys_num); i++)
         kmem_deref(uk->keys_num + i);
+    kmem_deref(&uk->key_minus);
     kmem_deref(&uk->key_cancel);
     kmem_deref(&uk->key_ok);
     kmem_deref(&uk->key_point);
@@ -260,6 +279,22 @@ int ui_keyboard_run(char *field_name, float *val)
 
             input[input_index] = '.';
             input_index++;
+            draw_input_win_value(uk, input, YELLOW);
+        }
+
+        if (is_disp_button_touched(uk->key_minus) && input_index) {
+            int i;
+            if (input[0] == '-') {
+                for (i = 0; i < input_index - 1; i++)
+                    input[i] = input[i + 1];
+                input_index --;
+                input[input_index] = 0;
+            } else {
+                for (i = input_index - 1; i >= 0; i--)
+                    input[i + 1] = input[i];
+                input[0] = '-';
+                input_index ++;
+            }
             draw_input_win_value(uk, input, YELLOW);
         }
 

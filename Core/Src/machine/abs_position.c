@@ -33,40 +33,40 @@ void abs_position_update(struct abs_position *ap)
     ap->raw.cross = (int)*raw_cross * LINEAR_CROSS_RESOLUTION;
 }
 
-
 int abs_longitudal(struct abs_position *ap, int tool_num)
 {
     int offset = ap->offset_tools[tool_num].longitudal;
-
-    if (ap->is_longitudal_inc_right) {
-        int pos = (int)(0xFFFFFFFF - (u32)ap->raw.longitudal);
-        offset = (int)(0xFFFFFFFF - (u32)offset);
-        return pos - offset;
-    }
-
+    if (ap->is_longitudal_inc_right)
+        return (int)(0xFFFFFFFF - ap->raw.longitudal) + offset;
     return ap->raw.longitudal - offset;
 }
 
 int abs_cross(struct abs_position *ap, int tool_num)
 {
     int offset = ap->offset_tools[tool_num].cross;
-
-    if (ap->is_cross_inc_up) {
-        int pos = (int)(0xFFFFFFFF - (u32)ap->raw.cross);
-        offset = (int)(0xFFFFFFFF - (u32)offset);
-        return pos - offset;
-    }
-
+    if (ap->is_cross_inc_up)
+        return (int)(0xFFFFFFFF - ap->raw.cross) + offset;
     return ap->raw.cross - offset;
 }
 
 void abs_cross_set(struct abs_position *ap, int tool_num, int val)
 {
-    ap->offset_tools[tool_num].cross = (int)ap->raw.cross - val;
+    if (ap->is_cross_inc_up) {
+        ap->offset_tools[tool_num].cross =
+            val - (int)(0xFFFFFFFF - ap->raw.cross);
+        return;
+    }
+    ap->offset_tools[tool_num].cross = ap->raw.cross - val;
 }
 
 void abs_longitudal_set(struct abs_position *ap, int tool_num, int val)
 {
-    ap->offset_tools[tool_num].longitudal = (int)ap->raw.longitudal - val;
+    if (ap->is_longitudal_inc_right) {
+        ap->offset_tools[tool_num].longitudal =
+            val - (int)(0xFFFFFFFF - ap->raw.longitudal);
+        return;
+    }
+    ap->offset_tools[tool_num].longitudal =
+        ap->raw.longitudal - val;
 }
 

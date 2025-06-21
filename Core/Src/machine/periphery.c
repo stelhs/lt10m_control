@@ -75,7 +75,7 @@ void periphery_init(void)
     m->switch_high_speed = button_register("switch_high_speed",
                                            SWITCH_HIGH_SPEED_GPIO_Port,
                                            SWITCH_HIGH_SPEED_Pin, 0, NULL, NULL);
-    m->switch_go_to = button_register("switch_gap_compensation",
+    m->switch_move_to = button_register("switch_gap_compensation",
                                                  SWITCH_GO_TO_MODE_GPIO_Port,
                                                  SWITCH_GO_TO_MODE_Pin, 0, NULL, NULL);
 

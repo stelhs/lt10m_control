@@ -121,13 +121,14 @@ void key_j(void *priv)
 
 //    m->ap->raw.cross ++;
     m->ap->raw.longitudal ++;
+//    printf("m->ap->raw.longitudal = %lu\r\n", m->ap->raw.longitudal);
 }
 
 void key_k(void *priv)
 {
     struct machine *m = (struct machine *)priv;
     printf("key_j\r\n");
-    m->ap->raw.cross --;
+    m->ap->raw.cross ++;
   //  m->ap->raw.longitudal --;
 }
 
@@ -407,7 +408,7 @@ static void program_idle_handler(void)
 
     if (is_switch_on(m->switch_high_speed))
         move_button_high_speed_handler();
-    else if (is_switch_on(m->switch_go_to))
+    else if (is_switch_on(m->switch_move_to))
         move_button_go_to_handler();
     else
         move_button_low_speed_handler();
@@ -498,6 +499,13 @@ static void main_thread(void *priv)
         yield();
 
         display_status_handler();
+
+        if (is_button_changed(m->switch_touch_lock)) {
+            if (is_switch_on(m->switch_touch_lock))
+                touch_enable(m->disp1->touch);
+            else
+                touch_disable(m->disp1->touch);
+        }
 
         if (!is_button_held_down(m->switch_run)) {
             program_idle_handler();
