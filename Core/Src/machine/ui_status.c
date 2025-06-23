@@ -43,7 +43,7 @@ void ui_status_cross_update(bool is_erase)
             .fontsize = 3,
     };
 
-    pos = abs_cross(ap, m->curr_tool_num);
+    pos = abs_cross_curr_tool(ap);
     sprintf(str_num, "%.3f", (float)pos / 1000);
     if (is_erase) {
         len = strlen(str_num);
@@ -69,7 +69,7 @@ void ui_status_longitudal_update(bool is_erase)
             .fontsize = 3,
     };
 
-    pos = abs_longitudal(ap, m->curr_tool_num);
+    pos = abs_longitudal_curr_tool(ap);
     sprintf(str_num, "%.3f", (float)pos / 1000);
     if (is_erase) {
         len = strlen(str_num);
@@ -93,7 +93,7 @@ void ui_status_tool_update(void)
             .fontsize = 3,
     };
 
-    sprintf(str_num, "%d", m->curr_tool_num + 1);
+    sprintf(str_num, "%d", abs_pos_tool(m->ap) + 1);
     len = strlen(str_num);
     width = disp_text_height(&ts, len);
     height = disp_text_width(&ts, len);
@@ -108,10 +108,10 @@ void ui_status_cross_dir_update(void)
     struct abs_position *ap = m->ap;
     struct img *img;
 
-    if (ap->is_cross_inc_up)
-        img = img_cross_arrow_up1();
-    else
+    if (ap->is_cross_inc_down)
         img = img_cross_arrow_down1();
+    else
+        img = img_cross_arrow_up1();
     disp_fill_img(disp, 53, 4, img);
     kmem_deref(&img);
 }
@@ -123,10 +123,10 @@ void ui_status_longitudal_dir_update(void)
     struct abs_position *ap = m->ap;
     struct img *img;
 
-    if (ap->is_longitudal_inc_right)
-        img = img_longitudal_arrow_right1();
-    else
+    if (ap->is_longitudal_inc_left)
         img = img_longitudal_arrow_left1();
+    else
+        img = img_longitudal_arrow_right1();
     disp_fill_img(disp, 260, 10, img);
     kmem_deref(&img);
 }

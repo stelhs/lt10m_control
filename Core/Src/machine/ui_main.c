@@ -18,6 +18,7 @@
 #include "ui_keyboard.h"
 #include "ui_sel_prog.h"
 #include "ui_set_xy.h"
+#include "ui_move_to.h"
 
 
 struct cmsis_thread *ui_tid;
@@ -365,6 +366,7 @@ static void ui_main_thread(void *priv)
         yield();
         disp_button_handler();
         if (is_switch_on(m->switch_move_to)) {
+            buttons_reset();
             hide(um);
             ui_move_to_run();
             show(um);

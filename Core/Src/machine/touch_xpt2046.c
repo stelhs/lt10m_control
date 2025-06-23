@@ -150,15 +150,6 @@ void touch_handler(struct touch_xpt2046 *dev)
     }
 }
 
-static void touch_thread(void *priv)
-{
-    struct touch_xpt2046 *dev = (struct touch_xpt2046 *)priv;
-
-    for(;;) {
-        yield();
-        touch_handler(dev);
-    }
-}
 
 static void touch_destructor(void *mem)
 {
@@ -198,7 +189,6 @@ touch_xpt2046_register(char *name, struct gpio *cs,
 
     timeout_start(&dev->t, 300);
 
-    thread_register("touch_thread", 1500, touch_thread, dev);
     return dev;
 }
 

@@ -71,8 +71,9 @@ void stepper_motor_disable(struct stepper_motor *sm)
 }
 
 void stepper_motor_run(struct stepper_motor *sm, int start_freq,
-                       int target_freq, bool dir, u32 distance_um)
+                       int target_freq, bool dir, int distance_um)
 {
+    int cnt;
     printf("%s: stepper_motor_run %d->%d %d\r\n",
            sm->name, start_freq, target_freq, dir);
 
@@ -101,18 +102,29 @@ void stepper_motor_run(struct stepper_motor *sm, int start_freq,
     else
         sm->cnt_htim->Instance->CCER &= ~TIM_CCER_CC1P;
 
-    __HAL_TIM_SET_COUNTER(sm->cnt_htim, 0);
+    dir ? gpio_up(sm->dir) : gpio_down(sm->dir);
+    sm->last_dir = dir;
 
-    __HAL_TIM_SET_AUTORELOAD(sm->cnt_htim, distance_um / 5);
-    HAL_TIM_Base_Start_IT(sm->cnt_htim);
+    cnt = distance_um / 5 - 1;
+    if (cnt == 0) { // lifehack for one impulse
+        if (dir)
+            sm->cnt_htim->Instance->CCER |= TIM_CCER_CC1P;
+        else
+            sm->cnt_htim->Instance->CCER &= ~TIM_CCER_CC1P;
+        cnt = 1;
+    }
 
+    sm->is_run = TRUE;
     stepper_motor_set_freq(sm, start_freq);
     __HAL_TIM_SET_COUNTER(sm->pulse_htim, 0);
     HAL_TIM_PWM_Start(sm->pulse_htim, sm->channel_num);
     HAL_TIM_Base_Start_IT(sm->pulse_htim);
-    sm->is_run = TRUE;
-    dir ? gpio_up(sm->dir) : gpio_down(sm->dir);
+
+    __HAL_TIM_SET_COUNTER(sm->cnt_htim, 0);
+    __HAL_TIM_SET_AUTORELOAD(sm->cnt_htim, cnt);
+    HAL_TIM_Base_Start_IT(sm->cnt_htim);
 }
+
 
 void stepper_motor_stop(struct stepper_motor *sm)
 {
@@ -138,10 +150,10 @@ void stepper_motor_wait_autostop(struct stepper_motor *sm)
         yield();
 }
 
-u32 stepper_motor_pos(struct stepper_motor *sm)
+int stepper_motor_pos(struct stepper_motor *sm)
 {
     // 5 micron per impulse
-    return __HAL_TIM_GET_COUNTER(sm->cnt_htim) * 5;
+    return (int)(__HAL_TIM_GET_COUNTER(sm->cnt_htim) * 5);
 }
 
 void stepper_motor_reset_pos(struct stepper_motor *sm)

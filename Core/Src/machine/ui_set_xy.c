@@ -32,8 +32,8 @@ struct ui_set_xy {
     int tool_num;
     int longitudal_pos[4];
     int cross_pos[4];
-    bool is_longitudal_inc_right;
-    bool is_cross_inc_up;
+    bool is_longitudal_inc_left;
+    bool is_cross_inc_down;
 };
 
 static struct ui_set_xy *ui_set_xy = NULL;
@@ -60,7 +60,7 @@ void onclick_up_down(void *priv)
 {
     struct ui_set_xy *usx = (struct ui_set_xy *)priv;
     hide();
-    usx->is_cross_inc_up = !usx->is_cross_inc_up;
+    usx->is_cross_inc_down = !usx->is_cross_inc_down;
     show();
 }
 
@@ -68,7 +68,7 @@ void onclick_left_right(void *priv)
 {
     struct ui_set_xy *usx = (struct ui_set_xy *)priv;
     hide();
-    usx->is_longitudal_inc_right = !usx->is_longitudal_inc_right;
+    usx->is_longitudal_inc_left = !usx->is_longitudal_inc_left;
     show();
 }
 
@@ -148,10 +148,10 @@ static void key_up_down_draw(struct disp_button *db)
 {
     struct ui_set_xy *usx = (struct ui_set_xy *)db->priv;
     struct img *img;
-    if (usx->is_cross_inc_up)
-        img = img_cross_arrow_up1();
-    else
+    if (usx->is_cross_inc_down)
         img = img_cross_arrow_down1();
+    else
+        img = img_cross_arrow_up1();
     disp_fill_img(db->disp, db->x + 73, db->y + 11, img);
     kmem_deref(&img);
 }
@@ -160,10 +160,10 @@ static void key_left_right_draw(struct disp_button *db)
 {
     struct ui_set_xy *usx = (struct ui_set_xy *)db->priv;
     struct img *img;
-    if (usx->is_longitudal_inc_right)
-        img = img_longitudal_arrow_right1();
-    else
+    if (usx->is_longitudal_inc_left)
         img = img_longitudal_arrow_left1();
+    else
+        img = img_longitudal_arrow_right1();
     disp_fill_img(db->disp, db->x + 65, db->y + 17, img);
     kmem_deref(&img);
 }
@@ -314,22 +314,23 @@ int ui_set_xy_run(void)
     ui_set_xy = usx;
     usx->disp_touch = kmem_ref(m->disp1);
     usx->disp_info = kmem_ref(m->disp2);
-    usx->tool_num = m->curr_tool_num;
+    usx->tool_num = abs_pos_tool(m->ap);
     for (i = 0; i < 4; i++) {
         usx->longitudal_pos[i] = abs_longitudal(m->ap, i);
         usx->cross_pos[i] = abs_cross(m->ap, i);
     }
-    usx->is_cross_inc_up = m->ap->is_cross_inc_up;
-    usx->is_longitudal_inc_right = m->ap->is_longitudal_inc_right;
+    usx->is_cross_inc_down = m->ap->is_cross_inc_down;
+    usx->is_longitudal_inc_left = m->ap->is_longitudal_inc_left;
 
     show();
 
     while (1) {
+        disp_button_handler();
         yield();
 
         if (is_disp_button_touched(usx->buttons->key_ok)) {
-            m->ap->is_cross_inc_up = usx->is_cross_inc_up;
-            m->ap->is_longitudal_inc_right = usx->is_longitudal_inc_right;
+            m->ap->is_cross_inc_down = usx->is_cross_inc_down;
+            m->ap->is_longitudal_inc_left = usx->is_longitudal_inc_left;
             for (i = 0; i < 4; i++) {
                 int cross_pos = abs_cross(m->ap, i);
                 int longitudal_pos = abs_longitudal(m->ap, i);
@@ -340,7 +341,7 @@ int ui_set_xy_run(void)
                 abs_cross_set(m->ap, i, cross_pos);
                 abs_longitudal_set(m->ap, i, longitudal_pos);
             }
-            m->curr_tool_num = usx->tool_num;
+            abs_pos_set_tool(m->ap, usx->tool_num);
             kmem_deref(&usx);
             return 0;
         }
@@ -349,8 +350,6 @@ int ui_set_xy_run(void)
             kmem_deref(&usx);
             return -1;
         }
-
-        disp_button_handler();
     }
 
     return -1;

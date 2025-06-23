@@ -62,12 +62,14 @@ bool is_disp_button_touched(struct disp_button *db)
 
 void disp_button_handler(void)
 {
-    struct le *le;
-    LIST_FOREACH(&disp_buttons_list, le) {
+    struct le *le, *le2;
+    LIST_FOREACH_SAFE(&disp_buttons_list, le, le2) {
         struct disp_button *db = (struct disp_button *)list_ledata(le);
         if (!db->on_click)
             continue;
-        if (is_area_touched(db->ta))
+        if (is_area_touched(db->ta)) {
             db->on_click(db->priv);
+            return;
+        }
     }
 }

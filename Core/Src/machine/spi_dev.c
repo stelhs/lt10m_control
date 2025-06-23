@@ -66,6 +66,11 @@ void spi_send_recv_sync(struct spi_dev *dev, u8 *tx_data,
     gpio_up(dev->cs);
 }
 
+void spi_send_cs_activate(struct spi_dev *dev)
+{
+    gpio_down(dev->cs);
+}
+
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
 {
 	struct le *le;

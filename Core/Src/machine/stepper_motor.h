@@ -24,14 +24,14 @@ struct stepper_motor {
     int freq;
     int start_freq;
     int target_freq;
-    u32 distance_um; // in micro-meters
-    bool is_run;
+    int distance_um; // in micro-meters
+    volatile bool is_run;
     u32 start_braking_point;
     void (*freq_changer_handler)(struct stepper_motor *, bool);
     u32 start_acceleration;
     u32 acceleration;
     int accel_prescaller_cnt;
-    int gap;
+    bool last_dir;
 };
 
 struct stepper_motor *
@@ -48,22 +48,22 @@ void stepper_motor_enable(struct stepper_motor *sm);
 void stepper_motor_disable(struct stepper_motor *sm);
 
 void stepper_motor_run(struct stepper_motor *sm, int start_freq,
-                       int target_freq, bool dir, u32 distance);
+                       int target_freq, bool dir, int distance);
 
 void stepper_motor_stop(struct stepper_motor *sm);
 void stepper_motor_set_speed(struct stepper_motor *sm, int freq);
 void stepper_motor_wait_autostop(struct stepper_motor *sm);
-u32 stepper_motor_pos(struct stepper_motor *sm);
+int stepper_motor_pos(struct stepper_motor *sm);
 void stepper_motor_reset_pos(struct stepper_motor *sm);
 bool is_stepper_motor_run(struct stepper_motor *sm);
 
 // IRQ context
 static inline void stepper_motor_stop_isr(struct stepper_motor *sm)
 {
-    printf("STOP\r\n");
+    sm->is_run = FALSE;
     HAL_TIM_Base_Stop_IT(sm->cnt_htim);
     HAL_TIM_Base_Stop_IT(sm->pulse_htim);
-    sm->is_run = FALSE;
+    printf("STOP\r\n");
 }
 
 // IRQ context

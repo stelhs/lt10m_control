@@ -110,14 +110,11 @@ void periphery_init(void)
                                                     &gpio_longitudal_feed_dir,
                                                     &gpio_longitudal_feed_en,
                                                     1000000, 18, 15000);
-    m->sm_longitudial_feed->gap = 1300;
-
     m->sm_cross_feed = stepper_motor_register("cross_feed_motor",
                                               &htim5, &htim3, TIM_CHANNEL_1,
                                               &gpio_cross_feed_dir,
                                               &gpio_cross_feed_en,
                                               1000000, 18, 10000);
-    m->sm_cross_feed->gap = 140;
 
     m->ap = abs_position_dev_register("abs_position_dev",
                                            &hspi2, &gpio_abs_pos_cs);

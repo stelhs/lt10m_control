@@ -22,7 +22,6 @@ extern struct machine machine;
 
 
 struct machine {
-    struct cmsis_thread *tid;
     struct cmsis_thread *ui_tid;
     struct button *btn_left;
     struct button *btn_right;
@@ -44,12 +43,18 @@ struct machine {
     int move_step;
     struct abs_position *ap;
     struct ui_status ui_stat;
-    int curr_tool_num;
 };
 
 extern struct machine machine;
 
 void panic(char *reason);
 void machine_init(void);
+int cross_move_to(int pos, bool is_accurate);
+int longitudal_move_to(int pos, bool is_accurate);
+void buttons_reset(void);
+int cross_up_new_position(int distance);
+int cross_down_new_position(int distance);
+int longitudal_left_new_position(int distance);
+int longitudal_right_new_position(int distance);
 
 #endif  // MACHINE_H_

@@ -20,18 +20,23 @@ struct xy {
 
 struct abs_position {
     struct spi_dev *dev;
-    bool is_longitudal_inc_right;
-    bool is_cross_inc_up;
+    bool is_longitudal_inc_left;
+    bool is_cross_inc_down;
     struct xy raw;
     struct xy offset_tools[4];
+    int curr_tool_num;
 };
 struct abs_position *
 abs_position_dev_register(char *name, SPI_HandleTypeDef *hspi,
                           struct gpio *cs);
 void abs_position_update(struct abs_position *ap);
 int abs_longitudal(struct abs_position *ap, int tool_num);
+int abs_longitudal_curr_tool(struct abs_position *ap);
 int abs_cross(struct abs_position *ap, int tool_num);
+int abs_cross_curr_tool(struct abs_position *ap);
 void abs_cross_set(struct abs_position *ap, int tool_num, int val);
 void abs_longitudal_set(struct abs_position *ap, int tool_num, int val);
+void abs_pos_set_tool(struct abs_position *ap, int tool_num);
+int abs_pos_tool(struct abs_position *ap);
 
 #endif /* SRC_MACHINE_ABS_POSITION_H_ */

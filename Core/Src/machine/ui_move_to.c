@@ -27,7 +27,6 @@ struct ui_move_to {
     struct ui_move_to_buttons *buttons;
     struct disp *disp_info;
     struct disp *disp_touch;
-    int move_step;
     int move_to_cross_pos;
     int move_to_longitudal_pos;
 };
@@ -71,7 +70,7 @@ static void onclick_set_xy(void *priv)
 
 static void key_set_step_draw(struct disp_button *db)
 {
-    struct ui_move_to *umt = (struct ui_move_to *)db->priv;
+    struct machine *m = &machine;
     char *string;
     int x, width;
     static struct text_style ts = {
@@ -83,7 +82,7 @@ static void key_set_step_draw(struct disp_button *db)
 
   //  disp_rect(db->disp, db->x, db->y, db->width, db->height, 1, GRAY);
 
-    string = kref_sprintf("%.3f", (float)umt->move_step / 1000);
+    string = kref_sprintf("%.3f", (float)m->move_step / 1000);
     width = disp_text_width(&ts, strlen(string));
     x = db->width / 2 - width / 2;
     disp_text(db->disp, string, db->x + x, db->y + 17, &ts);
@@ -127,7 +126,6 @@ static void key_set_longitudal_pos_draw(struct disp_button *db)
 
 static void key_move_to_draw(struct disp_button *db)
 {
-    struct ui_move_to *umt = (struct ui_move_to *)db->priv;
     struct img *img;
     disp_rect(db->disp, db->x, db->y, db->width, db->height, 2, RED);
     img = img_moveto();
@@ -139,11 +137,11 @@ static void key_move_to_draw(struct disp_button *db)
 
 void onclick_set_step(void *priv)
 {
-    struct ui_move_to *umt = (struct ui_move_to *)priv;
-    float pos = (float)umt->move_step / 1000;
+    struct machine *m = &machine;
+    float pos = (float)m->move_step / 1000;
     hide();
     if (!ui_keyboard_run("move step: ", &pos)) {
-        umt->move_step = (int)(pos * 1000);
+        m->move_step = (int)(pos * 1000);
     }
     show();
 }
@@ -173,10 +171,9 @@ void onclick_set_longitudal_pos(void *priv)
 void onclick_move_to(void *priv)
 {
     struct ui_move_to *umt = (struct ui_move_to *)priv;
-    printf("call moveto\r\n");
+    longitudal_move_to(umt->move_to_longitudal_pos, TRUE);
+    cross_move_to(umt->move_to_cross_pos, TRUE); // TODO
 }
-
-
 
 
 static void show(void)
