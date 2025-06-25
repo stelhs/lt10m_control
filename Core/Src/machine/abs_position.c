@@ -57,7 +57,7 @@ int abs_longitudal(struct abs_position *ap, int tool_num)
 {
     int offset = ap->offset_tools[tool_num].longitudal;
     if (ap->is_longitudal_inc_left)
-        return (int)(0xFFFFFFFF - ap->raw.longitudal) + offset;
+        return (int)(0xFFFFFFFF - ap->raw.longitudal) + 1 + offset;
     return ap->raw.longitudal - offset;
 }
 
@@ -68,10 +68,14 @@ int abs_longitudal_curr_tool(struct abs_position *ap)
 
 int abs_cross(struct abs_position *ap, int tool_num)
 {
+    int val;
     int offset = ap->offset_tools[tool_num].cross;
     if (ap->is_cross_inc_down)
-        return (int)(0xFFFFFFFF - ap->raw.cross) + offset;
-    return ap->raw.cross - offset;
+        val = (int)(0xFFFFFFFF - ap->raw.cross) + 1 + offset;
+    else
+        val = ap->raw.cross - offset;
+
+    return val * 2; // to diameter
 }
 
 int abs_cross_curr_tool(struct abs_position *ap)
@@ -81,9 +85,10 @@ int abs_cross_curr_tool(struct abs_position *ap)
 
 void abs_cross_set(struct abs_position *ap, int tool_num, int val)
 {
+    val /= 2; // to radius
     if (ap->is_cross_inc_down) {
         ap->offset_tools[tool_num].cross =
-            val - (int)(0xFFFFFFFF - ap->raw.cross);
+            val - (int)(0xFFFFFFFF - ap->raw.cross + 1);
         return;
     }
     ap->offset_tools[tool_num].cross = ap->raw.cross - val;
@@ -93,7 +98,7 @@ void abs_longitudal_set(struct abs_position *ap, int tool_num, int val)
 {
     if (ap->is_longitudal_inc_left) {
         ap->offset_tools[tool_num].longitudal =
-            val - (int)(0xFFFFFFFF - ap->raw.longitudal);
+            val - (int)(0xFFFFFFFF - ap->raw.longitudal + 1);
         return;
     }
     ap->offset_tools[tool_num].longitudal =

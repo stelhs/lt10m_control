@@ -14,32 +14,31 @@
 #include "disp_mipi_dcs.h"
 #include "touch_xpt2046.h"
 #include "images.h"
-#include "disp_button.h"
+#include "ui_button.h"
 #include "ui_keyboard.h"
 #include "ui_sel_prog.h"
 #include "ui_set_xy.h"
 #include "ui_move_to.h"
+#include "abs_position.h"
 
-
-struct cmsis_thread *ui_tid;
 
 struct ui_main_buttons {
-    struct disp_button *sel_prog;
-    struct disp_button *set_xy;
-    struct disp_button *sel_feed_limit;
-    struct disp_button *sel_cross_or_target_diameter;
-    struct disp_button *sel_cross_or_target_diameter_value;
-    struct disp_button *sel_step;
+    struct ui_button *sel_prog;
+    struct ui_button *set_xy;
+    struct ui_button *sel_feed_limit;
+    struct ui_button *sel_cross_or_target_diameter;
+    struct ui_button *sel_cross_or_target_diameter_value;
+    struct ui_button *sel_step;
 };
 
 struct ui_main {
     struct disp *disp;
     struct ui_main_buttons *buttons;
     enum progs prog;
-    float longitudial_limit;
-    float target_diameter;
-    float cross_limit;
-    float step;
+    int longitudial_limit;
+    int target_diameter;
+    int cross_limit;
+    int step;
     bool feed_or_diameter;
 };
 static struct ui_main *ui_main;
@@ -51,30 +50,32 @@ static void hide(struct ui_main *um)
 }
 
 
-static void key_prog_sel_draw(struct disp_button *db)
+static void key_prog_sel_show(struct ui_item *ut)
 {
-    struct ui_main *um = (struct ui_main *)db->priv;
+    struct ui_button *ub = (struct ui_button *)ut->priv;
+    struct ui_main *um = (struct ui_main *)ub->priv;
     struct img *img;
-    disp_rect(db->disp, db->x, db->y, db->width, db->height, 1, GRAY);
+    disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 1, GRAY);
 
     img = img_prog_by_num(um->prog);
-    disp_fill_img(db->disp, db->x + 2, db->y + 3, img);
+    disp_fill_img(ut->disp, ut->x + 2, ut->y + 3, img);
     kmem_deref(&img);
 }
 
-static void key_set_xy_draw(struct disp_button *db)
+static void key_set_xy_show(struct ui_item *ut)
 {
     struct img *img;
-    disp_rect(db->disp, db->x, db->y, db->width, db->height, 1, GRAY);
+    disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 1, GRAY);
 
     img = img_set_xy();
-    disp_fill_img(db->disp, db->x + 20, db->y + 4, img);
+    disp_fill_img(ut->disp, ut->x + 20, ut->y + 4, img);
     kmem_deref(&img);
 }
 
-static void key_feed_limit_draw(struct disp_button *db)
+static void key_feed_limit_show(struct ui_item *ut)
 {
-    struct ui_main *um = (struct ui_main *)db->priv;
+    struct ui_button *ub = (struct ui_button *)ut->priv;
+    struct ui_main *um = (struct ui_main *)ub->priv;
     struct img *img;
     char *string;
     static struct text_style ts = {
@@ -84,7 +85,7 @@ static void key_feed_limit_draw(struct disp_button *db)
             .fontsize = 3
     };
 
-    disp_rect(db->disp, db->x, db->y, db->width, db->height, 1, DARK_GRAY);
+    disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 1, DARK_GRAY);
 
     switch (um->prog) {
     case PROG_FEED_LEFT:
@@ -104,22 +105,23 @@ static void key_feed_limit_draw(struct disp_button *db)
     }
 
     if (img) {
-        disp_fill_img(db->disp, db->x + 5, db->y + 10, img);
+        disp_fill_img(ut->disp, ut->x + 5, ut->y + 10, img);
         kmem_deref(&img);
     }
 
-    string = kref_sprintf("%.2f", um->longitudial_limit);
-    disp_text(db->disp, string, db->x + 80, db->y + 15, &ts);
+    string = kref_sprintf("%.3f", (float)um->longitudial_limit / 1000);
+    disp_text(ut->disp, string, ut->x + 80, ut->y + 15, &ts);
     kmem_deref(&string);
 }
 
 
-static void key_cross_or_diameter_draw(struct disp_button *db)
+static void key_cross_or_diameter_show(struct ui_item *ut)
 {
-    struct ui_main *um = (struct ui_main *)db->priv;
+    struct ui_button *ub = (struct ui_button *)ut->priv;
+    struct ui_main *um = (struct ui_main *)ub->priv;
     struct img *img;
 
-    disp_rect(db->disp, db->x, db->y, db->width, db->height, 1, DARK_GRAY);
+    disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 1, DARK_GRAY);
 
     if (um->feed_or_diameter) {
         switch (um->prog) {
@@ -141,14 +143,15 @@ static void key_cross_or_diameter_draw(struct disp_button *db)
     } else
         img = img_big_circle();
 
-    disp_fill_img(db->disp, db->x + 5, db->y + 10, img);
+    disp_fill_img(ut->disp, ut->x + 5, ut->y + 10, img);
     kmem_deref(&img);
 }
 
 
-static void key_cross_or_diameter_value_draw(struct disp_button *db)
+static void key_cross_or_diameter_value_show(struct ui_item *ut)
 {
-    struct ui_main *um = (struct ui_main *)db->priv;
+    struct ui_button *ub = (struct ui_button *)ut->priv;
+    struct ui_main *um = (struct ui_main *)ub->priv;
     char *string;
     static struct text_style ts = {
             .bg_color = BLACK,
@@ -157,17 +160,19 @@ static void key_cross_or_diameter_value_draw(struct disp_button *db)
             .fontsize = 3
     };
 
-    disp_rect(db->disp, db->x, db->y, db->width, db->height, 1, DARK_GRAY);
+    disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 1, DARK_GRAY);
 
-    string = kref_sprintf("%.2f", um->feed_or_diameter ?
-                            um->cross_limit : um->target_diameter);
-    disp_text(db->disp, string, db->x + 15, db->y + 15, &ts);
+    string = kref_sprintf("%.3f", um->feed_or_diameter ?
+                            (float)um->cross_limit / 1000 :
+                            (float)um->target_diameter / 1000);
+    disp_text(ut->disp, string, ut->x + 15, ut->y + 15, &ts);
     kmem_deref(&string);
 }
 
-static void key_step_draw(struct disp_button *db)
+static void key_step_show(struct ui_item *ut)
 {
-    struct ui_main *um = (struct ui_main *)db->priv;
+    struct ui_button *ub = (struct ui_button *)ut->priv;
+    struct ui_main *um = (struct ui_main *)ub->priv;
     struct img *img;
     char *string;
     static struct text_style ts = {
@@ -177,14 +182,14 @@ static void key_step_draw(struct disp_button *db)
             .fontsize = 3
     };
 
-    disp_rect(db->disp, db->x, db->y, db->width, db->height, 1, DARK_GRAY);
+    disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 1, DARK_GRAY);
 
     img = img_step();
-    disp_fill_img(db->disp, db->x + 5, db->y + 10, img);
+    disp_fill_img(ut->disp, ut->x + 5, ut->y + 10, img);
     kmem_deref(&img);
 
-    string = kref_sprintf("%.2f", um->step);
-    disp_text(db->disp, string, db->x + 80, db->y + 15, &ts);
+    string = kref_sprintf("%.3f", (float)um->step / 1000);
+    disp_text(ut->disp, string, ut->x + 80, ut->y + 15, &ts);
     kmem_deref(&string);
 }
 
@@ -209,7 +214,9 @@ static void on_click_feed_limit(void *priv)
 {
     struct ui_main *um = (struct ui_main *)priv;
     hide(um);
-    ui_keyboard_run("longitudial feed limit:", &um->longitudial_limit);
+    ui_keyboard_run("longitudial feed limit:", &um->longitudial_limit,
+                    LINEAR_LONGITUDAL_RESOLUTION, 1500 * 1000,
+                    LINEAR_LONGITUDAL_RESOLUTION);
     show(um);
 }
 
@@ -226,17 +233,22 @@ static void on_click_cross_or_diameter_val(void *priv)
     struct ui_main *um = (struct ui_main *)priv;
     hide(um);
     if (um->feed_or_diameter)
-        ui_keyboard_run("cross feed limit:", &um->cross_limit);
+        ui_keyboard_run("cross feed limit:", &um->cross_limit,
+                        LINEAR_CROSS_RESOLUTION * 2, 1000 * 1000,
+                        LINEAR_CROSS_RESOLUTION * 2);
     else
-        ui_keyboard_run("target diameter:", &um->target_diameter);
+        ui_keyboard_run("target diameter:", &um->target_diameter,
+                        LINEAR_CROSS_RESOLUTION * 2, 1000 * 1000,
+                        LINEAR_CROSS_RESOLUTION * 2);
     show(um);
 }
 
-static void on_click_step_draw(void *priv)
+static void on_click_step(void *priv)
 {
     struct ui_main *um = (struct ui_main *)priv;
     hide(um);
-    ui_keyboard_run("feed step:", &um->step);
+    ui_keyboard_run("feed step:", &um->step,
+                    5, 10 * 1000, 5);
     show(um);
 }
 
@@ -265,14 +277,14 @@ static void show(struct ui_main *um)
     disp_clear(um->disp);
 
     buttons->sel_prog =
-            disp_button_register("key_prog_sel", um->disp,
-                                 30, 10, 100, 55, um,
-                                 key_prog_sel_draw, on_click_prog_sel);
+            ui_button_register("key_prog_sel", um->disp,
+                                 30, 10, 100, 55,
+                                 key_prog_sel_show, on_click_prog_sel, um);
 
     buttons->set_xy =
-            disp_button_register("key_set_xy", um->disp,
-                                 190, 10, 100, 55, um,
-                                 key_set_xy_draw, on_click_set_xy);
+            ui_button_register("key_set_xy", um->disp,
+                                 190, 10, 100, 55,
+                                 key_set_xy_show, on_click_set_xy, um);
 
     if (um->prog == PROG_FEED_LEFT ||
             um->prog == PROG_FEED_RIGHT ||
@@ -286,10 +298,10 @@ static void show(struct ui_main *um)
             um->prog ==  PROG_FEED_DOWN_RIGHT) {
 
         buttons->sel_feed_limit =
-                disp_button_register("key_feed_limit", um->disp,
-                                     10, 90, 200, 55, um,
-                                     key_feed_limit_draw,
-                                     on_click_feed_limit);
+                ui_button_register("key_feed_limit", um->disp,
+                                     10, 90, 200, 55,
+                                     key_feed_limit_show,
+                                     on_click_feed_limit, um);
     }
 
     if (um->prog == PROG_FEED_LEFT_UP ||
@@ -302,48 +314,44 @@ static void show(struct ui_main *um)
             um->prog ==  PROG_FEED_DOWN_RIGHT) {
 
         buttons->sel_cross_or_target_diameter =
-                disp_button_register("key_cross_or_diameter", um->disp,
-                                     10, 90 + (55 + 15) * 1,
-                                     70, 55, um,
-                                     key_cross_or_diameter_draw,
-                                     on_click_cross_or_diameter);
+                ui_button_register("key_cross_or_diameter", um->disp,
+                                     10, 90 + (55 + 15) * 1, 70, 55,
+                                     key_cross_or_diameter_show,
+                                     on_click_cross_or_diameter, um);
 
         buttons->sel_cross_or_target_diameter_value =
-                disp_button_register("key_cross_or_diameter_val", um->disp,
-                                     100, 90 + (55 + 15) * 1,
-                                     160, 55, um,
-                                     key_cross_or_diameter_value_draw,
-                                     on_click_cross_or_diameter_val);
+                ui_button_register("key_cross_or_diameter_val", um->disp,
+                                     100, 90 + (55 + 15) * 1, 160, 55,
+                                     key_cross_or_diameter_value_show,
+                                     on_click_cross_or_diameter_val, um);
 
         buttons->sel_step =
-                disp_button_register("key_step", um->disp,
-                                     10, 90 + (55 + 15) * 2,
-                                     200, 55, um,
-                                     key_step_draw,
-                                     on_click_step_draw);
+                ui_button_register("key_step", um->disp,
+                                     10, 90 + (55 + 15) * 2, 200, 55,
+                                     key_step_show,
+                                     on_click_step, um);
     }
 
     if (um->prog == PROG_FEED_UP ||
             um->prog == PROG_FEED_DOWN) {
 
         buttons->sel_cross_or_target_diameter =
-                disp_button_register("key_cross_or_diameter", um->disp,
-                                     10, 90, 70, 55, um,
-                                     key_cross_or_diameter_draw,
-                                     on_click_cross_or_diameter);
+                ui_button_register("key_cross_or_diameter", um->disp,
+                                     10, 90, 70, 55,
+                                     key_cross_or_diameter_show,
+                                     on_click_cross_or_diameter, um);
 
         buttons->sel_cross_or_target_diameter_value =
-                disp_button_register("key_cross_or_diameter_val", um->disp,
-                                     100, 90, 160, 55, um,
-                                     key_cross_or_diameter_value_draw,
-                                     on_click_cross_or_diameter_val);
+                ui_button_register("key_cross_or_diameter_val", um->disp,
+                                     100, 90, 160, 55,
+                                     key_cross_or_diameter_value_show,
+                                     on_click_cross_or_diameter_val, um);
     }
 }
 
 static void disp_main_win_destructor(void *mem)
 {
     struct ui_main *um = (struct ui_main *)mem;
-    kmem_deref(&um->disp);
     kmem_deref(&um->buttons);
 }
 
@@ -354,7 +362,13 @@ static void ui_main_thread(void *priv)
     struct machine *m = &machine;
 
     um = kzref_alloc("disp_main_win", sizeof *um, disp_main_win_destructor);
-    um->disp = kmem_ref(m->disp1);
+    um->disp = m->disp1;
+
+    um->longitudial_limit = 50 * 1000;
+    um->target_diameter = 42 * 1000;
+    um->cross_limit = 21 * 1000;
+    um->step = 1500;
+
     show(um);
 
     if (is_button_held_down(m->switch_touch_lock))
@@ -364,7 +378,8 @@ static void ui_main_thread(void *priv)
 
     while (1) {
         yield();
-        disp_button_handler();
+
+        ui_button_handler();
         if (is_switch_on(m->switch_move_to)) {
             buttons_reset();
             hide(um);
@@ -376,8 +391,9 @@ static void ui_main_thread(void *priv)
 
 void ui_main_start(void)
 {
-    ui_tid = thread_register("ui_thread", 1500,
-                             ui_main_thread, &ui_main);
+    struct machine *m = &machine;
+    m->ui_tid = thread_register("ui_thread", 1500,
+                                ui_main_thread, &ui_main);
 }
 
 

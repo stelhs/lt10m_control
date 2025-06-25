@@ -67,6 +67,52 @@ err:
     return NULL;
 }
 
+struct cmsis_thread *thread_current(void)
+{
+    struct le *le;
+    osThreadId_t tid = osThreadGetId();
+    LIST_FOREACH(&threads_list, le) {
+        struct cmsis_thread *thread = (struct cmsis_thread *)list_ledata(le);
+        if (thread->tid == tid)
+            return thread;
+    }
+    return NULL;
+}
+
+
+static void thread_msg_destructor(void *mem)
+{
+    struct cmsis_thread_msg *ct_msg = (struct cmsis_thread_msg *)mem;
+    list_unlink(&ct_msg->le);
+}
+
+void thread_send_msg(struct cmsis_thread *tid, int type, void *msg)
+{
+    struct cmsis_thread_msg *ct_msg;
+    ct_msg = kzref_alloc("thread_message", sizeof *ct_msg,
+                         thread_msg_destructor);
+    ct_msg->type = type;
+    ct_msg->msg = msg;
+    list_append(&tid->messages, &ct_msg->le, ct_msg);
+}
+
+int thread_recv_msg(void **msg)
+{
+    struct cmsis_thread *thread = thread_current();
+    struct le *le;
+    int type;
+    struct cmsis_thread_msg *ct_msg;
+
+    if (!list_count(&thread->messages))
+        return -1;
+
+    le = list_head(&thread->messages);
+    ct_msg = (struct cmsis_thread_msg *)list_ledata(le);
+    type = ct_msg->type;
+    *msg = ct_msg->msg;
+    kmem_deref(&ct_msg);
+    return type;
+}
 
 size_t thread_stack_max_used_size(struct cmsis_thread *tid)
 {

@@ -105,16 +105,21 @@ void periphery_init(void)
 
     m->pm_move_speed = potentiometer_register("pm_move_speed", &hadc1, 50);
 
-    m->sm_longitudial_feed = stepper_motor_register("longitudial_feed_motor",
-                                                    &htim2, &htim1, TIM_CHANNEL_1,
-                                                    &gpio_longitudal_feed_dir,
-                                                    &gpio_longitudal_feed_en,
-                                                    1000000, 18, 15000);
-    m->sm_cross_feed = stepper_motor_register("cross_feed_motor",
-                                              &htim5, &htim3, TIM_CHANNEL_1,
-                                              &gpio_cross_feed_dir,
-                                              &gpio_cross_feed_en,
-                                              1000000, 18, 10000);
+    m->sm_longitudial_feed =
+            stepper_motor_register("longitudial_feed_motor",
+                                   &htim2, &htim1, TIM_CHANNEL_1,
+                                   &gpio_longitudal_feed_dir,
+                                   &gpio_longitudal_feed_en,
+                                   1000000, 18, 15000,
+                                   LINEAR_LONGITUDAL_RESOLUTION);
+
+    m->sm_cross_feed =
+            stepper_motor_register("cross_feed_motor",
+                                   &htim5, &htim3, TIM_CHANNEL_1,
+                                   &gpio_cross_feed_dir,
+                                   &gpio_cross_feed_en,
+                                   1000000, 18, 10000,
+                                   LINEAR_CROSS_RESOLUTION * 2);
 
     m->ap = abs_position_dev_register("abs_position_dev",
                                            &hspi2, &gpio_abs_pos_cs);
@@ -153,13 +158,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     }
 
     if (htim == &htim2) { // longitudial feed counter
-        printf("irq htim2\r\n");
         stepper_motor_stop_isr(m->sm_longitudial_feed);
         return;
     }
 
     if (htim == &htim5) { // cross feed counter
-        printf("irq htim5\r\n");
         stepper_motor_stop_isr(m->sm_cross_feed);
         return;
     }

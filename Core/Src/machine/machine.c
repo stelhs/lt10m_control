@@ -13,6 +13,7 @@
 #include "touch_xpt2046.h"
 #include "periphery.h"
 #include "ui_main.h"
+#include "ui_move_to.h"
 
 struct machine machine;
 extern UART_HandleTypeDef huart1;
@@ -34,42 +35,6 @@ void panic(char *cause)
     }
 }
 
-
-static void test_keypad(struct disp *disp)
-{
-    int x, y;
-    int key_width = 80;
-    int key_height = 80;
-    int key_num = 0;
-    int left_indent = 20;
-    int top_indent = 80;
-    int key_indent = 15;
-
-    struct text_style key_text_style = {
-            .bg_color = BLACK,
-            .color = BLUE,
-            .font = font_rus,
-            .fontsize = 3
-    };
-
-    for (x = 0; x < 3; x++) {
-        for (y = 0; y < 4; y++) {
-            key_num ++;
-            char buf[3];
-            disp_rect(disp, left_indent + x * (key_width + key_indent),
-                      top_indent + y * (key_height + key_indent),
-                      key_width, key_height,
-                      1, GREEN);
-            snprintf(buf, 3, "%d", key_num);
-            disp_text(disp, buf,
-                    left_indent + x * (key_width + key_indent) + key_width / 2 - 10,
-                    top_indent + y * (key_height + key_indent) + key_height / 2 - 10,
-                    &key_text_style);
-        }
-    }
-}
-
-
 static void dbg_os_stat(void *priv)
 {
     printlog("LT10M board ver: %s\r\n", BUILD_VERSION);
@@ -84,8 +49,8 @@ void key_d(void *priv)
 	struct machine *m = (struct machine *)priv;
     printf("key_d\r\n");
 
-    printf("run 1 turn cross\r\n");
-    stepper_motor_run(m->sm_cross_feed, 18, 9000, MOVE_DOWN, 5000);
+    printf("run 1 turn longitudal\r\n");
+    stepper_motor_run(m->sm_longitudial_feed, 0, 15000, MOVE_RIGHT, 5);
 }
 
 void key_f(void *priv)
@@ -151,32 +116,47 @@ int cross_move_to(int pos, bool is_accurate)
     struct stepper_motor *sm = m->sm_cross_feed;
 
     int distance;
+    int offset;
     bool dir;
+    m->is_busy = TRUE;
+
+    if (pos % sm->resolution)
+        pos = (pos / sm->resolution) * sm->resolution;
 
     while (1) {
         yield();
         int curr_pos = abs_cross_curr_tool(m->ap);
-        if (curr_pos == pos)
-            return 0;
-
-        if (is_button_clicked(m->btn_enc)) {
-            stepper_motor_stop_isr(m->sm_cross_feed);
+        if (curr_pos == pos) {
+            m->is_busy = FALSE;
             return 0;
         }
 
-        distance = abs(pos - curr_pos);
+        offset = pos - curr_pos;
+        distance = abs(offset);
         dir = MOVE_DOWN;
         if (pos > curr_pos)
             dir = MOVE_UP;
         if (m->ap->is_cross_inc_down)
             dir = !dir;
+//        if (offset < 0)
+  //          dir = !dir;
 
         stepper_motor_run(sm, 0, 0, dir, distance);
-        stepper_motor_wait_autostop(sm);
-        if (!is_accurate)
+        while (is_stepper_motor_run(sm)) {
+            yield();
+            if (is_button_clicked(m->btn_enc)) {
+                stepper_motor_stop(sm);
+                m->is_busy = FALSE;
+                return 0;
+            }
+        }
+        if (!is_accurate) {
+            m->is_busy = FALSE;
             return 0;
+        }
         sleep(50);
     }
+    m->is_busy = FALSE;
     return -1;
 }
 
@@ -189,7 +169,10 @@ int longitudal_move_to(int pos, bool is_accurate)
     bool dir;
     int speed = sm->max_freq;
     int attempts = 0;
+    m->is_busy = TRUE;
 
+    if (pos % sm->resolution)
+        pos = (pos / sm->resolution) * sm->resolution;
 
     while (1) {
         yield();
@@ -197,11 +180,7 @@ int longitudal_move_to(int pos, bool is_accurate)
         printf("pos = %d, curr_pos = %d\r\n", pos, curr_pos);
         if (curr_pos == pos) {
             printf("SUCCESS\r\n");
-            return 0;
-        }
-
-        if (is_button_clicked(m->btn_enc)) {
-            stepper_motor_stop_isr(m->sm_longitudial_feed);
+            m->is_busy = FALSE;
             return 0;
         }
 
@@ -214,25 +193,37 @@ int longitudal_move_to(int pos, bool is_accurate)
         if (m->ap->is_longitudal_inc_left)
             dir = !dir;
 
-        printf("dir = %s\r\n", dir ? "LEFT" : "RIGHT");
-        if (attempts >= 3 && attempts < 6)
+        if (attempts == 2)
             speed /= 2;
 
-        if (attempts >= 6 && attempts < 10)
+        if (attempts == 3)
             speed /= 2;
 
-        if (attempts >= 10) {
+        if (attempts >= 5) {
             attempts = 0;
             speed = sm->max_freq;
         }
+        printf("attempts = %d\r\n", attempts);
+        printf("dir = %s\r\n", dir ? "LEFT" : "RIGHT");
+        printf("speed = %d\r\n", speed);
 
-        stepper_motor_run(sm, 0, speed, dir, distance);
-        stepper_motor_wait_autostop(sm);
-        if (!is_accurate)
+        stepper_motor_run(sm, 1000, speed, dir, distance);
+        while (is_stepper_motor_run(sm)) {
+            yield();
+            if (is_button_clicked(m->btn_enc)) {
+                stepper_motor_stop(sm);
+                m->is_busy = FALSE;
+                return 0;
+            }
+        }
+        if (!is_accurate) {
+            m->is_busy = FALSE;
             return 0;
-        sleep(200);
+        }
+        sleep(300);
         attempts ++;
     }
+    m->is_busy = FALSE;
     return -1;
 }
 
@@ -248,11 +239,11 @@ sm_cross_high_speed_freq_changer(struct stepper_motor *sm, bool is_init)
         else if (sm->freq < 2000)
             freq += 20;
         else if (sm->freq < 5000)
-            freq += 50;
+            freq += 30;
         else if (sm->freq < 8000)
-            freq += 20;
-        else if (sm->freq < 10000)
             freq += 10;
+        else if (sm->freq < 10000)
+            freq += 5;
         else
             freq ++;
         if (freq > sm->target_freq)
@@ -270,11 +261,11 @@ sm_longitudial_high_speed_freq_changer(struct stepper_motor *sm, bool is_init)
     int freq = sm->freq;
     if (sm->freq < sm->target_freq) {
         if (sm->freq < 1000)
-            freq += 100;
+            freq += 50;
         else if (sm->freq < 2000)
-            freq += 800;
+            freq += 400;
         else if (sm->freq < 6000)
-            freq += 500;
+            freq += 250;
         else if (sm->freq < 12000)
             freq += 100;
         else
@@ -386,6 +377,7 @@ static void move_button_high_speed_handler(void)
         else {
             stepper_motor_disable(m->sm_cross_feed);
             stepper_motor_stop(m->sm_cross_feed);
+            button_reset(m->btn_up);
         }
     }
 
@@ -398,6 +390,7 @@ static void move_button_high_speed_handler(void)
         else {
             stepper_motor_disable(m->sm_cross_feed);
             stepper_motor_stop(m->sm_cross_feed);
+            button_reset(m->btn_down);
         }
     }
 
@@ -410,6 +403,7 @@ static void move_button_high_speed_handler(void)
         else {
             stepper_motor_disable(m->sm_longitudial_feed);
             stepper_motor_stop(m->sm_longitudial_feed);
+            button_reset(m->btn_left);
         }
     }
 
@@ -422,6 +416,7 @@ static void move_button_high_speed_handler(void)
         else {
             stepper_motor_disable(m->sm_longitudial_feed);
             stepper_motor_stop(m->sm_longitudial_feed);
+            button_reset(m->btn_right);
         }
     }
 }
@@ -430,17 +425,27 @@ static void move_button_low_speed_handler(void)
 {
     struct machine *m = &machine;
 
-    int freq = potentiometer_val(m->pm_move_speed) * 5;
-    if (freq < 18) // TODO
-        freq = 18;
+    int cross_freq = potentiometer_val(m->pm_move_speed) * 5;
+    int longitudal_freq = potentiometer_val(m->pm_move_speed) * 10;
+    if (cross_freq < m->sm_cross_feed->min_freq)
+        cross_freq = m->sm_cross_feed->min_freq;
+    if (longitudal_freq < m->sm_longitudial_feed->min_freq)
+        longitudal_freq = m->sm_longitudial_feed->min_freq;
+
+    if (is_potentiometer_changed(m->pm_move_speed)) {
+        stepper_motor_set_freq(m->sm_cross_feed, cross_freq);
+        stepper_motor_set_freq(m->sm_longitudial_feed, longitudal_freq);
+    }
+
 
     if (is_button_changed(m->btn_up)) {
         if (is_button_held_down(m->btn_up)) {
             if (m->sm_cross_feed->last_dir != MOVE_UP) {
-                int pos = cross_up_new_position(5);
+                int pos = cross_up_new_position(LINEAR_CROSS_RESOLUTION * 2);
                 cross_move_to(pos, FALSE);
+                buttons_reset();
             }
-            stepper_motor_run(m->sm_cross_feed, freq, freq,
+            stepper_motor_run(m->sm_cross_feed, cross_freq, cross_freq,
                               MOVE_UP, NO_AUTO_STOP);
         }
         else
@@ -450,10 +455,11 @@ static void move_button_low_speed_handler(void)
     if (is_button_changed(m->btn_down)) {
         if (is_button_held_down(m->btn_down)) {
             if (m->sm_cross_feed->last_dir != MOVE_DOWN) {
-                int pos = cross_down_new_position(5);
+                int pos = cross_down_new_position(LINEAR_CROSS_RESOLUTION * 2);
                 cross_move_to(pos, FALSE);
+                buttons_reset();
             }
-            stepper_motor_run(m->sm_cross_feed, freq, freq,
+            stepper_motor_run(m->sm_cross_feed, cross_freq, cross_freq,
                               MOVE_DOWN, NO_AUTO_STOP);
         }
         else
@@ -463,10 +469,12 @@ static void move_button_low_speed_handler(void)
     if (is_button_changed(m->btn_left)) {
         if (is_button_held_down(m->btn_left)) {
             if (m->sm_longitudial_feed->last_dir != MOVE_LEFT) {
-                int pos = longitudal_left_new_position(5);
+                int pos = longitudal_left_new_position(LINEAR_LONGITUDAL_RESOLUTION);
                 longitudal_move_to(pos, FALSE);
+                buttons_reset();
             }
-            stepper_motor_run(m->sm_longitudial_feed, freq, freq,
+            stepper_motor_run(m->sm_longitudial_feed,
+                              longitudal_freq, longitudal_freq,
                               MOVE_LEFT, NO_AUTO_STOP);
         }
         else
@@ -476,10 +484,12 @@ static void move_button_low_speed_handler(void)
     if (is_button_changed(m->btn_right)) {
         if (is_button_held_down(m->btn_right)) {
             if (m->sm_longitudial_feed->last_dir != MOVE_RIGHT) {
-                int pos = longitudal_right_new_position(5);
+                int pos = longitudal_right_new_position(LINEAR_LONGITUDAL_RESOLUTION);
                 longitudal_move_to(pos, FALSE);
+                buttons_reset();
             }
-            stepper_motor_run(m->sm_longitudial_feed, freq, freq,
+            stepper_motor_run(m->sm_longitudial_feed,
+                              longitudal_freq, longitudal_freq,
                               MOVE_RIGHT, NO_AUTO_STOP);
         }
         else
@@ -528,31 +538,42 @@ static void move_buttons_move_to_handler(void)
 {
     struct machine *m = &machine;
     int pos;
+    int move_step = ui_move_to_step();
 
     if (is_button_clicked(m->btn_up)) {
-        pos = cross_up_new_position(m->move_step);
+        pos = cross_up_new_position(move_step);
+        ui_moveto_blink_up_arrow();
         cross_move_to(pos, TRUE);
+        ui_moveto_blink_stop();
     }
 
     if (is_button_clicked(m->btn_down)) {
-        pos = cross_down_new_position(m->move_step);
+        pos = cross_down_new_position(move_step);
+        ui_moveto_blink_down_arrow();
         cross_move_to(pos, TRUE);
+        ui_moveto_blink_stop();
     }
 
     if (is_button_clicked(m->btn_left)) {
-        pos = longitudal_left_new_position(m->move_step);
+        pos = longitudal_left_new_position(move_step);
+        ui_moveto_blink_left_arrow();
         longitudal_move_to(pos, TRUE);
+        ui_moveto_blink_stop();
     }
 
     if (is_button_clicked(m->btn_right)) {
-        pos = longitudal_right_new_position(m->move_step);
+        pos = longitudal_right_new_position(move_step);
+        ui_moveto_blink_right_arrow();
         longitudal_move_to(pos, TRUE);
+        ui_moveto_blink_stop();
     }
 }
 
 static void program_idle_handler(void)
 {
     struct machine *m = &machine;
+    void *msg;
+    int position;
 
     if (is_button_changed(m->switch_high_speed)) {
         if (is_switch_on(m->switch_high_speed))
@@ -568,9 +589,23 @@ static void program_idle_handler(void)
     else
         move_button_low_speed_handler();
 
-    if (is_potentiometer_changed(m->pm_move_speed)) {
-        u16 val = potentiometer_val(m->pm_move_speed);
-        printf("potentiometer = %d\r\n", val);
+    switch (thread_recv_msg(&msg)) {
+    case MACHINE_MSG_MOVETO_CROSS:
+        position = (int)msg;
+        ui_moveto_blink_up_down_arrow();
+        cross_move_to(position, TRUE);
+        buttons_reset();
+        ui_moveto_blink_stop();
+        ui_move_to_unlock_moveto();
+        break;
+    case MACHINE_MSG_MOVETO_LONGITUDAL:
+        position = (int)msg;
+        ui_moveto_blink_left_right_arrow();
+        longitudal_move_to(position, TRUE);
+        buttons_reset();
+        ui_moveto_blink_stop();
+        ui_move_to_unlock_moveto();
+        break;
     }
 }
 
@@ -634,7 +669,8 @@ static void monitoring_thread(void *priv)
     struct machine *m = &machine;
     for(;;) {
         yield();
-        touch_handler(m->disp1->touch);
+        if (!m->is_busy)
+            touch_handler(m->disp1->touch); // TODO
         abs_position_update(m->ap);
         display_status_handler();
 
@@ -651,7 +687,6 @@ static void monitoring_thread(void *priv)
 static void main_thread(void *priv)
 {
     struct machine *m = &machine;
-    memset(m, 0, sizeof *m);
 
     uart_debug_plug(&huart1);
     uart_dbg_key_register("os_status", 's', dbg_os_stat, m);
@@ -700,8 +735,11 @@ static void main_thread(void *priv)
 
 void machine_init(void)
 {
-    thread_register("main_thread", 2048,
-                    main_thread, NULL);
+    struct machine *m = &machine;
+    memset(m, 0, sizeof *m);
+
+    m->machine_tid = thread_register("main_thread", 2048,
+                                     main_thread, NULL);
 }
 
 

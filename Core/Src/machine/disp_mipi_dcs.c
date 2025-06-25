@@ -253,7 +253,7 @@ void disp_rect(struct disp *disp,
                        struct color color)
 {
     disp_fill(disp, x, y, width, thickness, color);
-    disp_fill(disp, x, y + height, width, thickness, color);
+    disp_fill(disp, x, y + height - thickness, width, thickness, color);
     disp_fill(disp, x, y, thickness, height, color);
     disp_fill(disp, x + width - thickness, y,
                       thickness, height, color);

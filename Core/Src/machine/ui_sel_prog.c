@@ -8,14 +8,14 @@
 
 #include "stm32_lib/kref_alloc.h"
 #include "disp_mipi_dcs.h"
-#include "disp_button.h"
 #include "images.h"
 #include "machine.h"
+#include "ui_button.h"
 
 
 struct ui_sel_prog {
     struct disp *disp;
-    struct disp_button *progs[14];
+    struct ui_button *progs[14];
 };
 
 static struct ui_sel_prog *ui_sel_prog = NULL;
@@ -59,13 +59,14 @@ struct img *img_prog_by_num(enum progs prog)
     return img;
 }
 
-static void key_prog_draw(struct disp_button *db)
+static void key_prog_show(struct ui_item *ut)
 {
-    enum progs prog = (enum progs)db->priv;
+    struct ui_button *ub = (struct ui_button *)ut->priv;
+    enum progs prog = (enum progs)ub->priv;
     struct img *img;
-    disp_rect(db->disp, db->x, db->y, db->width, db->height, 1, GRAY);
+    disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 1, GRAY);
     img = img_prog_by_num(prog);
-    disp_fill_img(db->disp, db->x + 2, db->y + 3, img);
+    disp_fill_img(ut->disp, ut->x + 2, ut->y + 3, img);
     kmem_deref(&img);
 }
 
@@ -115,18 +116,18 @@ static void show(struct ui_sel_prog *usp)
         }
 
         usp->progs[i * 2] =
-                disp_button_register(left, usp->disp,
+                ui_button_register(left, usp->disp,
                                      left_ident,
                                      top_ident + i * (key_height + key_ident),
-                                     key_width, key_height, (void *)(i * 2),
-                                     key_prog_draw, NULL);
+                                     key_width, key_height,
+                                     key_prog_show, NULL, (void *)(i * 2));
 
         usp->progs[i * 2 + 1] =
-                disp_button_register(right, usp->disp,
+                ui_button_register(right, usp->disp,
                                      right_butt_ident,
                                      top_ident + i * (key_height + key_ident),
-                                     key_width, key_height, (void *)(i * 2 + 1),
-                                     key_prog_draw, NULL);
+                                     key_width, key_height,
+                                     key_prog_show, NULL, (void *)(i * 2 + 1));
     }
 
 }
@@ -157,8 +158,8 @@ int ui_sel_prog_run(void)
         yield();
 
         for (i = 0; i < ARRAY_SIZE(usp->progs); i++) {
-            struct disp_button *db = usp->progs[i];
-            if (is_disp_button_touched(db)) {
+            struct ui_button *db = usp->progs[i];
+            if (is_ui_button_touched(db)) {
                 kmem_deref(&usp);
                 return i;
             }

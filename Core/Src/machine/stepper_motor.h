@@ -32,13 +32,14 @@ struct stepper_motor {
     u32 acceleration;
     int accel_prescaller_cnt;
     bool last_dir;
+    int resolution;
 };
 
 struct stepper_motor *
 stepper_motor_register(char *name, TIM_HandleTypeDef *cnt_htim,
                        TIM_HandleTypeDef *pulse_htim, u32 channel_num,
                        struct gpio *dir, struct gpio *en, int timer_freq,
-                       int min_freq, int max_freq);
+                       int min_freq, int max_freq, int resolution);
 
 void stepper_motor_set_freq_changer_handler(struct stepper_motor *sm,
                void (*freq_changer_handler)(struct stepper_motor *, bool));
@@ -63,7 +64,7 @@ static inline void stepper_motor_stop_isr(struct stepper_motor *sm)
     sm->is_run = FALSE;
     HAL_TIM_Base_Stop_IT(sm->cnt_htim);
     HAL_TIM_Base_Stop_IT(sm->pulse_htim);
-    printf("STOP\r\n");
+    printf("stepper stoped\r\n");
 }
 
 // IRQ context

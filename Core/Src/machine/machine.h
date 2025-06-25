@@ -14,7 +14,8 @@
 
 extern struct machine machine;
 
-
+#define MACHINE_MSG_MOVETO_CROSS 1
+#define MACHINE_MSG_MOVETO_LONGITUDAL 2
 
 #define printlog(format, ...) do { \
     printf("%ld: " format, now() ? now() : uptime(), ##__VA_ARGS__); \
@@ -23,6 +24,7 @@ extern struct machine machine;
 
 struct machine {
     struct cmsis_thread *ui_tid;
+    struct cmsis_thread *machine_tid;
     struct button *btn_left;
     struct button *btn_right;
     struct button *btn_up;
@@ -40,9 +42,10 @@ struct machine {
 
     struct potentiometer *pm_move_speed;
 
-    int move_step;
     struct abs_position *ap;
     struct ui_status ui_stat;
+
+    bool is_busy;
 };
 
 extern struct machine machine;

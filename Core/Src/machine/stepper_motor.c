@@ -23,7 +23,7 @@ struct stepper_motor *
 stepper_motor_register(char *name, TIM_HandleTypeDef *cnt_htim,
                        TIM_HandleTypeDef *pulse_htim, u32 channel_num,
                        struct gpio *dir, struct gpio *en, int timer_freq,
-                       int min_freq, int max_freq)
+                       int min_freq, int max_freq, int resolution)
 {
     struct stepper_motor *sm;
 
@@ -37,6 +37,7 @@ stepper_motor_register(char *name, TIM_HandleTypeDef *cnt_htim,
     sm->timer_freq = timer_freq;
     sm->min_freq = min_freq;
     sm->max_freq = max_freq;
+    sm->resolution = resolution;
 
     stepper_motor_disable(sm);
     return sm;
@@ -56,7 +57,8 @@ void stepper_motor_set_freq(struct stepper_motor *sm, int freq)
 {
     u32 period = sm->timer_freq / freq;
     __HAL_TIM_SET_AUTORELOAD(sm->pulse_htim, period - 1);
-    __HAL_TIM_SET_COMPARE(sm->pulse_htim, sm->channel_num, (period - 1) / 2); // Duty Cycle 50%
+    __HAL_TIM_SET_COMPARE(sm->pulse_htim, sm->channel_num,
+                          (period - 1) / 2); // Duty Cycle 50%
     sm->freq = freq;
 }
 
@@ -93,6 +95,8 @@ void stepper_motor_run(struct stepper_motor *sm, int start_freq,
     sm->target_freq = target_freq;
     sm->freq = start_freq;
     sm->distance_um = distance_um;
+    if (sm->distance_um < sm->resolution)
+        sm->distance_um = sm->resolution;
 
     if (sm->freq_changer_handler)
         sm->freq_changer_handler(sm, TRUE);
@@ -104,9 +108,10 @@ void stepper_motor_run(struct stepper_motor *sm, int start_freq,
 
     dir ? gpio_up(sm->dir) : gpio_down(sm->dir);
     sm->last_dir = dir;
+    sm->is_run = TRUE;
 
-    cnt = distance_um / 5 - 1;
-    if (cnt == 0) { // lifehack for one impulse
+    cnt = distance_um / sm->resolution - 1;
+    if (cnt <= 0) { // lifehack for one impulse
         if (dir)
             sm->cnt_htim->Instance->CCER |= TIM_CCER_CC1P;
         else
@@ -114,7 +119,6 @@ void stepper_motor_run(struct stepper_motor *sm, int start_freq,
         cnt = 1;
     }
 
-    sm->is_run = TRUE;
     stepper_motor_set_freq(sm, start_freq);
     __HAL_TIM_SET_COUNTER(sm->pulse_htim, 0);
     HAL_TIM_PWM_Start(sm->pulse_htim, sm->channel_num);
@@ -152,8 +156,7 @@ void stepper_motor_wait_autostop(struct stepper_motor *sm)
 
 int stepper_motor_pos(struct stepper_motor *sm)
 {
-    // 5 micron per impulse
-    return (int)(__HAL_TIM_GET_COUNTER(sm->cnt_htim) * 5);
+    return (int)(__HAL_TIM_GET_COUNTER(sm->cnt_htim) * sm->resolution);
 }
 
 void stepper_motor_reset_pos(struct stepper_motor *sm)

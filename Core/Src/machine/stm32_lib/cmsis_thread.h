@@ -18,7 +18,14 @@ extern TIM_HandleTypeDef htim1;
 #define sleep(msec) osDelay(msec)
 #define tick() osKernelGetTickCount()
 
+struct cmsis_thread_msg {
+    struct le le;
+    int type;
+    void *msg;
+};
+
 struct cmsis_thread {
+    struct list messages;
     struct le le;
     char *name;
     osThreadId_t tid;
@@ -108,5 +115,8 @@ static inline u32 stopwatch_counter(struct stopwatch *sw)
     lock = FALSE; \
 } while (0)
 
+struct cmsis_thread *thread_current(void);
+void thread_send_msg(struct cmsis_thread *tid, int type, void *msg);
+int thread_recv_msg(void **msg);
 
 #endif /* CMSIS_THREAD_H_ */
