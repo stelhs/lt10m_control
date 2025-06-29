@@ -95,7 +95,7 @@ struct img *font_symbol_img(char ch, u8 *font, int fontsize,
                             struct color color, struct color bg_color);
 
 int disp_text_width(struct text_style *ts, int text_len);
-int disp_text_height(struct text_style *ts, int text_len);
+int disp_text_height(struct text_style *ts);
 
 
 #endif /* SRC_MACHINE_DISP_MIPI_DCS_H_ */

@@ -24,11 +24,11 @@ struct ui_item *
 ui_item_register(char *name, struct disp *disp,
                  int x, int y, int width, int height,
                  void (*show)(struct ui_item *),
-                 void (*hide)(struct ui_item *), void *priv)
+                 void (*hide)(struct ui_item *), void *priv, size_t data_size)
 {
     struct ui_item *ut;
 
-    ut = kzref_alloc(name, sizeof *ut, ui_item_destructor);
+    ut = kzref_alloc(name, (sizeof *ut) + data_size, ui_item_destructor);
     ut->disp = disp;
     ut->x = x;
     ut->y = y;
@@ -39,7 +39,54 @@ ui_item_register(char *name, struct disp *disp,
     if (!hide)
         ut->hide = hide_default;
     ut->priv = priv;
+    ut->data = (void *)(ut + 1);
     ut->show(ut);
+    return ut;
+}
+
+struct ui_item_text {
+    char *str;
+    char *str_prev;
+    size_t text_len;
+    void (*getter)(struct ui_item *, char *, size_t);
+    struct text_style ts;
+};
+
+static void text_show(struct ui_item *ut)
+{
+    struct ui_item_text *uit = ut->data;
+    if (!uit->getter)
+        return;
+
+    uit->getter(ut, uit->str, uit->text_len + 1);
+    if (strcmp(uit->str, uit->str_prev) == 0)
+        return;
+    if (strlen(uit->str) != strlen(uit->str_prev))
+        ut->hide(ut);
+    memcpy(uit->str_prev, uit->str, uit->text_len + 1);
+    disp_text(ut->disp, uit->str, ut->x, ut->y, &uit->ts);
+}
+
+struct ui_item *
+ui_item_text_register(char *name, struct disp *disp,
+                      int x, int y, int text_len, struct text_style *ts,
+                      void (*getter)(struct ui_item *, char *, size_t size),
+                      void (*hide)(struct ui_item *), void *priv)
+{
+    struct ui_item *ut;
+    struct ui_item_text uit;
+    ut = ui_item_register(name, disp, x, y,
+                          disp_text_width(ts, text_len),
+                          disp_text_height(ts),
+                          text_show, hide,
+                          priv, (sizeof uit) + (text_len + 1) * 2);
+    uit.getter = getter;
+    uit.text_len = text_len;
+    uit.ts = *ts;
+    uit.str = (char *)((struct ui_item_text *)ut->data + 1);
+    uit.str_prev = (char *)((struct ui_item_text *)ut->data + 1) + (text_len + 1);
+    memcpy(ut->data, &uit, sizeof uit);
+    ui_item_show(ut);
     return ut;
 }
 
@@ -82,6 +129,12 @@ void ui_item_show(struct ui_item *ut)
 {
     ut->is_show = TRUE;
     ut->show(ut);
+}
+
+void ui_item_update(struct ui_item *ut)
+{
+    ui_item_hide(ut);
+    ui_item_show(ut);
 }
 
 bool ui_item_is_show(struct ui_item *ut)

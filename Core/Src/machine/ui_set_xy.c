@@ -117,8 +117,9 @@ void onclick_reset_longitudal(void *priv)
 }
 
 
-static void key_esc_show(struct ui_item *ut)
+static void key_esc_show(struct ui_button *ub)
 {
+    struct ui_item *ut = ub->ut;
     static struct text_style ts = {
             .bg_color = BLACK,
             .color = RED,
@@ -133,9 +134,9 @@ static void key_esc_show(struct ui_item *ut)
             &ts);
 }
 
-static void key_tool_num_show(struct ui_item *ut)
+static void key_tool_num_show(struct ui_button *ub)
 {
-    struct ui_button *ub = (struct ui_button *)ut->priv;
+    struct ui_item *ut = ub->ut;
     struct ui_set_xy *usx = ui_set_xy;
     static struct text_style non_selected_ts = {
             .bg_color = BLACK,
@@ -167,9 +168,9 @@ static void key_tool_num_show(struct ui_item *ut)
               ut->y + ut->height / 2 - 10, ts);
 }
 
-static void key_up_down_show(struct ui_item *ut)
+static void key_up_down_show(struct ui_button *ub)
 {
-    struct ui_button *ub = (struct ui_button *)ut->priv;
+    struct ui_item *ut = ub->ut;
     struct ui_set_xy *usx = (struct ui_set_xy *)ub->priv;
     struct img *img;
     if (usx->is_cross_inc_down)
@@ -180,10 +181,10 @@ static void key_up_down_show(struct ui_item *ut)
     kmem_deref(&img);
 }
 
-static void key_left_right_show(struct ui_item *ut)
+static void key_left_right_show(struct ui_button *ub)
 {
-    struct ui_button *ub = (struct ui_button *)ut->priv;
     struct ui_set_xy *usx = (struct ui_set_xy *)ub->priv;
+    struct ui_item *ut = ub->ut;
     struct img *img;
     if (usx->is_longitudal_inc_left)
         img = img_longitudal_arrow_left1();
@@ -193,9 +194,9 @@ static void key_left_right_show(struct ui_item *ut)
     kmem_deref(&img);
 }
 
-static void key_cross_pos_show(struct ui_item *ut)
+static void key_cross_pos_show(struct ui_button *ub)
 {
-    struct ui_button *ub = (struct ui_button *)ut->priv;
+    struct ui_item *ut = ub->ut;
     struct ui_set_xy *usx = (struct ui_set_xy *)ub->priv;
     char *string;
     int x, width;
@@ -213,9 +214,9 @@ static void key_cross_pos_show(struct ui_item *ut)
     kmem_deref(&string);
 }
 
-static void key_longitudal_pos_show(struct ui_item *ut)
+static void key_longitudal_pos_show(struct ui_button *ub)
 {
-    struct ui_button *ub = (struct ui_button *)ut->priv;
+    struct ui_item *ut = ub->ut;
     struct ui_set_xy *usx = (struct ui_set_xy *)ub->priv;
     char *string;
     int x, width;
@@ -234,8 +235,9 @@ static void key_longitudal_pos_show(struct ui_item *ut)
     kmem_deref(&string);
 }
 
-static void key_reset_show(struct ui_item *ut)
+static void key_reset_show(struct ui_button *ub)
 {
+    struct ui_item *ut = ub->ut;
     static struct text_style ts = {
             .bg_color = BLACK,
             .color = EMERALD,

@@ -9,6 +9,7 @@
 
 #include "stm32_lib/gpio.h"
 #include "stm32_lib/buttons.h"
+#include "stm32_lib/kref_alloc.h"
 #include "spi.h"
 #include "usart.h"
 #include "tim.h"
@@ -20,7 +21,6 @@
 
 extern struct machine machine;
 
-static struct gpio gpio_led_d2 = {LED_D2_GPIO_Port, LED_D2_Pin};
 static struct gpio gpio_disp1_spi_cs = {SPI_TFT_CS_GPIO_Port, SPI_TFT_CS_Pin};
 static struct gpio gpio_disp2_spi_cs = {SPI_TFT2_CS_GPIO_Port, SPI_TFT2_CS_Pin};
 static struct gpio gpio_disp_reset = {TFT_RESET_GPIO_Port,
@@ -39,17 +39,61 @@ static struct gpio gpio_cross_feed_dir = {CROSS_FEED_DIR_GPIO_Port,
                                           CROSS_FEED_DIR_Pin};
 static struct gpio gpio_abs_pos_cs = {ABS_POS_CS_GPIO_Port,
                                           ABS_POS_CS_Pin};
+static struct gpio gpio_speaker = {SPEAKER_GPIO_Port, SPEAKER_Pin};
 
-
-void lde_d2_on(void)
+struct beep_blinker {
+    u32 cnt;
+    u32 target;
+};
+static void beep_blinker_cb(void *priv)
 {
-    gpio_up(&gpio_led_d2);
+    struct beep_blinker *bb = (struct beep_blinker *)priv;
+
+    if (gpio_read(&gpio_speaker))
+        gpio_down(&gpio_speaker);
+    else
+        gpio_up(&gpio_speaker);
+
+    bb->cnt ++;
+    if (bb->target && bb->cnt >= bb->target)
+        beep_blink_stop();
 }
 
-void lde_d2_off(void)
+static struct timer_worker *beep_blinker;
+void beep_blink_start(int beep_duration, int period, int count)
 {
-    gpio_down(&gpio_led_d2);
+    struct beep_blinker bb = {
+            .cnt = 0,
+            .target = count
+    };
+    beep_blinker = set_periodic("beep_blinker", period, beep_blinker_cb, &bb,
+                                sizeof (struct beep_blinker));
 }
+
+void beep_blink_stop(void)
+{
+    kmem_deref(&beep_blinker);
+    gpio_down(&gpio_speaker);
+}
+
+static void panel_encoder_init(void)
+{
+    __HAL_TIM_SET_COUNTER(&htim4, 0);
+    HAL_TIM_Base_Start_IT(&htim4);
+}
+
+int panel_encoder_val(void)
+{
+    int val = (s16)__HAL_TIM_GET_COUNTER(&htim4);
+    __HAL_TIM_SET_COUNTER(&htim4, 0);
+    return val;
+}
+
+void panel_encoder_reset(void)
+{
+    __HAL_TIM_SET_COUNTER(&htim4, 0);
+}
+
 
 void periphery_init(void)
 {
@@ -111,7 +155,8 @@ void periphery_init(void)
                                    &gpio_longitudal_feed_dir,
                                    &gpio_longitudal_feed_en,
                                    1000000, 18, 15000,
-                                   LINEAR_LONGITUDAL_RESOLUTION);
+                                   LINEAR_LONGITUDAL_RESOLUTION,
+                                   15000, 17600);
 
     m->sm_cross_feed =
             stepper_motor_register("cross_feed_motor",
@@ -119,12 +164,13 @@ void periphery_init(void)
                                    &gpio_cross_feed_dir,
                                    &gpio_cross_feed_en,
                                    1000000, 18, 10000,
-                                   LINEAR_CROSS_RESOLUTION * 2);
+                                   LINEAR_CROSS_RESOLUTION * 2,
+                                   10000, 20000);
 
     m->ap = abs_position_dev_register("abs_position_dev",
                                            &hspi2, &gpio_abs_pos_cs);
 
-    HAL_TIM_Base_Start_IT(&htim4); // Panel Encoder
+    panel_encoder_init();
 //    HAL_TIM_Base_Start_IT(&htim12);
     //HAL_TIM_IC_Start(&htim12, TIM_CHANNEL_1); // Spindle Encoder
 }
@@ -146,9 +192,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     struct machine *m = &machine;
 
-    if (htim == &htim6) { // Period = 10ms (100Hz)
-        stepper_motor_timer_isr(m->sm_longitudial_feed);
-        stepper_motor_timer_isr(m->sm_cross_feed);
+    if (htim == &htim6) { // Period = 1ms (1000Hz)
+        if (m->sm_longitudial_feed)
+            stepper_motor_timer_isr(m->sm_longitudial_feed);
+        if (m->sm_cross_feed)
+            stepper_motor_timer_isr(m->sm_cross_feed);
         return;
     }
 

@@ -19,6 +19,7 @@ struct ui_button {
     struct disp *disp;
     struct touch_area *ta;
     void (*on_click)(void *);
+    void (*show)(struct ui_button *);
     void *priv;
 };
 
@@ -26,7 +27,7 @@ struct ui_button *
 ui_button_register(char *name,
                    struct disp *disp,
                    int x, int y, int width, int height,
-                   void (*show)(struct ui_item *),
+                   void (*show)(struct ui_button *),
                    void (*on_click)(void *), void *priv);
 
 bool is_ui_button_touched(struct ui_button *db);

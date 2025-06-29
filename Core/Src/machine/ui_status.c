@@ -12,99 +12,25 @@
 #include "machine.h"
 
 
-void ui_status_show(void)
+static void ui_tool_num_show(struct ui_item *ut)
 {
     struct machine *m = &machine;
-    struct disp *disp = m->disp2;
-
-    disp_fill(disp, 0,0, 480, 43, BLACK);
-    disp_fill(disp, 2, 40, 480 - 4, 3, GREEN);
-    disp_rect(disp, 5, 0, 35, 32, 2, EMERALD);
-
-    ui_status_cross_dir_update();
-    ui_status_tool_update();
-    ui_status_cross_update(FALSE);
-    ui_status_longitudal_dir_update();
-    ui_status_longitudal_update(FALSE);
-}
-
-void ui_status_cross_update(bool is_erase)
-{
-    struct machine *m = &machine;
-    struct disp *disp = m->disp2;
-    char str_num[10];
-    struct abs_position *ap = m->ap;
-    int pos, len;
-    int width, height;
-    struct text_style ts = {
-            .bg_color = BLACK,
-            .color = GREEN,
-            .font = font_rus,
-            .fontsize = 3,
-    };
-
-    pos = abs_cross_curr_tool(ap);
-    sprintf(str_num, "%.3f", (float)pos / 1000);
-    if (is_erase) {
-        len = strlen(str_num);
-        width = disp_text_width(&ts, sizeof str_num);
-        height = disp_text_height(&ts, len);
-        disp_fill(disp, 78, 9, width, height, BLACK);
-    }
-    disp_text(disp, str_num, 78, 9, &ts);
-}
-
-void ui_status_longitudal_update(bool is_erase)
-{
-    struct machine *m = &machine;
-    struct disp *disp = m->disp2;
-    char str_num[10];
-    struct abs_position *ap = m->ap;
-    int pos, len;
-    int width, height;
-    struct text_style ts = {
-            .bg_color = BLACK,
-            .color = BLUE,
-            .font = font_rus,
-            .fontsize = 3,
-    };
-
-    pos = abs_longitudal_curr_tool(ap);
-    sprintf(str_num, "%.3f", (float)pos / 1000);
-    if (is_erase) {
-        len = strlen(str_num);
-        width = disp_text_width(&ts, sizeof str_num);
-        height = disp_text_height(&ts, len);
-        disp_fill(disp, 300, 9, width, height, BLACK);
-    }
-    disp_text(disp, str_num, 300, 9, &ts);
-}
-
-void ui_status_tool_update(void)
-{
-    struct machine *m = &machine;
-    struct disp *disp = m->disp2;
     char str_num[2];
-    int width, height, len;
     struct text_style ts = {
             .bg_color = BLACK,
             .color = EMERALD,
             .font = font_rus,
             .fontsize = 3,
     };
+    disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 2, EMERALD);
 
     sprintf(str_num, "%d", abs_pos_tool(m->ap) + 1);
-    len = strlen(str_num);
-    width = disp_text_height(&ts, len);
-    height = disp_text_width(&ts, len);
-    disp_fill(disp, 15, 7, width, height, BLACK);
-    disp_text(disp, str_num, 15, 7, &ts);
+    disp_text(ut->disp, str_num, ut->x + 9, ut->y + 5, &ts);
 }
 
-void ui_status_cross_dir_update(void)
+static void ui_cross_pos_dir_show(struct ui_item *ut)
 {
     struct machine *m = &machine;
-    struct disp *disp = m->disp2;
     struct abs_position *ap = m->ap;
     struct img *img;
 
@@ -112,14 +38,21 @@ void ui_status_cross_dir_update(void)
         img = img_cross_arrow_down1();
     else
         img = img_cross_arrow_up1();
-    disp_fill_img(disp, 53, 4, img);
+    disp_fill_img(ut->disp, ut->x, ut->y, img);
     kmem_deref(&img);
 }
 
-void ui_status_longitudal_dir_update(void)
+static void ui_cross_pos_getter(struct ui_item *ut, char *str, size_t size)
 {
     struct machine *m = &machine;
-    struct disp *disp = m->disp2;
+    struct abs_position *ap = m->ap;
+    int pos = abs_cross_curr_tool(ap);
+    snprintf(str, size, "%.3f", (float)pos / 1000);
+}
+
+static void ui_longitudal_pos_dir_show(struct ui_item *ut)
+{
+    struct machine *m = &machine;
     struct abs_position *ap = m->ap;
     struct img *img;
 
@@ -127,6 +60,173 @@ void ui_status_longitudal_dir_update(void)
         img = img_longitudal_arrow_left1();
     else
         img = img_longitudal_arrow_right1();
-    disp_fill_img(disp, 260, 10, img);
+    disp_fill_img(ut->disp, ut->x, ut->y, img);
     kmem_deref(&img);
 }
+
+static void ui_longitudal_pos_getter(struct ui_item *ut, char *str, size_t size)
+{
+    struct machine *m = &machine;
+    struct abs_position *ap = m->ap;
+    int pos = abs_longitudal_curr_tool(ap);
+    snprintf(str, size, "%.3f", (float)pos / 1000);
+}
+
+static void ui_spindle_icon_show(struct ui_item *ut)
+{
+    struct img *img;
+    img = img_spindle_speed();
+    disp_fill_img(ut->disp, ut->x, ut->y, img);
+    kmem_deref(&img);
+}
+
+static void ui_spindle_speed_getter(struct ui_item *ut, char *str, size_t size)
+{
+    snprintf(str, size, "%d", 0); // TODO
+}
+
+static void ui_cross_speed_icon_show(struct ui_item *ut)
+{
+    struct img *img;
+    img = img_cross_speed();
+    disp_fill_img(ut->disp, ut->x, ut->y, img);
+    kmem_deref(&img);
+}
+
+static void ui_cross_speed_getter(struct ui_item *ut, char *str, size_t size)
+{
+    struct machine *m = &machine;
+    struct stepper_motor *sm = m->sm_cross_feed;
+    snprintf(str, size, "%.3f", (float)sm->speed / 1000);
+}
+
+static void ui_longitudal_speed_icon_show(struct ui_item *ut)
+{
+    struct img *img;
+    img = img_longitudal_speed();
+    disp_fill_img(ut->disp, ut->x, ut->y, img);
+    kmem_deref(&img);
+}
+
+static void ui_longitudal_speed_getter(struct ui_item *ut,
+                                       char *str, size_t size)
+{
+    struct machine *m = &machine;
+    struct stepper_motor *sm = m->sm_longitudial_feed;
+    snprintf(str, size, "%.3f", (float)sm->speed / 1000);
+}
+
+static void ui_feed_rate_icon_show(struct ui_item *ut)
+{
+    struct img *img;
+    img = img_feed_rate();
+    disp_fill_img(ut->disp, ut->x, ut->y, img);
+    kmem_deref(&img);
+}
+
+static void ui_feed_rate_getter(struct ui_item *ut,
+                                char *str, size_t size)
+{
+    struct machine *m = &machine;
+    snprintf(str, size, "%.3f", (float)m->feed_rate / 1000);
+}
+
+void ui_status_init(void)
+{
+    struct machine *m = &machine;
+    struct disp *disp = m->disp2;
+    struct ui_status *us = &m->ui_stat;
+    struct text_style cross_ts = {
+            .bg_color = BLACK,
+            .color = GREEN,
+            .font = font_rus,
+            .fontsize = 3,
+    };
+    struct text_style longitudal_ts = {
+            .bg_color = BLACK,
+            .color = BLUE,
+            .font = font_rus,
+            .fontsize = 3,
+    };
+    struct text_style spindle_ts = {
+            .bg_color = BLACK,
+            .color = {241, 255, 146},
+            .font = font_rus,
+            .fontsize = 3,
+    };
+    struct text_style feed_rate_ts = {
+            .bg_color = BLACK,
+            .color = {255, 128, 0},
+            .font = font_rus,
+            .fontsize = 3,
+    };
+
+    disp_fill(disp, 0,0, 480, 43, BLACK); // Clear status area
+    disp_fill(disp, 2, 74, 480 - 4, 3, GREEN); // Green line
+
+    us->cross_pos_dir =
+            ui_item_register("ui_cross_pos_dir", disp,
+                                 0, 2, 16, 28,
+                                 ui_cross_pos_dir_show, NULL, NULL, 0);
+
+    us->cross_pos =
+            ui_item_text_register("ui_cross_pos", disp,
+                                  23, 5, 8, &cross_ts,
+                                  ui_cross_pos_getter, NULL, NULL);
+
+    us->longitudal_pos_dir =
+            ui_item_register("ui_longitudal_pos_dir", disp,
+                                 173, 7, 31, 18,
+                                 ui_longitudal_pos_dir_show, NULL, NULL, 0);
+
+    us->longitudal_pos =
+            ui_item_text_register("ui_longitudal_pos", disp,
+                                  208, 5, 8, &longitudal_ts,
+                                  ui_longitudal_pos_getter, NULL, NULL);
+
+    us->spindle_icon =
+            ui_item_register("ui_spindle_icon", disp,
+                                 359, 4, 26, 29,
+                                 ui_spindle_icon_show, NULL, NULL, 0);
+
+    us->spindle_speed =
+            ui_item_text_register("ui_spindle_speed", disp,
+                                  395, 9, 4, &spindle_ts,
+                                  ui_spindle_speed_getter, NULL, NULL);
+
+    us->tool_num =
+            ui_item_register("ui_tool_num", disp,
+                                 1, 39, 32, 32,
+                                 ui_tool_num_show, NULL, NULL, 0);
+
+    us->cross_speed_icon =
+            ui_item_register("ui_cross_speed_icon", disp,
+                                 39, 36, 33, 36,
+                                 ui_cross_speed_icon_show, NULL, NULL, 0);
+
+    us->cross_speed =
+            ui_item_text_register("ui_cross_speed", disp,
+                                  77, 48, 6, &cross_ts,
+                                  ui_cross_speed_getter, NULL, NULL);
+
+    us->longitudal_speed_icon =
+            ui_item_register("ui_longitudal_speed_icon", disp,
+                                 186, 36, 33, 36,
+                                 ui_longitudal_speed_icon_show, NULL, NULL, 0);
+
+    us->longitudal_speed =
+            ui_item_text_register("ui_longitudal_speed", disp,
+                                  223, 48, 6, &longitudal_ts,
+                                  ui_longitudal_speed_getter, NULL, NULL);
+
+    us->feed_rate_icon =
+            ui_item_register("ui_feed_rate_icon", disp,
+                                 334, 36, 33, 36,
+                                 ui_feed_rate_icon_show, NULL, NULL, 0);
+
+    us->feed_rate =
+            ui_item_text_register("ui_feed_rate", disp,
+                                  372, 48, 6, &feed_rate_ts,
+                                  ui_feed_rate_getter, NULL, NULL);
+}
+

@@ -350,7 +350,7 @@ int disp_text_width(struct text_style *ts, int text_len)
     return 6 * ts->fontsize * text_len;
 }
 
-int disp_text_height(struct text_style *ts, int text_len)
+int disp_text_height(struct text_style *ts)
 {
     return 8 * ts->fontsize;
 }

@@ -16,7 +16,7 @@ extern TIM_HandleTypeDef htim1;
 
 #define yield() osThreadYield()
 #define sleep(msec) osDelay(msec)
-#define tick() osKernelGetTickCount()
+#define now() osKernelGetTickCount()
 
 struct cmsis_thread_msg {
     struct le le;
@@ -45,7 +45,7 @@ struct timeout {
 
 static inline void timeout_start(struct timeout *timeout, u32 duration)
 {
-    u32 curr = tick();
+    u32 curr = now();
     u32 end = curr + duration - 1;
     timeout->duration = duration;
     timeout->end = end ? end : 1;
@@ -53,14 +53,14 @@ static inline void timeout_start(struct timeout *timeout, u32 duration)
 
 static inline void timeout_reset(struct timeout *timeout)
 {
-    u32 curr = tick();
+    u32 curr = now();
     u32 end = curr + timeout->duration - 1;
     timeout->end = end ? end : 1;
 }
 
 static inline u32 timeout_left(struct timeout *timeout)
 {
-    u32 curr = tick();
+    u32 curr = now();
     return timeout->end - curr;
 }
 
@@ -91,19 +91,6 @@ static inline void delay_us(u16 us)
 struct stopwatch {
     u32 start;
 };
-
-static inline void stopwatch_start(struct stopwatch *sw)
-{
-    sw->start = tick();
-}
-
-static inline u32 stopwatch_counter(struct stopwatch *sw)
-{
-    u32 now = tick();
-    if (now >= sw->start)
-        return (sw->start - now) / 1000;
-    return (0xFFFFFFFF - sw->start + now) / 1000;
-}
 
 #define thread_lock(lock) do { \
     while (lock) \

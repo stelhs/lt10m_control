@@ -73,8 +73,9 @@ static void moveto_ui_items_destructor(void *mem)
     kmem_deref(&ui_items->left_right_arrow);
 }
 
-static void key_set_xy_show(struct ui_item *ut)
+static void key_set_xy_show(struct ui_button *ub)
 {
+    struct ui_item *ut = ub->ut;
     struct img *img;
     disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 1, GRAY);
 
@@ -90,9 +91,9 @@ static void onclick_set_xy(void *priv)
     show();
 }
 
-static void key_set_step_show(struct ui_item *ut)
+static void key_set_step_show(struct ui_button *ub)
 {
-    struct ui_button *ub = (struct ui_button *)ut->priv;
+    struct ui_item *ut = ub->ut;
     struct ui_move_to *umt = (struct ui_move_to *)ub->priv;
     char *string;
     int x, width;
@@ -110,9 +111,9 @@ static void key_set_step_show(struct ui_item *ut)
     kmem_deref(&string);
 }
 
-static void key_set_cross_pos_show(struct ui_item *ut)
+static void key_set_cross_pos_show(struct ui_button *ub)
 {
-    struct ui_button *ub = (struct ui_button *)ut->priv;
+    struct ui_item *ut = ub->ut;
     struct ui_move_to *umt = (struct ui_move_to *)ub->priv;
     char *string;
     static struct text_style ts = {
@@ -127,9 +128,9 @@ static void key_set_cross_pos_show(struct ui_item *ut)
     kmem_deref(&string);
 }
 
-static void key_set_longitudal_pos_show(struct ui_item *ut)
+static void key_set_longitudal_pos_show(struct ui_button *ub)
 {
-    struct ui_button *ub = (struct ui_button *)ut->priv;
+    struct ui_item *ut = ub->ut;
     struct ui_move_to *umt = (struct ui_move_to *)ub->priv;
     char *string;
     static struct text_style ts = {
@@ -144,8 +145,9 @@ static void key_set_longitudal_pos_show(struct ui_item *ut)
     kmem_deref(&string);
 }
 
-static void key_move_to_show(struct ui_item *ut)
+static void key_move_to_show(struct ui_button *ub)
 {
+    struct ui_item *ut = ub->ut;
     struct img *img;
     disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 2, BLUE);
     img = img_moveto();
@@ -323,33 +325,33 @@ static void show(void)
     ui_items->up_arrow =
             ui_item_register("ui_item_arrow_up", umt->disp_touch,
                              150, 90, 16, 28,
-                             up_arrow_show, NULL, NULL);
+                             up_arrow_show, NULL, NULL, 0);
 
     ui_items->down_arrow =
             ui_item_register("ui_item_arrow_down", umt->disp_touch,
                              150, 190, 16, 28,
-                             down_arrow_show, NULL, NULL);
+                             down_arrow_show, NULL, NULL, 0);
 
     ui_items->left_arrow =
             ui_item_register("ui_item_arrow_left", umt->disp_touch,
                              50, 144, 31, 18,
-                             left_arrow_show, NULL, NULL);
+                             left_arrow_show, NULL, NULL, 0);
 
 
     ui_items->right_arrow =
             ui_item_register("ui_item_arrow_right", umt->disp_touch,
                              235, 144, 31, 18,
-                             right_arrow_show, NULL, NULL);
+                             right_arrow_show, NULL, NULL, 0);
 
     ui_items->up_down_arrow =
             ui_item_register("ui_item_arrow_up_down", umt->disp_touch,
                              120, 280, 18, 41,
-                             up_down_arrow_show, NULL, NULL);
+                             up_down_arrow_show, NULL, NULL, 0);
 
     ui_items->left_right_arrow =
             ui_item_register("ui_item_arrow_left_right", umt->disp_touch,
                              105, 410, 43, 16,
-                             left_right_arrow_show, NULL, NULL);
+                             left_right_arrow_show, NULL, NULL, 0);
 }
 
 void ui_moveto_blink_left_arrow(void)

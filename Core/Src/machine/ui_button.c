@@ -16,14 +16,23 @@ static void disp_button_destructor(void *mem)
 {
     struct ui_button *ub = (struct ui_button *)mem;
     kmem_deref(&ub->ut);
+    kmem_deref(&ub->ta);
     list_unlink(&ub->le);
+}
+
+static void button_show(struct ui_item *ut)
+{
+    struct ui_button *ub = (struct ui_button *)ut->priv;
+    if (!ub->ut)
+        return;
+    ub->show(ub);
 }
 
 struct ui_button *
 ui_button_register(char *name,
                    struct disp *disp,
                    int x, int y, int width, int height,
-                   void (*show)(struct ui_item *),
+                   void (*show)(struct ui_button *),
                    void (*on_click)(void *), void *priv)
 {
     struct ui_button *ub;
@@ -35,8 +44,9 @@ ui_button_register(char *name,
     ub->priv = priv;
     ub->disp = disp;
     ub->on_click = on_click;
+    ub->show = show;
     ub->ut = ui_item_register("ui_item_button", disp, x, y, width, height,
-                              (void (*)(struct ui_item *))show, NULL, ub);
+                              button_show, NULL, ub, 0);
     ub->ta = touch_area_register(ub->disp->touch, "disp_butt_touch",
                                  x, y, x + width, y + height);
     ui_item_show(ub->ut);

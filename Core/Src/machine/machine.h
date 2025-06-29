@@ -44,6 +44,7 @@ struct machine {
 
     struct abs_position *ap;
     struct ui_status ui_stat;
+    int feed_rate;
 
     bool is_busy;
 };
@@ -59,5 +60,11 @@ int cross_up_new_position(int distance);
 int cross_down_new_position(int distance);
 int longitudal_left_new_position(int distance);
 int longitudal_right_new_position(int distance);
+int calc_cross_to_target(int target_pos, bool *dir);
+int calc_cross_position(int position, int distance, bool dir);
+void set_normal_acceleration(void);
+
+// IRQ context
+void sm_normal_acceleration_changer(struct stepper_motor *sm, bool is_init);
 
 #endif  // MACHINE_H_

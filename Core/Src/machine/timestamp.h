@@ -7,7 +7,6 @@
 
 
 void timestamp_set(u32 timestamp);
-u32 now(void);
 bool is_current_time_valid(void);
 u32 uptime(void);
 void timestamp_tick(void);

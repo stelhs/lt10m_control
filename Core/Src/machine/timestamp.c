@@ -14,17 +14,6 @@ void timestamp_set(u32 new_timestamp)
     irq_enable();
 }
 
-u32 now(void)
-{
-    u32 time;
-
-    irq_disable();
-    time = _timestamp;
-    irq_enable();
-
-    return time;
-}
-
 u32 uptime(void)
 {
     u32 time;

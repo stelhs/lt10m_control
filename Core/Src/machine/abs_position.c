@@ -4,7 +4,6 @@
  *  Created on: Jun 17, 2025
  *      Author: stelhs
  */
-
 #include "abs_position.h"
 #include "stm32_lib/kref_alloc.h"
 #include "stm32_lib/cmsis_thread.h"

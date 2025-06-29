@@ -23,7 +23,8 @@ struct stepper_motor *
 stepper_motor_register(char *name, TIM_HandleTypeDef *cnt_htim,
                        TIM_HandleTypeDef *pulse_htim, u32 channel_num,
                        struct gpio *dir, struct gpio *en, int timer_freq,
-                       int min_freq, int max_freq, int resolution)
+                       int min_freq, int max_freq, int resolution,
+                       int ref_freq, int ref_speed)
 {
     struct stepper_motor *sm;
 
@@ -38,7 +39,8 @@ stepper_motor_register(char *name, TIM_HandleTypeDef *cnt_htim,
     sm->min_freq = min_freq;
     sm->max_freq = max_freq;
     sm->resolution = resolution;
-
+    sm->ref_freq = ref_freq;
+    sm->ref_speed = ref_speed;
     stepper_motor_disable(sm);
     return sm;
 }
@@ -119,14 +121,15 @@ void stepper_motor_run(struct stepper_motor *sm, int start_freq,
         cnt = 1;
     }
 
+    __HAL_TIM_SET_COUNTER(sm->cnt_htim, 0);
+    __HAL_TIM_SET_AUTORELOAD(sm->cnt_htim, cnt);
+    HAL_TIM_Base_Start_IT(sm->cnt_htim);
+
     stepper_motor_set_freq(sm, start_freq);
     __HAL_TIM_SET_COUNTER(sm->pulse_htim, 0);
     HAL_TIM_PWM_Start(sm->pulse_htim, sm->channel_num);
     HAL_TIM_Base_Start_IT(sm->pulse_htim);
 
-    __HAL_TIM_SET_COUNTER(sm->cnt_htim, 0);
-    __HAL_TIM_SET_AUTORELOAD(sm->cnt_htim, cnt);
-    HAL_TIM_Base_Start_IT(sm->cnt_htim);
 }
 
 
@@ -140,7 +143,7 @@ void stepper_motor_stop(struct stepper_motor *sm)
     gpio_down(sm->dir);
 }
 
-void stepper_motor_set_speed(struct stepper_motor *sm, int target_freq)
+void stepper_motor_set_target_freq(struct stepper_motor *sm, int target_freq)
 {
     printf("%s: freq = %d\r\n", sm->name, sm->freq);
     irq_disable();

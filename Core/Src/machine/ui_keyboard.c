@@ -12,6 +12,7 @@
 #include "touch_xpt2046.h"
 #include "machine.h"
 #include "ui_button.h"
+#include "ui_main.h"
 
 struct ui_keyboard {
     struct disp *disp_info;
@@ -37,9 +38,9 @@ static struct text_style key_text_style = {
         .fontsize = 3
 };
 
-static void key_num_show(struct ui_item *ut)
+static void key_num_show(struct ui_button *ub)
 {
-    struct ui_button *ub = (struct ui_button *)ut->priv;
+    struct ui_item *ut = ub->ut;
     int key_num = (int)ub->priv;
     char str[3];
 
@@ -51,8 +52,9 @@ static void key_num_show(struct ui_item *ut)
             &key_text_style);
 }
 
-static void key_point_show(struct ui_item *ut)
+static void key_point_show(struct ui_button *ub)
 {
+    struct ui_item *ut = ub->ut;
     disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 1, GRAY);
     disp_text(ut->disp, ".",
             ut->x + ut->width / 2 - 10,
@@ -60,8 +62,9 @@ static void key_point_show(struct ui_item *ut)
             &key_text_style);
 }
 
-static void key_del_show(struct ui_item *ut)
+static void key_del_show(struct ui_button *ub)
 {
+    struct ui_item *ut = ub->ut;
     disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 1, GRAY);
     disp_text(ut->disp, "<-",
             ut->x + ut->width / 2 - 15,
@@ -69,8 +72,9 @@ static void key_del_show(struct ui_item *ut)
             &key_text_style);
 }
 
-static void key_ok_show(struct ui_item *ut)
+static void key_ok_show(struct ui_button *ub)
 {
+    struct ui_item *ut = ub->ut;
     static struct text_style ts = {
             .bg_color = BLACK,
             .color = GREEN,
@@ -85,8 +89,9 @@ static void key_ok_show(struct ui_item *ut)
             &ts);
 }
 
-static void key_esc_show(struct ui_item *ut)
+static void key_esc_show(struct ui_button *ub)
 {
+    struct ui_item *ut = ub->ut;
     static struct text_style ts = {
             .bg_color = BLACK,
             .color = RED,
@@ -101,8 +106,9 @@ static void key_esc_show(struct ui_item *ut)
             &ts);
 }
 
-static void key_minus_show(struct ui_item *ut)
+static void key_minus_show(struct ui_button *ub)
 {
+    struct ui_item *ut = ub->ut;
     disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 1, GRAY);
     disp_text(ut->disp, "-",
             ut->x + ut->width / 2 - 7,
@@ -208,7 +214,7 @@ static void draw_input_win_value(struct ui_keyboard *uk, char *val,
 
     disp_fill(disp, 40, 255,
               disp_text_width(&ts, uk->max_len),
-              disp_text_height(&ts, uk->max_len),
+              disp_text_height(&ts),
               DARK_GRAY);
     disp_text(disp, val, 40, 255, &ts);
 }
@@ -330,11 +336,13 @@ int ui_keyboard_run(char *field_name, int *val,
             if (*val % step)
                 *val = (*val / step) * step;
             kmem_deref(&uk);
+            ui_message_hide();
             return 0;
         }
 
         if (is_ui_button_touched(uk->key_cancel)) {
             kmem_deref(&uk);
+            ui_message_hide();
             return -1;
         }
     }

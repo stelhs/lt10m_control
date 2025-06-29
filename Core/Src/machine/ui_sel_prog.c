@@ -59,9 +59,9 @@ struct img *img_prog_by_num(enum progs prog)
     return img;
 }
 
-static void key_prog_show(struct ui_item *ut)
+static void key_prog_show(struct ui_button *ub)
 {
-    struct ui_button *ub = (struct ui_button *)ut->priv;
+    struct ui_item *ut = ub->ut;
     enum progs prog = (enum progs)ub->priv;
     struct img *img;
     disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 1, GRAY);
@@ -110,8 +110,8 @@ static void show(struct ui_sel_prog *usp)
             right = "key_prog_feed_down";
             break;
         case 6:
-            left = "key_prog_thread_left";
-            right = "key_prog_thread_right";
+            left = "key_prog_thread_right";
+            right = "key_prog_thread_left";
             break;
         }
 
