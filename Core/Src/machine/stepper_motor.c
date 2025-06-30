@@ -135,7 +135,6 @@ void stepper_motor_run(struct stepper_motor *sm, int start_freq,
 
 void stepper_motor_stop(struct stepper_motor *sm)
 {
-    printf("%s: stepper_motor_stop\r\n", sm->name);
     HAL_TIM_PWM_Stop(sm->pulse_htim, sm->channel_num);
     HAL_TIM_Base_Stop_IT(sm->pulse_htim);
     HAL_TIM_Base_Stop_IT(sm->cnt_htim);
@@ -145,7 +144,6 @@ void stepper_motor_stop(struct stepper_motor *sm)
 
 void stepper_motor_set_target_freq(struct stepper_motor *sm, int target_freq)
 {
-    printf("%s: freq = %d\r\n", sm->name, sm->freq);
     irq_disable();
     sm->target_freq = target_freq;
     irq_enable();

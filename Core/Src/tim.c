@@ -283,7 +283,7 @@ void MX_TIM5_Init(void)
   htim5.Init.Prescaler = 0;
   htim5.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim5.Init.Period = 5000;
-  htim5.Init.ClockDivision = TIM_CLOCKDIVISION_DIV4;
+  htim5.Init.ClockDivision = TIM_CLOCKDIVISION_DIV2;
   htim5.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
   sConfig.IC1Polarity = TIM_ICPOLARITY_FALLING;
@@ -513,14 +513,14 @@ void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef* tim_encoderHandle)
     */
     GPIO_InitStruct.Pin = ENC_A_MEASURE_LONGITUDAL_FEED_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
     HAL_GPIO_Init(ENC_A_MEASURE_LONGITUDAL_FEED_GPIO_Port, &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = ENC_B_MEASURE_LONGITUDAL_FEED_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
     HAL_GPIO_Init(ENC_B_MEASURE_LONGITUDAL_FEED_GPIO_Port, &GPIO_InitStruct);

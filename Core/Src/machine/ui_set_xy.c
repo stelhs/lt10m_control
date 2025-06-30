@@ -82,7 +82,7 @@ void onclick_cross_pos(void *priv)
     if (!ui_keyboard_run("diameter: ", &pos,
                          -1000 * 1000, 1000 * 1000,
                          LINEAR_CROSS_RESOLUTION * 2)) {
-        usx->cross_pos[usx->tool_num] = pos;
+        usx->cross_pos[usx->tool_num] = pos / 2;
     }
     usx->is_finished = TRUE;
 }
@@ -207,7 +207,7 @@ static void key_cross_pos_show(struct ui_button *ub)
             .fontsize = 3
     };
 
-    string = kref_sprintf("%.3f", (float)usx->cross_pos[usx->tool_num] / 1000);
+    string = kref_sprintf("%.3f", (float)usx->cross_pos[usx->tool_num] / 1000 * 2);
     width = disp_text_width(&ts, strlen(string));
     x = ut->width / 2 - width / 2;
     disp_text(ut->disp, string, ut->x + x, ut->y + 15, &ts);
@@ -381,6 +381,7 @@ int ui_set_xy_run(void)
             }
             abs_pos_set_tool(m->ap, usx->tool_num);
             kmem_deref(&usx);
+            mode_cut_settings_validate();
             return 0;
         }
 
@@ -389,5 +390,6 @@ int ui_set_xy_run(void)
         }
     }
 
+    mode_cut_settings_validate();
     return -1;
 }

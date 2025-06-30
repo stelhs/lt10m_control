@@ -164,8 +164,8 @@ void periphery_init(void)
                                    &gpio_cross_feed_dir,
                                    &gpio_cross_feed_en,
                                    1000000, 18, 10000,
-                                   LINEAR_CROSS_RESOLUTION * 2,
-                                   10000, 20000);
+                                   LINEAR_CROSS_RESOLUTION,
+                                   10000, 10000);
 
     m->ap = abs_position_dev_register("abs_position_dev",
                                            &hspi2, &gpio_abs_pos_cs);

@@ -5,7 +5,6 @@
  *      Author: stelhs
  */
 #include "ui_sel_prog.h"
-
 #include "stm32_lib/kref_alloc.h"
 #include "disp_mipi_dcs.h"
 #include "images.h"
@@ -146,6 +145,8 @@ static void ui_sel_prog_destructor(void *mem)
 int ui_sel_prog_run(void)
 {
     struct machine *m = &machine;
+    struct mode_cut *mc = &m->mc;
+    struct mode_cut_settings *mc_settings = &mc->settings;
     struct ui_sel_prog *usp = ui_sel_prog;
 
     usp = kzref_alloc("ui_sel_prog", sizeof *usp, ui_sel_prog_destructor);
@@ -160,7 +161,12 @@ int ui_sel_prog_run(void)
         for (i = 0; i < ARRAY_SIZE(usp->progs); i++) {
             struct ui_button *db = usp->progs[i];
             if (is_ui_button_touched(db)) {
+                if (i != PROG_FEED_LEFT && i != PROG_FEED_RIGHT)
+                    mc_settings->longitudal_ret_mode = CUT_LONGITUDAL_NO_RETURN;
+                if (i != PROG_FEED_UP && i != PROG_FEED_DOWN)
+                    mc_settings->cross_ret_mode = CUT_CROSS_NO_RETURN;
                 kmem_deref(&usp);
+                mode_cut_settings_validate();
                 return i;
             }
         }

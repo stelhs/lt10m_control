@@ -218,7 +218,7 @@ static void onclick_move_to_cross(void *priv)
         return; // TODO
     ui_move_to_lock_moveto();
     thread_send_msg(m->machine_tid, MACHINE_MSG_MOVETO_CROSS,
-                    (void *)umt->move_to_cross_pos);
+                    (void *)(umt->move_to_cross_pos / 2));
 }
 
 static void onclick_move_to_longitudal(void *priv)
@@ -435,6 +435,11 @@ void ui_move_to_run(void)
         ui_button_handler();
 
         if (!is_switch_on(m->switch_move_to)) {
+            kmem_deref(&umt);
+            return;
+        }
+
+        if (is_switch_on(m->switch_run)) {
             kmem_deref(&umt);
             return;
         }

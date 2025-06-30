@@ -13,7 +13,6 @@
 #include "ui_main.h"
 #include "ui_move_to.h"
 #include "mode_idle.h"
-#include "mode_cut.h"
 #include "msg_rus.h"
 
 struct machine machine;
@@ -28,6 +27,9 @@ void halt(char *reason)
 
 void panic(char *cause)
 {
+    struct machine *m = &machine;
+    stepper_motor_stop(m->sm_cross_feed);
+    stepper_motor_stop(m->sm_longitudial_feed);
     printlog("PANIC: %s\r\n", cause);
     for (;;) {
         printlog("PANIC: %s\r\n", cause);
@@ -111,11 +113,11 @@ void key_l(void *priv)
 
 }
 
-int calc_cross_to_target(int target_pos, bool *dir)
+int calc_cross_to_target(int curr_pos, int target_pos, bool *dir)
 {
     struct machine *m = &machine;
     struct stepper_motor *sm = m->sm_cross_feed;
-    int curr_pos = abs_cross_curr_tool(m->ap);
+
     int offset;
     int distance;
 
@@ -127,11 +129,13 @@ int calc_cross_to_target(int target_pos, bool *dir)
 
     offset = target_pos - curr_pos;
     distance = abs(offset);
-    *dir = MOVE_DOWN;
-    if (target_pos > curr_pos)
-        *dir = MOVE_UP;
-    if (m->ap->is_cross_inc_down)
-        *dir = !*dir;
+    if (dir) {
+        *dir = MOVE_DOWN;
+        if (target_pos > curr_pos)
+            *dir = MOVE_UP;
+        if (m->ap->is_cross_inc_down)
+            *dir = !*dir;
+    }
     return distance;
 }
 
@@ -150,11 +154,54 @@ int calc_cross_position(int position, int distance, bool dir)
     return position - distance;
 }
 
+int calc_longitudal_position(int position, int distance, bool dir)
+{
+    struct machine *m = &machine;
+
+    if (dir == MOVE_RIGHT) {
+        if (m->ap->is_longitudal_inc_left)
+            return position - distance;
+        return position + distance;
+    }
+
+    if (m->ap->is_longitudal_inc_left)
+        return position + distance;
+    return position - distance;
+}
+
+int calc_longitudal_to_target(int curr_pos, int target_pos, bool *dir)
+{
+    struct machine *m = &machine;
+    struct stepper_motor *sm = m->sm_longitudial_feed;
+
+    int offset;
+    int distance;
+
+    if (target_pos % sm->resolution)
+        target_pos = (target_pos / sm->resolution) * sm->resolution;
+
+    if (curr_pos == target_pos)
+        return 0;
+
+    offset = target_pos - curr_pos;
+    distance = abs(offset);
+    if (dir) {
+        *dir = MOVE_LEFT;
+        if (target_pos > curr_pos)
+            *dir = MOVE_RIGHT;
+        if (m->ap->is_longitudal_inc_left)
+            *dir = !*dir;
+    }
+    return distance;
+}
+
+
 
 int cross_move_to(int target_pos, bool is_accurate)
 {
     struct machine *m = &machine;
     struct stepper_motor *sm = m->sm_cross_feed;
+    int curr_pos;
 
     int distance;
     bool dir;
@@ -162,7 +209,8 @@ int cross_move_to(int target_pos, bool is_accurate)
 
     while (1) {
         yield();
-        distance = calc_cross_to_target(target_pos, &dir);
+        curr_pos = abs_cross_curr_tool(m->ap);
+        distance = calc_cross_to_target(curr_pos, target_pos, &dir);
         if (!distance) {
             m->is_busy = FALSE;
             return 0;
@@ -173,7 +221,7 @@ int cross_move_to(int target_pos, bool is_accurate)
             if (is_button_clicked(m->btn_enc)) {
                 stepper_motor_stop(sm);
                 m->is_busy = FALSE;
-                return 0;
+                return -1;
             }
         }
         if (!is_accurate) {
@@ -186,7 +234,7 @@ int cross_move_to(int target_pos, bool is_accurate)
     return -1;
 }
 
-int longitudal_move_to(int pos, bool is_accurate)
+int longitudal_move_to(int target_pos, bool is_accurate)
 {
     struct machine *m = &machine;
     struct stepper_motor *sm = m->sm_longitudial_feed;
@@ -197,27 +245,14 @@ int longitudal_move_to(int pos, bool is_accurate)
     int attempts = 0;
     m->is_busy = TRUE;
 
-    if (pos % sm->resolution)
-        pos = (pos / sm->resolution) * sm->resolution;
-
     while (1) {
         yield();
         int curr_pos = abs_longitudal_curr_tool(m->ap);
-        printf("pos = %d, curr_pos = %d\r\n", pos, curr_pos);
-        if (curr_pos == pos) {
-            printf("SUCCESS\r\n");
+        distance = calc_longitudal_to_target(curr_pos, target_pos, &dir);
+        if (!distance) {
             m->is_busy = FALSE;
             return 0;
         }
-
-        distance = abs(pos - curr_pos);
-        printf("distance = %d\r\n", distance);
-
-        dir = MOVE_LEFT;
-        if (pos > curr_pos)
-            dir = MOVE_RIGHT;
-        if (m->ap->is_longitudal_inc_left)
-            dir = !dir;
 
         if (attempts == 2)
             speed /= 2;
@@ -239,7 +274,7 @@ int longitudal_move_to(int pos, bool is_accurate)
             if (is_button_clicked(m->btn_enc)) {
                 stepper_motor_stop(sm);
                 m->is_busy = FALSE;
-                return 0;
+                return -1;
             }
         }
         if (!is_accurate) {
@@ -415,6 +450,8 @@ void buttons_reset(void)
 static void monitoring_thread(void *priv)
 {
     struct machine *m = &machine;
+    struct mode_cut *mc = &m->mc;
+    struct mode_cut_settings *mc_settings = &mc->settings;
     for(;;) {
         int val;
         yield();
@@ -432,11 +469,11 @@ static void monitoring_thread(void *priv)
 
         val = panel_encoder_val();
         if (val) {
-            m->feed_rate += val * 10;
-            if (m->feed_rate < 100)
-                m->feed_rate = 100;
-            if (m->feed_rate > 10000)
-                m->feed_rate = 10000;
+            mc_settings->feed_rate += val * 10;
+            if (mc_settings->feed_rate < 100)
+                mc_settings->feed_rate = 100;
+            if (mc_settings->feed_rate > 10000)
+                mc_settings->feed_rate = 10000;
         }
     }
 }
@@ -445,7 +482,14 @@ static void monitoring_thread(void *priv)
 static void main_thread(void *priv)
 {
     struct machine *m = &machine;
-    m->feed_rate = 1000;
+    struct mode_cut *mc = &m->mc;
+    struct mode_cut_settings *mc_settings = &mc->settings;
+
+    mc_settings->feed_rate = 1000;
+    mc_settings->longitudal_distance = 50 * 1000;
+    mc_settings->target_diameter = 42 * 1000;
+    mc_settings->cross_distance = 21 * 1000;
+    mc_settings->cut_depth = 1500;
 
     uart_debug_plug(&huart1);
     uart_dbg_key_register("os_status", 's', dbg_os_stat, m);

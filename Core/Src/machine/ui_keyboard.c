@@ -13,6 +13,7 @@
 #include "machine.h"
 #include "ui_button.h"
 #include "ui_main.h"
+#include "mode_cut.h"
 
 struct ui_keyboard {
     struct disp *disp_info;
@@ -337,12 +338,15 @@ int ui_keyboard_run(char *field_name, int *val,
                 *val = (*val / step) * step;
             kmem_deref(&uk);
             ui_message_hide();
+            m->is_disp2_needs_redraw = TRUE;
+            mode_cut_settings_validate();
             return 0;
         }
 
         if (is_ui_button_touched(uk->key_cancel)) {
             kmem_deref(&uk);
             ui_message_hide();
+            m->is_disp2_needs_redraw = TRUE;
             return -1;
         }
     }

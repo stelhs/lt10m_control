@@ -26,7 +26,6 @@ abs_position_dev_register(char *name, SPI_HandleTypeDef *hspi,
 
 void abs_position_update(struct abs_position *ap)
 {
-//    return; // TODO
     u8 tx[12];
     u8 rx[12];
     memset(tx, 0, 12);
@@ -35,15 +34,9 @@ void abs_position_update(struct abs_position *ap)
     u32 *crc = (u32 *)(rx + 8);
     u32 crc_calc;
     spi_send_cs_activate(ap->dev);
-    //sleep(1);
     delay_us(500);
     spi_send_recv_sync(ap->dev, tx, rx, 12);
-
-//    printf("raw_longitudal = %lu\r\n", *raw_longitudal);
-//    printf("raw_cross = %lu\r\n", *raw_cross);
-//    printf("crc = %lu\r\n", *crc);
     crc_calc = crc32(rx, 8);
-//    printf("crc_calc = %lu\r\n", crc_calc);
     if (*crc != crc_calc) {
         printf("CRC ERR\r\n");
         return;
@@ -74,7 +67,7 @@ int abs_cross(struct abs_position *ap, int tool_num)
     else
         val = ap->raw.cross - offset;
 
-    return val * 2; // to diameter
+    return val;
 }
 
 int abs_cross_curr_tool(struct abs_position *ap)
@@ -84,7 +77,6 @@ int abs_cross_curr_tool(struct abs_position *ap)
 
 void abs_cross_set(struct abs_position *ap, int tool_num, int val)
 {
-    val /= 2; // to radius
     if (ap->is_cross_inc_down) {
         ap->offset_tools[tool_num].cross =
             val - (int)(0xFFFFFFFF - ap->raw.cross + 1);

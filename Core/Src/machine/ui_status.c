@@ -46,7 +46,7 @@ static void ui_cross_pos_getter(struct ui_item *ut, char *str, size_t size)
 {
     struct machine *m = &machine;
     struct abs_position *ap = m->ap;
-    int pos = abs_cross_curr_tool(ap);
+    int pos = abs_cross_curr_tool(ap) * 2;
     snprintf(str, size, "%.3f", (float)pos / 1000);
 }
 
@@ -128,7 +128,9 @@ static void ui_feed_rate_getter(struct ui_item *ut,
                                 char *str, size_t size)
 {
     struct machine *m = &machine;
-    snprintf(str, size, "%.3f", (float)m->feed_rate / 1000);
+    struct mode_cut *mc = &m->mc;
+    struct mode_cut_settings *mc_settings = &mc->settings;
+    snprintf(str, size, "%.3f", (float)mc_settings->feed_rate / 1000);
 }
 
 void ui_status_init(void)

@@ -8,6 +8,7 @@
 #include "stm32_lib/types.h"
 #include "timestamp.h"
 #include "ui_status.h"
+#include "mode_cut.h"
 
 
 #define BUILD_VERSION "0.4"
@@ -44,9 +45,10 @@ struct machine {
 
     struct abs_position *ap;
     struct ui_status ui_stat;
-    int feed_rate;
-
+    struct ui_main *ui_main;
+    struct mode_cut mc;
     bool is_busy;
+    bool is_disp2_needs_redraw;
 };
 
 extern struct machine machine;
@@ -60,8 +62,10 @@ int cross_up_new_position(int distance);
 int cross_down_new_position(int distance);
 int longitudal_left_new_position(int distance);
 int longitudal_right_new_position(int distance);
-int calc_cross_to_target(int target_pos, bool *dir);
+int calc_cross_to_target(int curr_pos, int target_pos, bool *dir);
 int calc_cross_position(int position, int distance, bool dir);
+int calc_longitudal_position(int position, int distance, bool dir);
+int calc_longitudal_to_target(int curr_pos, int target_pos, bool *dir);
 void set_normal_acceleration(void);
 
 // IRQ context

@@ -23,6 +23,7 @@ struct ui_item {
     int interval;
     bool is_blink_hide;
     bool is_show;
+    bool is_redraw_needed;
     struct timer_worker *tw;
     void *data;
 };

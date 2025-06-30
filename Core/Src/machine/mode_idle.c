@@ -22,14 +22,14 @@ static void move_buttons_move_to_handler(void)
     int move_step = ui_move_to_step();
 
     if (is_button_clicked(m->btn_up)) {
-        pos = cross_up_new_position(move_step);
+        pos = cross_up_new_position(move_step / 2);
         ui_moveto_blink_up_arrow();
         cross_move_to(pos, TRUE);
         ui_moveto_blink_stop();
     }
 
     if (is_button_clicked(m->btn_down)) {
-        pos = cross_down_new_position(move_step);
+        pos = cross_down_new_position(move_step / 2);
         ui_moveto_blink_down_arrow();
         cross_move_to(pos, TRUE);
         ui_moveto_blink_stop();

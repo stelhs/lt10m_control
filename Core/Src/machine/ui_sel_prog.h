@@ -7,25 +7,9 @@
 
 #ifndef UI_SEL_PROG_H_
 #define UI_SEL_PROG_H_
-
-enum progs {
-    PROG_FEED_LEFT,
-    PROG_FEED_RIGHT,
-    PROG_FEED_LEFT_UP,
-    PROG_FEED_RIGHT_UP,
-    PROG_FEED_LEFT_DOWN,
-    PROG_FEED_RIGHT_DOWN,
-    PROG_FEED_UP_LEFT,
-    PROG_FEED_UP_RIGHT,
-    PROG_FEED_DOWN_LEFT,
-    PROG_FEED_DOWN_RIGHT,
-    PROG_FEED_UP,
-    PROG_FEED_DOWN,
-    PROG_THREAD_LEFT,
-    PROG_THREAD_RIGHT
-};
+#include "mode_cut.h"
 
 int ui_sel_prog_run(void);
-struct img *img_prog_by_num(enum progs prog);
+struct img *img_prog_by_num(enum progs);
 
 #endif /* UI_SEL_PROG_H_ */

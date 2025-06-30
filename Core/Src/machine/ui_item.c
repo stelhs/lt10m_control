@@ -40,6 +40,7 @@ ui_item_register(char *name, struct disp *disp,
         ut->hide = hide_default;
     ut->priv = priv;
     ut->data = (void *)(ut + 1);
+    ut->is_redraw_needed = TRUE;
     ut->show(ut);
     return ut;
 }
@@ -59,12 +60,15 @@ static void text_show(struct ui_item *ut)
         return;
 
     uit->getter(ut, uit->str, uit->text_len + 1);
-    if (strcmp(uit->str, uit->str_prev) == 0)
-        return;
-    if (strlen(uit->str) != strlen(uit->str_prev))
-        ut->hide(ut);
+    if (!ut->is_redraw_needed) {
+        if (strcmp(uit->str, uit->str_prev) == 0)
+            return;
+        if (strlen(uit->str) != strlen(uit->str_prev))
+            ut->hide(ut);
+    }
     memcpy(uit->str_prev, uit->str, uit->text_len + 1);
     disp_text(ut->disp, uit->str, ut->x, ut->y, &uit->ts);
+    ut->is_redraw_needed = FALSE;
 }
 
 struct ui_item *
@@ -122,6 +126,7 @@ void ui_item_blink_stop(struct ui_item *ut)
 void ui_item_hide(struct ui_item *ut)
 {
     ut->is_show = FALSE;
+    ut->is_redraw_needed = TRUE;
     ut->hide(ut);
 }
 

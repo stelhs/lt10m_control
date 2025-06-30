@@ -38,6 +38,7 @@ struct __attribute__((packed)) color {
 #define GREEN (struct color){0, 255, 0}
 #define DARK_GREEN (struct color){0, 127, 0}
 #define EMERALD (struct color){0, 255, 255}
+#define LIGHT_GRAY (struct color){200, 200, 200}
 #define GRAY (struct color){127, 127, 127}
 #define DARK_GRAY (struct color){50, 50, 50}
 #define RED (struct color){255, 0, 0}
