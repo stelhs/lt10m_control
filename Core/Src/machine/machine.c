@@ -52,8 +52,8 @@ void key_d(void *priv)
 	struct machine *m = (struct machine *)priv;
     printf("key_d\r\n");
 
-    printf("run 1 turn longitudal\r\n");
-    stepper_motor_run(m->sm_longitudial_feed, 0, 15000, MOVE_RIGHT, 5);
+    printf("run 1 turn cross\r\n");
+    stepper_motor_run(m->sm_cross_feed, 0, 10000, MOVE_UP, 75000);
 }
 
 void key_f(void *priv)
@@ -61,7 +61,7 @@ void key_f(void *priv)
     struct machine *m = (struct machine *)priv;
     printf("key_f\r\n");
 
-    printf("run 1 turn cross\r\n");
+    printf("run 2 turn cross\r\n");
 
 /*    __HAL_TIM_SET_PRESCALER(&htim5, 10 - 1);
     htim5.Instance->EGR |= TIM_EGR_UG;
@@ -69,7 +69,7 @@ void key_f(void *priv)
     __HAL_TIM_SET_AUTORELOAD(f&htim5, 1000);
     HAL_TIM_Base_Start_IT(&htim5);*/
 
-    stepper_motor_run(m->sm_cross_feed, 18, 4000, MOVE_DOWN, 40000);
+    stepper_motor_run(m->sm_cross_feed, 18, 10000, MOVE_DOWN, 75000);
 }
 
 void key_g(void *priv)
@@ -264,9 +264,6 @@ int longitudal_move_to(int target_pos, bool is_accurate)
             attempts = 0;
             speed = sm->max_freq;
         }
-        printf("attempts = %d\r\n", attempts);
-        printf("dir = %s\r\n", dir ? "LEFT" : "RIGHT");
-        printf("speed = %d\r\n", speed);
 
         stepper_motor_run(sm, 1000, speed, dir, distance);
         while (is_stepper_motor_run(sm)) {
@@ -342,7 +339,10 @@ void sm_normal_acceleration_changer(struct stepper_motor *sm, bool is_init)
             sm->accel_prescaller_cnt = 0;
             sm->acceleration = (sm->start_acceleration /
                                 (sm->max_freq / (sm->target_freq - freq)));
+            if (!sm->acceleration)
+                sm->acceleration = 1;
         }
+
 
         freq += sm->acceleration;
         if (freq >= sm->target_freq) {

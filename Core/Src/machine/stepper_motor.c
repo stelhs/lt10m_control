@@ -42,6 +42,7 @@ stepper_motor_register(char *name, TIM_HandleTypeDef *cnt_htim,
     sm->ref_freq = ref_freq;
     sm->ref_speed = ref_speed;
     stepper_motor_disable(sm);
+    __HAL_TIM_CLEAR_FLAG(sm->cnt_htim, TIM_FLAG_UPDATE);
     return sm;
 }
 
@@ -78,9 +79,6 @@ void stepper_motor_run(struct stepper_motor *sm, int start_freq,
                        int target_freq, bool dir, int distance_um)
 {
     int cnt;
-    printf("%s: stepper_motor_run %d->%d %d\r\n",
-           sm->name, start_freq, target_freq, dir);
-
     if (!start_freq)
         start_freq = sm->min_freq;
 
@@ -110,7 +108,6 @@ void stepper_motor_run(struct stepper_motor *sm, int start_freq,
 
     dir ? gpio_up(sm->dir) : gpio_down(sm->dir);
     sm->last_dir = dir;
-    sm->is_run = TRUE;
 
     cnt = distance_um / sm->resolution - 1;
     if (cnt <= 0) { // lifehack for one impulse
@@ -130,6 +127,7 @@ void stepper_motor_run(struct stepper_motor *sm, int start_freq,
     HAL_TIM_PWM_Start(sm->pulse_htim, sm->channel_num);
     HAL_TIM_Base_Start_IT(sm->pulse_htim);
 
+    sm->is_run = TRUE;
 }
 
 
@@ -140,6 +138,7 @@ void stepper_motor_stop(struct stepper_motor *sm)
     HAL_TIM_Base_Stop_IT(sm->cnt_htim);
     sm->is_run = FALSE;
     gpio_down(sm->dir);
+    printf("sm %s stopped\r\n", sm->name);
 }
 
 void stepper_motor_set_target_freq(struct stepper_motor *sm, int target_freq)

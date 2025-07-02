@@ -41,18 +41,18 @@ struct ui_move_to {
     int move_step;
 };
 
-struct ui_move_to *ui_move_to = NULL;
-
 static void show(void);
 static void hide(void)
 {
-    struct ui_move_to *umt = ui_move_to;
+    struct machine *m = &machine;
+    struct ui_move_to *umt = m->ui_move_to;
     kmem_deref(&umt->ui_items);
 }
 
 int ui_move_to_step(void)
 {
-    struct ui_move_to *umt = ui_move_to;
+    struct machine *m = &machine;
+    struct ui_move_to *umt = m->ui_move_to;
     return umt->move_step;
 }
 
@@ -197,14 +197,18 @@ void onclick_set_longitudal_pos(void *priv)
 
 void ui_move_to_lock_moveto(void)
 {
-    struct ui_move_to *umt = ui_move_to;
+    struct machine *m = &machine;
+    struct ui_move_to *umt = m->ui_move_to;
     ui_button_hide(umt->ui_items->move_to_cross);
     ui_button_hide(umt->ui_items->move_to_longitudal);
 }
 
 void ui_move_to_unlock_moveto(void)
 {
-    struct ui_move_to *umt = ui_move_to;
+    struct machine *m = &machine;
+    struct ui_move_to *umt = m->ui_move_to;
+    if (!umt)
+        return;
     ui_button_show(umt->ui_items->move_to_cross);
     ui_button_show(umt->ui_items->move_to_longitudal);
 }
@@ -277,7 +281,8 @@ static void left_right_arrow_show(struct ui_item *ut)
 
 static void show(void)
 {
-    struct ui_move_to *umt = ui_move_to;
+    struct machine *m = &machine;
+    struct ui_move_to *umt = m->ui_move_to;
     struct moveto_ui_items *ui_items;
     ui_items = kzref_alloc("moveto_ui_items", sizeof *ui_items,
                           moveto_ui_items_destructor);
@@ -356,51 +361,60 @@ static void show(void)
 
 void ui_moveto_blink_left_arrow(void)
 {
-    struct ui_move_to *umt = ui_move_to;
+    struct machine *m = &machine;
+    struct ui_move_to *umt = m->ui_move_to;
     ui_item_blink(umt->ui_items->left_arrow, BLINK_INTERVAL);
 }
 
 void ui_moveto_blink_right_arrow(void)
 {
-    struct ui_move_to *umt = ui_move_to;
+    struct machine *m = &machine;
+    struct ui_move_to *umt = m->ui_move_to;
     ui_item_blink(umt->ui_items->right_arrow, BLINK_INTERVAL);
 }
 
 void ui_moveto_blink_up_arrow(void)
 {
-    struct ui_move_to *umt = ui_move_to;
-    if(!umt->ui_items)
+    struct machine *m = &machine;
+    struct ui_move_to *umt = m->ui_move_to;
+    if(!umt || !umt->ui_items)
         return;
     ui_item_blink(umt->ui_items->up_arrow, BLINK_INTERVAL);
 }
 
 void ui_moveto_blink_down_arrow(void)
 {
-    struct ui_move_to *umt = ui_move_to;
-    if(!umt->ui_items)
+    struct machine *m = &machine;
+    struct ui_move_to *umt = m->ui_move_to;
+    if(!umt || !umt->ui_items)
         return;
     ui_item_blink(umt->ui_items->down_arrow, BLINK_INTERVAL);
 }
 
 void ui_moveto_blink_up_down_arrow(void)
 {
-    struct ui_move_to *umt = ui_move_to;
-    if(!umt->ui_items)
+    struct machine *m = &machine;
+    struct ui_move_to *umt = m->ui_move_to;
+    if(!umt || !umt->ui_items)
         return;
     ui_item_blink(umt->ui_items->up_down_arrow, BLINK_INTERVAL);
 }
 
 void ui_moveto_blink_left_right_arrow(void)
 {
-    struct ui_move_to *umt = ui_move_to;
-    if(!umt->ui_items)
+    struct machine *m = &machine;
+    struct ui_move_to *umt = m->ui_move_to;
+    if(!umt || !umt->ui_items)
         return;
     ui_item_blink(umt->ui_items->left_right_arrow, BLINK_INTERVAL);
 }
 
 void ui_moveto_blink_stop(void)
 {
-    struct ui_move_to *umt = ui_move_to;
+    struct machine *m = &machine;
+    struct ui_move_to *umt = m->ui_move_to;
+    if (!umt)
+        return;
     ui_item_blink_stop(umt->ui_items->up_arrow);
     ui_item_blink_stop(umt->ui_items->down_arrow);
     ui_item_blink_stop(umt->ui_items->left_arrow);
@@ -423,24 +437,26 @@ void ui_move_to_run(void)
     struct ui_move_to *umt;
 
     umt = kzref_alloc("ui_move_to", sizeof *umt, ui_move_to_destructor);
-    ui_move_to = umt;
     umt->disp_touch = m->disp1;
     umt->disp_info = m->disp2;
     umt->move_step = 10;
+    m->ui_move_to = umt;
 
     show();
 
     while (1) {
         yield();
-        ui_button_handler();
+        if(m->is_busy)
+            continue;
 
+        ui_button_handler();
         if (!is_switch_on(m->switch_move_to)) {
-            kmem_deref(&umt);
+            kmem_deref(&m->ui_move_to);
             return;
         }
 
         if (is_switch_on(m->switch_run)) {
-            kmem_deref(&umt);
+            kmem_deref(&m->ui_move_to);
             return;
         }
     }

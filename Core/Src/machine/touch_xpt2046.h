@@ -59,7 +59,7 @@ static inline void touch_isr(struct touch_xpt2046 *touch)
 
     if (touch->is_enabled) {
         if (is_timeout_elapsed(&touch->t)) {
-            timeout_start(&touch->t, 50);
+            timeout_start(&touch->t, 100);
             touch->is_touched = TRUE;
         }
     }

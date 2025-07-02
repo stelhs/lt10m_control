@@ -46,6 +46,7 @@ struct machine {
     struct abs_position *ap;
     struct ui_status ui_stat;
     struct ui_main *ui_main;
+    struct ui_move_to *ui_move_to;
     struct mode_cut mc;
     bool is_busy;
     bool is_disp2_needs_redraw;

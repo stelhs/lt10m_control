@@ -44,6 +44,8 @@ enum progs {
     PROG_THREAD_RIGHT
 };
 
+#define CROSS_RETRACTION 500
+#define LONGITUDAL_RETRACTION 500
 
 struct mode_cut_stat {
     int cross_miss_up;
@@ -80,6 +82,7 @@ struct mode_cut {
     int cut_depth;
     int cut_pass_cnt;
     int cut_pass_rest;
+    int cut_pass_last_cnt;
     bool longitudal_pass_dir;
 };
 

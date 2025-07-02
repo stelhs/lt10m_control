@@ -44,10 +44,8 @@ bool is_touched(struct touch_xpt2046 *touch, int *x, int *y)
     const int number = 32;
     bool is_touched;
 
-    irq_disable();
     is_touched = touch->is_touched;
     touch->is_touched = FALSE;
-    irq_enable();
 
     if (!is_touched)
         return FALSE;
@@ -78,24 +76,32 @@ bool is_touched(struct touch_xpt2046 *touch, int *x, int *y)
         touch->height = 480;
         *x = touch->width * round_y / 4096;
         *y = touch->height - touch->height * round_x / 4096;
+        if (*x < 15 || *x > 305 || *y < 15 || *y > 465)
+            return FALSE;
         break;
     case DISP_ORIENT_PORTRAIT_MIRROR:
         touch->width = 320;
         touch->height = 480;
         *x = touch->width - touch->width * round_y / 4096;
         *y = touch->height * round_x / 4096;
+        if (*x < 15 || *x > 305 || *y < 15 || *y > 465)
+            return FALSE;
         break;
     case DISP_ORIENT_LANDSCAPE:
         touch->width = 480;
         touch->height = 320;
         *x = touch->width * round_x / 4096;
         *y = touch->height * round_y / 4096;
+        if (*x < 15 || *x > 465 || *y < 15 || *y > 305)
+            return FALSE;
         break;
     case DISP_ORIENT_LANDSCAPE_MIRROR:
         touch->width = 480;
         touch->height = 320;
         *x = touch->width - touch->width * round_x / 4096;
         *y = touch->height - touch->height * round_y / 4096;
+        if (*x < 15 || *x > 465 || *y < 15 || *y > 305)
+            return FALSE;
         break;
     }
     return TRUE;
