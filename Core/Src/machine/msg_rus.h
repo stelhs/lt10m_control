@@ -16,6 +16,10 @@ extern char *msg_feed_speed;
 extern char *msg_cut_depth;
 extern char *msg_cross_position;
 extern char *msg_longitudal_position;
+extern char *msg_coordinates;
+extern char *msg_start;
+extern char *msg_end;
+extern char *msg_readiness;
 extern char *msg_cuting_miss;
 extern char *msg_prog_finished;
 

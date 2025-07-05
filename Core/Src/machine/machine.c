@@ -260,6 +260,9 @@ int longitudal_move_to(int target_pos, bool is_accurate)
         if (attempts == 3)
             speed /= 2;
 
+        if (attempts == 4)
+            speed /= 2;
+
         if (attempts >= 5) {
             attempts = 0;
             speed = sm->max_freq;
@@ -470,8 +473,8 @@ static void monitoring_thread(void *priv)
         val = panel_encoder_val();
         if (val) {
             mc_settings->feed_rate += val * 10;
-            if (mc_settings->feed_rate < 100)
-                mc_settings->feed_rate = 100;
+            if (mc_settings->feed_rate < 10)
+                mc_settings->feed_rate = 10;
             if (mc_settings->feed_rate > 10000)
                 mc_settings->feed_rate = 10000;
         }

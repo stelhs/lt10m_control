@@ -26,23 +26,29 @@ abs_position_dev_register(char *name, SPI_HandleTypeDef *hspi,
 
 void abs_position_update(struct abs_position *ap)
 {
-    u8 tx[12];
-    u8 rx[12];
-    memset(tx, 0, 12);
-    u32 *raw_longitudal = (u32 *)rx;
-    u32 *raw_cross = (u32 *)(rx + 4);
-    u32 *crc = (u32 *)(rx + 8);
+    u32 tx[5];
+    u32 rx[5];
+    memset(tx, 0, sizeof tx);
+    u32 *raw_longitudal = rx + 0;
+    u32 *raw_cross = rx + 1;
+    u32 *raw_cross_speed = rx + 2;
+    u32 *raw_longitudal_speed = rx + 3;
+    u32 *crc = rx + 4;
     u32 crc_calc;
     spi_send_cs_activate(ap->dev);
     delay_us(500);
-    spi_send_recv_sync(ap->dev, tx, rx, 12);
-    crc_calc = crc32(rx, 8);
+    spi_send_recv_sync(ap->dev, (u8*)tx, (u8*)rx, sizeof rx);
+    crc_calc = crc32(rx, 4 * 4);
     if (*crc != crc_calc) {
         printf("CRC ERR\r\n");
         return;
     }
     ap->raw.longitudal = (int)*raw_longitudal * LINEAR_LONGITUDAL_RESOLUTION;
     ap->raw.cross = (int)*raw_cross * LINEAR_CROSS_RESOLUTION;
+    ap->longitudal_speed =
+            (*raw_longitudal_speed * LINEAR_LONGITUDAL_RESOLUTION) * 4;
+    ap->cross_speed =
+            (*raw_cross_speed * LINEAR_CROSS_RESOLUTION) * 4 * 2;
 }
 
 int abs_longitudal(struct abs_position *ap, int tool_num)
@@ -104,4 +110,36 @@ void abs_pos_set_tool(struct abs_position *ap, int tool_num)
 int abs_pos_tool(struct abs_position *ap)
 {
     return ap->curr_tool_num;
+}
+
+bool is_longitudal_target_position_left(struct abs_position *ap,
+                                     int curr_position, int target_position)
+{
+    if (ap->is_longitudal_inc_left) {
+        if (target_position - curr_position > 0)
+            return TRUE;
+        else
+            return FALSE;
+    } else { // is_longitudal_inc_right
+        if (target_position - curr_position < 0)
+            return TRUE;
+        else
+            return FALSE;
+    }
+}
+
+bool is_cross_target_position_down(struct abs_position *ap,
+                                   int curr_position, int target_position)
+{
+    if (ap->is_cross_inc_down) {
+        if (target_position - curr_position < 0)
+            return TRUE;
+        else
+            return FALSE;
+    } else { // is_cross_inc_up
+        if (target_position - curr_position > 0)
+            return TRUE;
+        else
+            return FALSE;
+    }
 }

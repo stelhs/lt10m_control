@@ -46,7 +46,6 @@ void spi_send_sleep(struct spi_dev *dev, u8 *data, size_t len)
 		irq_enable();
 		if (is_finished)
 			break;
-//		yield();
 	}
 	gpio_up(dev->cs);
 }

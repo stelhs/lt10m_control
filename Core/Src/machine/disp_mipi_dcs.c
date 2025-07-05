@@ -40,7 +40,7 @@ disp_register(char *name, struct gpio *cs, struct gpio *dc_rs,
 static void cmd_send(struct disp *disp, u8 cmd)
 {
     if (last_disp != disp)
-        sleep(5);
+        delay_us(5000);
     last_disp = disp;
     gpio_down(disp->dc_rs);
     spi_send_sync(disp->spi, &cmd, 1);
@@ -49,7 +49,7 @@ static void cmd_send(struct disp *disp, u8 cmd)
 static void data_send(struct disp *disp, u8 *data, size_t len)
 {
     if (last_disp != disp)
-        sleep(5);
+        delay_us(5000);
     last_disp = disp;
     gpio_up(disp->dc_rs);
     spi_send_sleep(disp->spi, data, len);
@@ -59,7 +59,7 @@ static void data_send(struct disp *disp, u8 *data, size_t len)
 static void data_send_sync(struct disp *disp, u8 *data, size_t len)
 {
     if (last_disp != disp)
-        sleep(5);
+        delay_us(5000);
     last_disp = disp;
     gpio_up(disp->dc_rs);
     spi_send_sync(disp->spi, data, len);

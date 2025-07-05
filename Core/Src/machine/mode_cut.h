@@ -83,6 +83,8 @@ struct mode_cut {
     int cut_pass_cnt;
     int cut_pass_rest;
     int cut_pass_last_cnt;
+    int cross_distance;
+    int longitudal_distance;
     bool longitudal_pass_dir;
 };
 

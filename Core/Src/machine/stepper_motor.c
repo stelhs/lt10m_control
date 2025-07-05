@@ -115,11 +115,15 @@ void stepper_motor_run(struct stepper_motor *sm, int start_freq,
             sm->cnt_htim->Instance->CCER |= TIM_CCER_CC1P;
         else
             sm->cnt_htim->Instance->CCER &= ~TIM_CCER_CC1P;
-        cnt = 1;
+
+        __HAL_TIM_SET_COUNTER(sm->cnt_htim, 0);
+        __HAL_TIM_SET_AUTORELOAD(sm->cnt_htim, 1);
+        sm->target_freq = 300;
+    } else {
+        __HAL_TIM_SET_COUNTER(sm->cnt_htim, 1);
+        __HAL_TIM_SET_AUTORELOAD(sm->cnt_htim, cnt + 1);
     }
 
-    __HAL_TIM_SET_COUNTER(sm->cnt_htim, 0);
-    __HAL_TIM_SET_AUTORELOAD(sm->cnt_htim, cnt);
     HAL_TIM_Base_Start_IT(sm->cnt_htim);
 
     stepper_motor_set_freq(sm, start_freq);
@@ -156,12 +160,10 @@ void stepper_motor_wait_autostop(struct stepper_motor *sm)
 
 int stepper_motor_pos(struct stepper_motor *sm)
 {
-    return (int)(__HAL_TIM_GET_COUNTER(sm->cnt_htim) * sm->resolution);
-}
-
-void stepper_motor_reset_pos(struct stepper_motor *sm)
-{
-    __HAL_TIM_SET_COUNTER(sm->cnt_htim, 0);
+    int val = (int)__HAL_TIM_GET_COUNTER(sm->cnt_htim) * sm->resolution - 1;
+    if (val < 0)
+        return 0;
+    return val;
 }
 
 bool is_stepper_motor_run(struct stepper_motor *sm)

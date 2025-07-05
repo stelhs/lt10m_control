@@ -33,8 +33,6 @@ struct stepper_motor {
     int accel_prescaller_cnt;
     bool last_dir;
     int resolution;
-    int timer_devider_cnt;
-    int speed;
     int prev_position;
     int ref_speed;
     int ref_freq;
@@ -61,7 +59,6 @@ void stepper_motor_run(struct stepper_motor *sm, int start_freq,
 void stepper_motor_stop(struct stepper_motor *sm);
 void stepper_motor_wait_autostop(struct stepper_motor *sm);
 int stepper_motor_pos(struct stepper_motor *sm);
-void stepper_motor_reset_pos(struct stepper_motor *sm);
 bool is_stepper_motor_run(struct stepper_motor *sm);
 
 // IRQ context
@@ -73,15 +70,6 @@ static inline void stepper_motor_stop_isr(struct stepper_motor *sm)
 // IRQ context
 static inline void stepper_motor_timer_isr(struct stepper_motor *sm)
 {
-    int pos;
-    sm->timer_devider_cnt++;
-    if (sm->timer_devider_cnt > 1000) {
-        sm->timer_devider_cnt = 0;
-        pos = stepper_motor_pos(sm);
-        sm->speed = pos - sm->prev_position;
-        sm->prev_position = pos;
-    }
-
     if (!sm->is_run)
         return;
 

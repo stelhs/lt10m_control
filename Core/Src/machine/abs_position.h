@@ -25,6 +25,8 @@ struct abs_position {
     struct xy raw;
     struct xy offset_tools[4];
     int curr_tool_num;
+    int longitudal_speed;
+    int cross_speed;
 };
 struct abs_position *
 abs_position_dev_register(char *name, SPI_HandleTypeDef *hspi,
@@ -38,5 +40,8 @@ void abs_cross_set(struct abs_position *ap, int tool_num, int val);
 void abs_longitudal_set(struct abs_position *ap, int tool_num, int val);
 void abs_pos_set_tool(struct abs_position *ap, int tool_num);
 int abs_pos_tool(struct abs_position *ap);
-
+bool is_longitudal_target_position_left(struct abs_position *ap,
+                                     int curr_position, int target_position);
+bool is_cross_target_position_down(struct abs_position *ap,
+                                   int curr_position, int target_position);
 #endif /* SRC_MACHINE_ABS_POSITION_H_ */

@@ -96,8 +96,8 @@ static void ui_cross_speed_icon_show(struct ui_item *ut)
 static void ui_cross_speed_getter(struct ui_item *ut, char *str, size_t size)
 {
     struct machine *m = &machine;
-    struct stepper_motor *sm = m->sm_cross_feed;
-    snprintf(str, size, "%.3f", (float)sm->speed / 1000);
+
+    snprintf(str, size, "%.3f", (float)m->ap->cross_speed / 1000);
 }
 
 static void ui_longitudal_speed_icon_show(struct ui_item *ut)
@@ -112,8 +112,7 @@ static void ui_longitudal_speed_getter(struct ui_item *ut,
                                        char *str, size_t size)
 {
     struct machine *m = &machine;
-    struct stepper_motor *sm = m->sm_longitudial_feed;
-    snprintf(str, size, "%.3f", (float)sm->speed / 1000);
+    snprintf(str, size, "%.3f", (float)m->ap->longitudal_speed / 1000);
 }
 
 static void ui_feed_rate_icon_show(struct ui_item *ut)

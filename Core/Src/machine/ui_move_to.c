@@ -413,7 +413,7 @@ void ui_moveto_blink_stop(void)
 {
     struct machine *m = &machine;
     struct ui_move_to *umt = m->ui_move_to;
-    if (!umt)
+    if (!umt || !umt->ui_items)
         return;
     ui_item_blink_stop(umt->ui_items->up_arrow);
     ui_item_blink_stop(umt->ui_items->down_arrow);
