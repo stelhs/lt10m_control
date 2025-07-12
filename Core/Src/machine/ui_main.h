@@ -20,10 +20,12 @@ struct ui_main {
     struct disp *disp;
     struct ui_main_items *ui_items;
     struct mode_cut *mc;
+    struct mode_thread *mt;
 };
 
 void ui_main_start(void);
 void ui_message_show(char *msg, enum msg_type mt);
 void ui_message_hide(void);
+char *interval_to_str(int time_sec);
 
 #endif /* UI_MAIN_H_ */

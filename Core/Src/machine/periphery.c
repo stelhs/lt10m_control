@@ -66,6 +66,7 @@ void beep_blink_start(int beep_duration, int period, int count)
             .cnt = 0,
             .target = count
     };
+    gpio_up(&gpio_speaker);
     beep_blinker = set_periodic("beep_blinker", period, beep_blinker_cb, &bb,
                                 sizeof (struct beep_blinker));
 }
@@ -79,8 +80,75 @@ void beep_blink_stop(void)
 static void panel_encoder_init(void)
 {
     __HAL_TIM_SET_COUNTER(&htim4, 0);
+    __HAL_TIM_CLEAR_FLAG(&htim4, TIM_FLAG_UPDATE);
     HAL_TIM_Base_Start_IT(&htim4);
 }
+
+static void spindle_encoder_init(void)
+{
+    __HAL_TIM_SET_COUNTER(&htim8, 0);
+    __HAL_TIM_CLEAR_FLAG(&htim8, TIM_FLAG_UPDATE);
+    HAL_TIM_Base_Start_IT(&htim8);
+}
+
+// In points
+u32 spindle_raw_angle(void)
+{
+    return __HAL_TIM_GET_COUNTER(&htim8) % SPINDLE_ENC_RESOLUTION;
+}
+
+// In millidegrees
+u32 spindle_angle(void)
+{
+    return ((__HAL_TIM_GET_COUNTER(&htim8) % SPINDLE_ENC_RESOLUTION) * 1000) *
+                    360 / SPINDLE_ENC_RESOLUTION;
+}
+
+
+// IRQ Context
+static volatile u32 spindle_speed_raw = 0;
+static volatile u16 spindle_cnt = 0;
+static void spindle_speed_irq(void)
+{
+    static int prescaller = 0;
+    u16 cnt;
+    u16 val;
+    bool dir;
+
+    prescaller++;
+    if (prescaller < 500)
+        return;
+    prescaller = 0;
+
+    dir = (htim8.Instance->CR1 & TIM_CR1_DIR) ? TRUE : FALSE;
+    cnt = (u16)__HAL_TIM_GET_COUNTER(&htim8);
+
+    if (!dir) {
+        val = cnt - spindle_cnt;
+        if (cnt < spindle_cnt)
+            val -= 0xFFFF - SPINDLE_ENC_RESOLUTION * 21; // the rest of 65536 - 3000*21
+    } else {
+        val = spindle_cnt - cnt;
+        if (cnt > spindle_cnt)
+            val -= 0xFFFF - SPINDLE_ENC_RESOLUTION * 21; // the rest of 65536 - 3000*21
+    }
+    spindle_cnt = cnt;
+    spindle_speed_raw = val;
+}
+
+
+// rotary per minute
+u32 spindle_speed(void)
+{
+    u32 val;
+    u32 ret_val;
+    irq_disable();
+    val = spindle_speed_raw;
+    irq_enable();
+    ret_val = ((val * 2 * 60 * 1000) / SPINDLE_ENC_RESOLUTION);
+    return ret_val;
+}
+
 
 int panel_encoder_val(void)
 {
@@ -111,6 +179,8 @@ void periphery_init(void)
                                   BUTTON_DOWN_Pin, 0, NULL, NULL);
     m->btn_enc = button_register("btn_encoder", PANEL_ENC_BUTTON_GPIO_Port,
                                  PANEL_ENC_BUTTON_Pin, 0, NULL, NULL);
+    m->btn_ok = button_register("btn_ok", BUTTON_OK_GPIO_Port,
+                                BUTTON_OK_Pin, 0, NULL, NULL);
     m->switch_run = button_register("switch_run", SWITCH_RUN_GPIO_Port,
                                     SWITCH_RUN_Pin, 0, NULL, NULL);
     m->switch_touch_lock = button_register("switch_touch_lock",
@@ -160,7 +230,7 @@ void periphery_init(void)
 
     m->sm_cross_feed =
             stepper_motor_register("cross_feed_motor",
-                                   &htim5, &htim3, TIM_CHANNEL_1,
+                                   &htim5, &htim3, TIM_CHANNEL_3,
                                    &gpio_cross_feed_dir,
                                    &gpio_cross_feed_en,
                                    1000000, 18, 10000,
@@ -171,6 +241,8 @@ void periphery_init(void)
                                            &hspi2, &gpio_abs_pos_cs);
 
     panel_encoder_init();
+    spindle_encoder_init();
+
 //    HAL_TIM_Base_Start_IT(&htim12);
     //HAL_TIM_IC_Start(&htim12, TIM_CHANNEL_1); // Spindle Encoder
 }
@@ -193,6 +265,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     struct machine *m = &machine;
 
     if (htim == &htim6) { // Period = 1ms (1000Hz)
+        spindle_speed_irq();
+
         if (m->sm_longitudial_feed)
             stepper_motor_timer_isr(m->sm_longitudial_feed);
         if (m->sm_cross_feed)
@@ -214,6 +288,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         stepper_motor_stop_isr(m->sm_cross_feed);
         return;
     }
+
+/*    if (htim == &htim8) { // Spendle encoder 360 degree interrupt
+        printf("360\r\n");
+        return;
+    }*/
 }
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {

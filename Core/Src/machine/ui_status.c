@@ -10,6 +10,7 @@
 #include "abs_position.h"
 #include "images.h"
 #include "machine.h"
+#include "periphery.h"
 
 
 static void ui_tool_num_show(struct ui_item *ut)
@@ -75,14 +76,33 @@ static void ui_longitudal_pos_getter(struct ui_item *ut, char *str, size_t size)
 static void ui_spindle_icon_show(struct ui_item *ut)
 {
     struct img *img;
-    img = img_spindle_speed();
+    if (spindle_speed() < 10000)
+        img = img_spindle_angle();
+    else
+        img = img_spindle_speed();
     disp_fill_img(ut->disp, ut->x, ut->y, img);
     kmem_deref(&img);
 }
 
 static void ui_spindle_speed_getter(struct ui_item *ut, char *str, size_t size)
 {
-    snprintf(str, size, "%d", 0); // TODO
+    struct machine *m = &machine;
+    struct ui_status *us = &m->ui_stat;
+
+    u32 val = spindle_speed();
+    static u32 last_mode = 0;
+    if (val < 10000) {
+        val = spindle_angle();
+        snprintf(str, size, "%.1f", (float)val / 1000);
+        if (!last_mode)
+            ui_item_show(us->spindle_icon);
+        last_mode = 1;
+        return;
+    }
+    snprintf(str, size, "%lu", val / 1000);
+    if (last_mode)
+        ui_item_show(us->spindle_icon);
+    last_mode = 0;
 }
 
 static void ui_cross_speed_icon_show(struct ui_item *ut)
@@ -132,6 +152,25 @@ static void ui_feed_rate_getter(struct ui_item *ut,
     snprintf(str, size, "%.3f", (float)mc_settings->feed_rate / 1000);
 }
 
+static void ui_cut_speed_icon_show(struct ui_item *ut)
+{
+    struct img *img;
+    img = img_cut_speed();
+    disp_fill_img(ut->disp, ut->x, ut->y, img);
+    kmem_deref(&img);
+}
+
+static void ui_cut_speed_getter(struct ui_item *ut,
+                                char *str, size_t size)
+{
+    struct machine *m = &machine;
+    int diameter = abs_cross_curr_tool(m->ap) * 2;
+    int circumference = (3141 * diameter) / 1000; // 3141 это Pi 3.141*1000
+    int rpm = spindle_speed() / 1000;
+    int val = (circumference * rpm) / 1000;
+    snprintf(str, size, "%.1f", (float)val / 1000);
+}
+
 void ui_status_init(void)
 {
     struct machine *m = &machine;
@@ -162,8 +201,8 @@ void ui_status_init(void)
             .fontsize = 3,
     };
 
-    disp_fill(disp, 0,0, 480, 43, BLACK); // Clear status area
-    disp_fill(disp, 2, 74, 480 - 4, 3, GREEN); // Green line
+    disp_fill(disp, 0,0, 480, 111, BLACK); // Clear status area
+    disp_fill(disp, 2, 111, 480 - 4, 3, GREEN); // Green line
 
     us->cross_pos_dir =
             ui_item_register("ui_cross_pos_dir", disp,
@@ -187,12 +226,12 @@ void ui_status_init(void)
 
     us->spindle_icon =
             ui_item_register("ui_spindle_icon", disp,
-                                 359, 4, 26, 29,
+                                 358, 4, 26, 29,
                                  ui_spindle_icon_show, NULL, NULL, 0);
 
     us->spindle_speed =
             ui_item_text_register("ui_spindle_speed", disp,
-                                  395, 9, 4, &spindle_ts,
+                                  390, 9, 5, &spindle_ts,
                                   ui_spindle_speed_getter, NULL, NULL);
 
     us->tool_num =
@@ -229,5 +268,15 @@ void ui_status_init(void)
             ui_item_text_register("ui_feed_rate", disp,
                                   372, 48, 6, &feed_rate_ts,
                                   ui_feed_rate_getter, NULL, NULL);
+
+    us->cut_speed_icon =
+            ui_item_register("ui_cut_speed_icon", disp,
+                                 300, 74, 33, 36,
+                                 ui_cut_speed_icon_show, NULL, NULL, 0);
+
+    us->cut_speed =
+            ui_item_text_register("ui_cut_speed", disp,
+                                  338, 74, 7, &feed_rate_ts,
+                                  ui_cut_speed_getter, NULL, NULL);
 }
 

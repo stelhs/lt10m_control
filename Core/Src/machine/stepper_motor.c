@@ -91,6 +91,12 @@ void stepper_motor_run(struct stepper_motor *sm, int start_freq,
     if (target_freq > sm->max_freq)
         panic("attempt to set frequency higher than allowed");
 
+    if (start_freq > target_freq)
+        start_freq = target_freq;
+
+    if (!distance_um)
+        return;
+
     sm->start_freq = start_freq;
     sm->target_freq = target_freq;
     sm->freq = start_freq;
@@ -124,6 +130,7 @@ void stepper_motor_run(struct stepper_motor *sm, int start_freq,
         __HAL_TIM_SET_AUTORELOAD(sm->cnt_htim, cnt + 1);
     }
 
+    stepper_motor_enable(sm);
     HAL_TIM_Base_Start_IT(sm->cnt_htim);
 
     stepper_motor_set_freq(sm, start_freq);
@@ -142,7 +149,6 @@ void stepper_motor_stop(struct stepper_motor *sm)
     HAL_TIM_Base_Stop_IT(sm->cnt_htim);
     sm->is_run = FALSE;
     gpio_down(sm->dir);
-    printf("sm %s stopped\r\n", sm->name);
 }
 
 void stepper_motor_set_target_freq(struct stepper_motor *sm, int target_freq)

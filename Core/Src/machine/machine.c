@@ -7,13 +7,15 @@
 #include "machine.h"
 #include "abs_position.h"
 #include "disp_mipi_dcs.h"
-#include "mode_idle.h"
 #include "touch_xpt2046.h"
 #include "periphery.h"
 #include "ui_main.h"
 #include "ui_move_to.h"
-#include "mode_idle.h"
 #include "msg_rus.h"
+#include "mode_idle.h"
+#include "mode_cut.h"
+#include "mode_thread.h"
+
 
 struct machine machine;
 extern UART_HandleTypeDef huart1;
@@ -101,15 +103,14 @@ void key_k(void *priv)
 
 void key_l(void *priv)
 {
-    struct machine *m = (struct machine *)priv;
+//    struct machine *m = (struct machine *)priv;
     printf("key_l\r\n");
 
-    abs_position_update(m->ap);
-    return;
-    printf("reset\r\n");
-    __HAL_TIM_SET_COUNTER(&htim12, 0);
-    __HAL_TIM_SET_AUTORELOAD(&htim12, 5000);
-    HAL_TIM_Base_Start_IT(&htim12);
+    int val = (int)__HAL_TIM_GET_COUNTER(&htim8);
+    printf("val = %d\r\n", val);
+    __HAL_TIM_SET_COUNTER(&htim8, 0);
+//    __HAL_TIM_SET_AUTORELOAD(&htim8, 5000);
+//    HAL_TIM_Base_Start_IT(&htim12);
 
 }
 
@@ -234,14 +235,14 @@ int cross_move_to(int target_pos, bool is_accurate)
     return -1;
 }
 
-int longitudal_move_to(int target_pos, bool is_accurate)
+int longitudal_move_to(int target_pos, bool is_accurate, int max_freq)
 {
     struct machine *m = &machine;
     struct stepper_motor *sm = m->sm_longitudial_feed;
 
     int distance;
     bool dir;
-    int speed = sm->max_freq;
+    int freq = max_freq ? max_freq : sm->max_freq;
     int attempts = 0;
     m->is_busy = TRUE;
 
@@ -255,20 +256,20 @@ int longitudal_move_to(int target_pos, bool is_accurate)
         }
 
         if (attempts == 2)
-            speed /= 2;
+            freq /= 2;
 
         if (attempts == 3)
-            speed /= 2;
+            freq /= 2;
 
         if (attempts == 4)
-            speed /= 2;
+            freq /= 2;
 
         if (attempts >= 5) {
             attempts = 0;
-            speed = sm->max_freq;
+            freq = max_freq;
         }
 
-        stepper_motor_run(sm, 1000, speed, dir, distance);
+        stepper_motor_run(sm, 500, freq, dir, distance);
         while (is_stepper_motor_run(sm)) {
             yield();
             if (is_button_clicked(m->btn_enc)) {
@@ -298,7 +299,7 @@ void sm_normal_acceleration_changer(struct stepper_motor *sm, bool is_init)
 
     if (is_init) {
         // Length of acceleration section
-        sm->start_acceleration = 5;
+        sm->start_acceleration = 10;
         u32 accel_distance = (((sm->target_freq - sm->start_freq) *
                                (sm->target_freq - sm->start_freq))) /
                                       (sm->start_acceleration * 1000);
@@ -447,6 +448,7 @@ void buttons_reset(void)
     button_reset(m->btn_left);
     button_reset(m->btn_right);
     button_reset(m->btn_enc);
+    button_reset(m->btn_ok);
 }
 
 
@@ -481,6 +483,19 @@ static void monitoring_thread(void *priv)
     }
 }
 
+static void program_run(void)
+{
+    struct machine *m = &machine;
+
+    switch (m->prog) {
+    case PROG_THREAD_LEFT:
+    case PROG_THREAD_RIGHT:
+        mode_thread_run();
+        break;
+    default:
+        mode_cut_run();
+    }
+}
 
 static void main_thread(void *priv)
 {
@@ -488,7 +503,7 @@ static void main_thread(void *priv)
     struct mode_cut *mc = &m->mc;
     struct mode_cut_settings *mc_settings = &mc->settings;
 
-    mc_settings->feed_rate = 1000;
+    mc_settings->feed_rate = 50;
     mc_settings->longitudal_distance = 50 * 1000;
     mc_settings->target_diameter = 42 * 1000;
     mc_settings->cross_distance = 21 * 1000;
@@ -534,10 +549,10 @@ static void main_thread(void *priv)
                     }
                     prev_val = val;*/
 
-        if (!is_button_held_down(m->switch_run))
-            mode_idle_run();
+        if (is_switch_on(m->switch_run))
+            program_run();
         else
-            mode_cut_run();
+            mode_idle_run();
     }
 }
 

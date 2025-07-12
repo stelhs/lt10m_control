@@ -38,14 +38,14 @@ static void move_buttons_move_to_handler(void)
     if (is_button_clicked(m->btn_left)) {
         pos = longitudal_left_new_position(move_step);
         ui_moveto_blink_left_arrow();
-        longitudal_move_to(pos, TRUE);
+        longitudal_move_to(pos, TRUE, 0);
         ui_moveto_blink_stop();
     }
 
     if (is_button_clicked(m->btn_right)) {
         pos = longitudal_right_new_position(move_step);
         ui_moveto_blink_right_arrow();
-        longitudal_move_to(pos, TRUE);
+        longitudal_move_to(pos, TRUE, 0);
         ui_moveto_blink_stop();
     }
 }
@@ -59,9 +59,9 @@ sm_cross_high_acceleration_changer(struct stepper_motor *sm, bool is_init)
         if (sm->freq < 1000)
             freq += 10;
         else if (sm->freq < 2000)
-            freq += 20;
+            freq += 15;
         else if (sm->freq < 5000)
-            freq += 30;
+            freq += 20;
         else if (sm->freq < 8000)
             freq += 10;
         else if (sm->freq < 10000)
@@ -77,7 +77,7 @@ sm_cross_high_acceleration_changer(struct stepper_motor *sm, bool is_init)
 }
 
 // IRQ context
-static void
+void
 sm_longitudial_high_acceleration_changer(struct stepper_motor *sm, bool is_init)
 {
     int freq = sm->freq;
@@ -174,8 +174,8 @@ static void move_button_low_speed_handler(void)
 {
     struct machine *m = &machine;
 
-    int cross_freq = potentiometer_val(m->pm_move_speed) * 5;
-    int longitudal_freq = potentiometer_val(m->pm_move_speed) * 10;
+    int cross_freq = 100;//potentiometer_val(m->pm_move_speed) * 5;
+    int longitudal_freq = 200;//potentiometer_val(m->pm_move_speed) * 10;
     if (cross_freq < m->sm_cross_feed->min_freq)
         cross_freq = m->sm_cross_feed->min_freq;
     if (longitudal_freq < m->sm_longitudial_feed->min_freq)
@@ -219,7 +219,7 @@ static void move_button_low_speed_handler(void)
         if (is_button_held_down(m->btn_left)) {
             if (m->sm_longitudial_feed->last_dir != MOVE_LEFT) {
                 int pos = longitudal_left_new_position(LINEAR_LONGITUDAL_RESOLUTION);
-                longitudal_move_to(pos, FALSE);
+                longitudal_move_to(pos, FALSE, 0);
                 buttons_reset();
             }
             stepper_motor_run(m->sm_longitudial_feed,
@@ -234,7 +234,7 @@ static void move_button_low_speed_handler(void)
         if (is_button_held_down(m->btn_right)) {
             if (m->sm_longitudial_feed->last_dir != MOVE_RIGHT) {
                 int pos = longitudal_right_new_position(LINEAR_LONGITUDAL_RESOLUTION);
-                longitudal_move_to(pos, FALSE);
+                longitudal_move_to(pos, FALSE, 0);
                 buttons_reset();
             }
             stepper_motor_run(m->sm_longitudial_feed,
@@ -292,7 +292,7 @@ void mode_idle_run(void)
         case MACHINE_MSG_MOVETO_LONGITUDAL:
             position = (int)msg;
             ui_moveto_blink_left_right_arrow();
-            longitudal_move_to(position, TRUE);
+            longitudal_move_to(position, TRUE, 0);
             buttons_reset();
             ui_moveto_blink_stop();
             ui_move_to_unlock_moveto();

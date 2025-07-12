@@ -21,6 +21,7 @@
 #include "ui_set_xy.h"
 #include "ui_move_to.h"
 #include "abs_position.h"
+#include "mode_thread.h"
 
 
 struct ui_main_items {
@@ -33,7 +34,31 @@ struct ui_main_items {
     struct ui_button *sel_cross_or_target_diameter;
     struct ui_button *sel_cross_or_target_diameter_value;
     struct ui_button *sel_cut_depth;
+    struct ui_button *sel_thread_type;
+    struct ui_button *sel_thread_size;
+    struct ui_button *sel_thread_arrow;
+    struct ui_item *ui_item_thread_cut_depth;
 };
+
+char *interval_to_str(int time_sec)
+{
+    int sec;
+    int min;
+    int hour;
+
+    if (time_sec < 60)
+        return kref_sprintf("%ds", time_sec);
+
+    if (time_sec < 60*60) {
+        min = time_sec / 60;
+        sec = time_sec - min * 60;
+        return kref_sprintf("%dm,%ds", min, sec);
+    }
+    hour = time_sec / 3600;
+    min = (time_sec % 3600) / 60;
+    sec = time_sec - hour * 3600 - min * 60;
+    return kref_sprintf("%dh,%dm,%ds", hour, min, sec);
+}
 
 static void show(struct ui_main *um);
 static void hide(struct ui_main *um)
@@ -44,13 +69,12 @@ static void hide(struct ui_main *um)
 
 static void key_prog_sel_show(struct ui_button *ub)
 {
+    struct machine *m = &machine;
     struct ui_item *ut = ub->ut;
-    struct ui_main *um = (struct ui_main *)ub->priv;
-    struct mode_cut *mc = um->mc;
     struct img *img;
     disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 1, GRAY);
 
-    img = img_prog_by_num(mc->prog);
+    img = img_prog_by_num(m->prog);
     disp_fill_img(ut->disp, ut->x + 2, ut->y + 3, img);
     kmem_deref(&img);
 }
@@ -69,13 +93,14 @@ static void key_set_xy_show(struct ui_button *ub)
 
 static void key_sel_feed_return_longitudal_show(struct ui_button *ub)
 {
+    struct machine *m = &machine;
     struct ui_item *ut = ub->ut;
     struct ui_main *um = (struct ui_main *)ub->priv;
     struct mode_cut *mc = um->mc;
     struct mode_cut_settings *mc_settings = &mc->settings;
     struct img *img = NULL;
 
-    switch (mc->prog) {
+    switch (m->prog) {
     case PROG_FEED_LEFT:
     case PROG_FEED_LEFT_UP:
     case PROG_FEED_LEFT_DOWN: {
@@ -129,13 +154,14 @@ static void key_sel_feed_return_longitudal_show(struct ui_button *ub)
 
 static void key_sel_feed_return_cross_show(struct ui_button *ub)
 {
+    struct machine *m = &machine;
     struct ui_item *ut = ub->ut;
     struct ui_main *um = (struct ui_main *)ub->priv;
     struct mode_cut *mc = um->mc;
     struct mode_cut_settings *mc_settings = &mc->settings;
     struct img *img = NULL;
 
-    switch (mc->prog) {
+    switch (m->prog) {
     case PROG_FEED_UP:
     case PROG_FEED_UP_LEFT:
     case PROG_FEED_UP_RIGHT: {
@@ -189,11 +215,10 @@ static void key_sel_feed_return_cross_show(struct ui_button *ub)
 
 void ui_item_longitudal_arrow_show(struct ui_item *ut)
 {
-    struct ui_main *um = (struct ui_main *)ut->priv;
-    struct mode_cut *mc = um->mc;
+    struct machine *m = &machine;
     struct img *img = NULL;
 
-    switch (mc->prog) {
+    switch (m->prog) {
     case PROG_FEED_UP_LEFT:
     case PROG_FEED_DOWN_LEFT:
         img = img_feed_arrow_left(); break;
@@ -211,6 +236,237 @@ void ui_item_longitudal_arrow_show(struct ui_item *ut)
     }
 }
 
+void key_thread_arrow_show(struct ui_button *ub)
+{
+    struct machine *m = &machine;
+    struct ui_item *ut = ub->ut;
+    struct ui_main *um = (struct ui_main *)ub->priv;
+    struct mode_thread *mt = um->mt;
+    struct mode_thread_settings *mt_settings = &mt->settings;
+
+    struct img *img = NULL;
+
+    switch (m->prog) {
+    case PROG_THREAD_LEFT:
+        if (mt_settings->is_internal)
+            img = img_feed_arrow_left_down2();
+        else
+            img = img_feed_arrow_left_up2();
+        break;
+
+    case PROG_THREAD_RIGHT:
+        if (mt_settings->is_internal)
+            img = img_feed_arrow_right_down2();
+        else
+            img = img_feed_arrow_right_up2();
+        break;
+    default:
+        break;
+    }
+
+    disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 1, DARK_GRAY);
+    if (img) {
+        disp_fill_img(ut->disp, ut->x + 5, ut->y + 10, img);
+        kmem_deref(&img);
+    }
+}
+
+static void key_thread_length_show(struct ui_button *ub)
+{
+    struct ui_item *ut = ub->ut;
+    struct ui_main *um = (struct ui_main *)ub->priv;
+    struct mode_thread *mt = um->mt;
+    struct mode_thread_settings *mt_settings = &mt->settings;
+
+    char *string;
+    static struct text_style ts = {
+            .bg_color = BLACK,
+            .color = GREEN,
+            .font = font_rus,
+            .fontsize = 3
+    };
+
+    disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 1, DARK_GRAY);
+    string = kref_sprintf("%.3f", (float)mt_settings->length / 1000);
+    string[8] = 0;
+    disp_text(ut->disp, string, ut->x + 5, ut->y + 15, &ts);
+    kmem_deref(&string);
+}
+
+static void onclick_thread_length(void *priv)
+{
+    struct ui_main *um = (struct ui_main *)priv;
+    struct mode_thread *mt = um->mt;
+    struct mode_thread_settings *mt_settings = &mt->settings;
+    hide(um);
+    ui_keyboard_run("thread length:", &mt_settings->length,
+                    LINEAR_LONGITUDAL_RESOLUTION, 1500 * 1000,
+                    LINEAR_LONGITUDAL_RESOLUTION);
+    show(um);
+}
+
+static void key_thread_size_show(struct ui_button *ub)
+{
+    struct ui_item *ut = ub->ut;
+    struct ui_main *um = (struct ui_main *)ub->priv;
+    struct mode_thread *mt = um->mt;
+    struct mode_thread_settings *mt_settings = &mt->settings;
+
+    char *string;
+    static struct text_style ts = {
+            .bg_color = BLACK,
+            .color = GREEN,
+            .font = font_rus,
+            .fontsize = 3
+    };
+
+    disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 1, DARK_GRAY);
+    string = kref_sprintf("%.3f", (float)mt_settings->thread_size / 1000);
+    string[8] = 0;
+    disp_text(ut->disp, string, ut->x + 5, ut->y + 15, &ts);
+    kmem_deref(&string);
+}
+
+static void onclick_key_thread_size(void *priv)
+{
+    struct ui_main *um = (struct ui_main *)priv;
+    struct mode_thread *mt = um->mt;
+    struct mode_thread_settings *mt_settings = &mt->settings;
+    hide(um);
+    ui_keyboard_run("thread size:", &mt_settings->thread_size,
+                    LINEAR_LONGITUDAL_RESOLUTION, 1500 * 1000,
+                    LINEAR_LONGITUDAL_RESOLUTION);
+    show(um);
+}
+
+void ui_item_thread_cut_depth_show(struct ui_item *ut)
+{
+    struct img *img = NULL;
+    img = img_thread_cut_depth();
+    disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 1, DARK_GRAY);
+    if (img) {
+        disp_fill_img(ut->disp, ut->x + 5, ut->y + 10, img);
+        kmem_deref(&img);
+    }
+}
+
+static void key_thread_cut_depth_show(struct ui_button *ub)
+{
+    struct ui_item *ut = ub->ut;
+    struct ui_main *um = (struct ui_main *)ub->priv;
+    struct mode_thread *mt = um->mt;
+    struct mode_thread_settings *mt_settings = &mt->settings;
+
+    char *string;
+    static struct text_style ts = {
+            .bg_color = BLACK,
+            .color = GREEN,
+            .font = font_rus,
+            .fontsize = 3
+    };
+
+    disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 1, DARK_GRAY);
+    string = kref_sprintf("%.3f", (float)mt_settings->cut_depth / 1000);
+    string[8] = 0;
+    disp_text(ut->disp, string, ut->x + 5, ut->y + 15, &ts);
+    kmem_deref(&string);
+}
+
+static void onclick_key_thread_cut_depth(void *priv)
+{
+    struct ui_main *um = (struct ui_main *)priv;
+    struct mode_thread *mt = um->mt;
+    struct mode_thread_settings *mt_settings = &mt->settings;
+    hide(um);
+    ui_keyboard_run("thread size:", &mt_settings->cut_depth,
+                    LINEAR_LONGITUDAL_RESOLUTION, 5000,
+                    LINEAR_LONGITUDAL_RESOLUTION);
+    show(um);
+}
+
+
+static void key_thread_repeate_show(struct ui_button *ub)
+{
+    struct machine *m = &machine;
+    struct ui_item *ut = ub->ut;
+    struct ui_main *um = (struct ui_main *)ub->priv;
+    struct mode_thread *mt = um->mt;
+    struct mode_thread_settings *mt_settings = &mt->settings;
+
+    struct img *img = NULL;
+    char *string;
+    static struct text_style ts = {
+            .bg_color = BLACK,
+            .color = GREEN,
+            .font = font_rus,
+            .fontsize = 3
+    };
+
+    switch (m->prog) {
+    case PROG_THREAD_LEFT:
+        img = img_feed_many_arrows_left(); break;
+    case PROG_THREAD_RIGHT:
+        img = img_feed_many_arrows_right(); break;
+    default:
+        break;
+    }
+
+    disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 1, DARK_GRAY);
+    if (img) {
+        disp_fill_img(ut->disp, ut->x + 7, ut->y + 10, img);
+        kmem_deref(&img);
+    }
+
+    string = kref_sprintf("%d", mt_settings->last_repeate_number);
+    disp_text(ut->disp, string, ut->x + 45, ut->y + 15, &ts);
+    kmem_deref(&string);
+}
+
+static void onclick_thread_repeate(void *priv)
+{
+    struct ui_main *um = (struct ui_main *)priv;
+    struct mode_thread *mt = um->mt;
+    struct mode_thread_settings *mt_settings = &mt->settings;
+
+    mt_settings->last_repeate_number ++;
+    if (mt_settings->last_repeate_number >= 5)
+        mt_settings->last_repeate_number = 0;
+    ui_button_show(um->ui_items->sel_feed_repeate);
+}
+
+static void key_thread_type_show(struct ui_button *ub)
+{
+    struct ui_item *ut = ub->ut;
+    struct ui_main *um = (struct ui_main *)ub->priv;
+    struct mode_thread *mt = um->mt;
+    struct mode_thread_settings *mt_settings = &mt->settings;
+
+    struct img *img = NULL;
+
+    if (mt_settings->is_type_inch)
+        img = img_thread_inch();
+    else
+        img = img_thread_mm();
+
+    disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 1, DARK_GRAY);
+    if (img) {
+        disp_fill_img(ut->disp, ut->x + 7, ut->y + 10, img);
+        kmem_deref(&img);
+    }
+}
+
+static void onclick_key_thread_type(void *priv)
+{
+    struct ui_main *um = (struct ui_main *)priv;
+    struct mode_thread *mt = um->mt;
+    struct mode_thread_settings *mt_settings = &mt->settings;
+
+    if (mt_settings->is_type_inch)
+        mt_settings->is_type_inch = FALSE;
+    else
+        mt_settings->is_type_inch = TRUE;
+    ui_button_show(um->ui_items->sel_thread_type);
+}
 
 static void key_longitudal_feed_limit_show(struct ui_button *ub)
 {
@@ -236,6 +492,7 @@ static void key_longitudal_feed_limit_show(struct ui_button *ub)
 
 static void key_feed_repeate_show(struct ui_button *ub)
 {
+    struct machine *m = &machine;
     struct ui_item *ut = ub->ut;
     struct ui_main *um = (struct ui_main *)ub->priv;
     struct mode_cut *mc = um->mc;
@@ -250,7 +507,7 @@ static void key_feed_repeate_show(struct ui_button *ub)
             .fontsize = 3
     };
 
-    switch (mc->prog) {
+    switch (m->prog) {
     case PROG_FEED_LEFT:
     case PROG_FEED_LEFT_UP:
     case PROG_FEED_LEFT_DOWN:
@@ -280,6 +537,7 @@ static void key_feed_repeate_show(struct ui_button *ub)
 
 static void key_cross_or_diameter_show(struct ui_button *ub)
 {
+    struct machine *m = &machine;
     struct ui_item *ut = ub->ut;
     struct ui_main *um = (struct ui_main *)ub->priv;
     struct mode_cut *mc = um->mc;
@@ -289,7 +547,7 @@ static void key_cross_or_diameter_show(struct ui_button *ub)
     disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 1, DARK_GRAY);
 
     if (mc_settings->cross_distance) {
-        switch (mc->prog) {
+        switch (m->prog) {
         case PROG_FEED_LEFT_UP:
         case PROG_FEED_RIGHT_UP:
         case PROG_FEED_UP_LEFT:
@@ -371,12 +629,11 @@ static void on_click_prog_sel(void *priv)
 {
     struct machine *m = &machine;
     struct ui_main *um = (struct ui_main *)priv;
-    struct mode_cut *mc = um->mc;
     if (is_switch_on(m->switch_run))
         return;
 
     hide(um);
-    mc->prog = ui_sel_prog_run();
+    m->prog = ui_sel_prog_run();
     mode_cut_settings_validate();
     show(um);
 }
@@ -395,12 +652,13 @@ static void on_click_set_xy(void *priv)
 
 static void onclick_feed_return_longitudal(void *priv)
 {
+    struct machine *m = &machine;
     struct ui_main *um = (struct ui_main *)priv;
     struct mode_cut *mc = um->mc;
     struct mode_cut_settings *mc_settings = &mc->settings;
 
-    if (mc->prog != PROG_FEED_LEFT &&
-            mc->prog != PROG_FEED_RIGHT) {
+    if (m->prog != PROG_FEED_LEFT &&
+            m->prog != PROG_FEED_RIGHT) {
         return;
     }
 
@@ -417,14 +675,36 @@ static void onclick_feed_return_longitudal(void *priv)
     ui_button_show(um->ui_items->sel_feed_repeate);
 }
 
+static void onclick_key_thread_arrow(void *priv)
+{
+    struct machine *m = &machine;
+    struct ui_main *um = (struct ui_main *)priv;
+    struct mode_thread *mt = um->mt;
+    struct mode_thread_settings *mt_settings = &mt->settings;
+
+    if (m->prog != PROG_THREAD_LEFT &&
+            m->prog != PROG_THREAD_RIGHT) {
+        return;
+    }
+
+    if (mt_settings->is_internal)
+        mt_settings->is_internal = FALSE;
+    else
+        mt_settings->is_internal = TRUE;
+
+    ui_button_show(um->ui_items->sel_thread_arrow);
+}
+
+
 static void onclick_feed_return_cross(void *priv)
 {
+    struct machine *m = &machine;
     struct ui_main *um = (struct ui_main *)priv;
     struct mode_cut *mc = um->mc;
     struct mode_cut_settings *mc_settings = &mc->settings;
 
-    if (mc->prog != PROG_FEED_UP &&
-            mc->prog != PROG_FEED_DOWN) {
+    if (m->prog != PROG_FEED_UP &&
+            m->prog != PROG_FEED_DOWN) {
         return;
     }
 
@@ -450,12 +730,13 @@ static void onclick_longitudal_feed_limit(void *priv)
 
 static void onclick_feed_repeate(void *priv)
 {
+    struct machine *m = &machine;
     struct ui_main *um = (struct ui_main *)priv;
     struct mode_cut *mc = um->mc;
     struct mode_cut_settings *mc_settings = &mc->settings;
 
-    if (mc->prog == PROG_FEED_LEFT ||
-            mc->prog == PROG_FEED_RIGHT) {
+    if (m->prog == PROG_FEED_LEFT ||
+            m->prog == PROG_FEED_RIGHT) {
         if (mc_settings->longitudal_ret_mode != CUT_LONGITUDAL_RETURN_UP &&
                 mc_settings->longitudal_ret_mode != CUT_LONGITUDAL_RETURN_DOWN) {
             mc_settings->last_repeate_number = 0;
@@ -519,19 +800,44 @@ static void main_win_buttons_destructor(void *mem)
     struct ui_main_items *umi = (struct ui_main_items *)mem;
     kmem_deref(&umi->sel_prog);
     kmem_deref(&umi->set_xy);
-    kmem_deref(&umi->sel_feed_return_mode);
-    kmem_deref(&umi->ui_item_longitudal_arrow);
-    kmem_deref(&umi->sel_feed_limit);
-    kmem_deref(&umi->sel_feed_repeate);
-    kmem_deref(&umi->sel_cross_or_target_diameter);
-    kmem_deref(&umi->sel_cross_or_target_diameter_value);
-    kmem_deref(&umi->sel_cut_depth);
+    if (umi->sel_feed_return_mode)
+        kmem_deref(&umi->sel_feed_return_mode);
+
+    if (umi->ui_item_longitudal_arrow)
+        kmem_deref(&umi->ui_item_longitudal_arrow);
+
+    if (umi->sel_feed_limit)
+        kmem_deref(&umi->sel_feed_limit);
+
+    if (umi->sel_feed_repeate)
+        kmem_deref(&umi->sel_feed_repeate);
+
+    if (umi->sel_cross_or_target_diameter)
+        kmem_deref(&umi->sel_cross_or_target_diameter);
+
+    if (umi->sel_cross_or_target_diameter_value)
+        kmem_deref(&umi->sel_cross_or_target_diameter_value);
+
+    if (umi->sel_cut_depth)
+        kmem_deref(&umi->sel_cut_depth);
+
+    if (umi->sel_thread_type)
+        kmem_deref(&umi->sel_thread_type);
+
+    if (umi->sel_thread_size)
+        kmem_deref(&umi->sel_thread_size);
+
+    if (umi->ui_item_thread_cut_depth)
+        kmem_deref(&umi->ui_item_thread_cut_depth);
+
+    if (umi->sel_thread_arrow)
+        kmem_deref(&umi->sel_thread_arrow);
 }
 
 void show_longitudal(struct ui_main *um)
 {
+    struct machine *m = &machine;
     struct ui_main_items *ui_items = um->ui_items;
-    struct mode_cut *mc = um->mc;
 
     ui_items->sel_feed_return_mode =
             ui_button_register("key_sel_feed_return_longitudal", um->disp,
@@ -551,10 +857,10 @@ void show_longitudal(struct ui_main *um)
                                  key_feed_repeate_show,
                                  onclick_feed_repeate, um);
 
-    if (mc->prog == PROG_FEED_LEFT_UP ||
-            mc->prog == PROG_FEED_RIGHT_UP ||
-            mc->prog == PROG_FEED_LEFT_DOWN ||
-            mc->prog == PROG_FEED_RIGHT_DOWN) {
+    if (m->prog == PROG_FEED_LEFT_UP ||
+            m->prog == PROG_FEED_RIGHT_UP ||
+            m->prog == PROG_FEED_LEFT_DOWN ||
+            m->prog == PROG_FEED_RIGHT_DOWN) {
 
         ui_items->sel_cross_or_target_diameter =
                 ui_button_register("key_cross_or_diameter", um->disp,
@@ -578,8 +884,8 @@ void show_longitudal(struct ui_main *um)
 
 void show_cross(struct ui_main *um)
 {
+    struct machine *m = &machine;
     struct ui_main_items *ui_items = um->ui_items;
-    struct mode_cut *mc = um->mc;
 
     ui_items->sel_cross_or_target_diameter =
             ui_button_register("key_cross_or_diameter", um->disp,
@@ -599,10 +905,10 @@ void show_cross(struct ui_main *um)
                                  key_sel_feed_return_cross_show,
                                  onclick_feed_return_cross, um);
 
-    if (mc->prog == PROG_FEED_UP_LEFT ||
-            mc->prog == PROG_FEED_UP_RIGHT ||
-            mc->prog == PROG_FEED_DOWN_LEFT ||
-            mc->prog == PROG_FEED_DOWN_RIGHT) {
+    if (m->prog == PROG_FEED_UP_LEFT ||
+            m->prog == PROG_FEED_UP_RIGHT ||
+            m->prog == PROG_FEED_DOWN_LEFT ||
+            m->prog == PROG_FEED_DOWN_RIGHT) {
 
         ui_items->ui_item_longitudal_arrow =
                 ui_item_register("ui_item_longitudal_arrow", um->disp,
@@ -625,10 +931,59 @@ void show_cross(struct ui_main *um)
 }
 
 
+void show_thread(struct ui_main *um)
+{
+    struct ui_main_items *ui_items = um->ui_items;
+
+    ui_items->sel_thread_arrow =
+            ui_button_register("key_thread_arrow", um->disp,
+                                 0, 90 + (55 + 15) * 0, 70, 55,
+                                 key_thread_arrow_show,
+                                 onclick_key_thread_arrow, um);
+
+    ui_items->sel_feed_limit =
+            ui_button_register("key_thread_length", um->disp,
+                                 77, 90 + (55 + 15) * 0, 155, 55,
+                                 key_thread_length_show,
+                                 onclick_thread_length, um);
+
+    ui_items->sel_feed_repeate =
+            ui_button_register("key_thread_repeate", um->disp,
+                                 240, 90 + (55 + 15) * 0, 75, 55,
+                                 key_thread_repeate_show,
+                                 onclick_thread_repeate, um);
+
+    ui_items->sel_thread_type =
+            ui_button_register("key_thread_type", um->disp,
+                                 0, 90 + (55 + 15) * 1, 70, 55,
+                                 key_thread_type_show,
+                                 onclick_key_thread_type, um);
+
+    ui_items->sel_thread_size =
+            ui_button_register("key_thread_size", um->disp,
+                                 77, 90 + (55 + 15) * 1, 155, 55,
+                                 key_thread_size_show,
+                                 onclick_key_thread_size, um);
+
+    ui_items->ui_item_thread_cut_depth =
+            ui_item_register("ui_item_thread_cut_depth", um->disp,
+                                 0, 90 + (55 + 15) * 2, 70, 55,
+                                 ui_item_thread_cut_depth_show,
+                                 NULL, um, 0);
+
+    ui_items->sel_cut_depth =
+            ui_button_register("key_thread_cut_depth", um->disp,
+                                 77, 90 + (55 + 15) * 2, 155, 55,
+                                 key_thread_cut_depth_show,
+                                 onclick_key_thread_cut_depth, um);
+}
+
+
+
 static void show(struct ui_main *um)
 {
+    struct machine *m = &machine;
     struct ui_main_items *ui_items;
-    struct mode_cut *mc = um->mc;
     ui_items = kzref_alloc("main_win_buttons", sizeof *ui_items,
                       main_win_buttons_destructor);
     um->ui_items = ui_items;
@@ -646,28 +1001,33 @@ static void show(struct ui_main *um)
                                  key_set_xy_show, on_click_set_xy, um);
 
 
-    if (mc->prog == PROG_FEED_LEFT ||
-            mc->prog == PROG_FEED_RIGHT ||
-            mc->prog == PROG_FEED_LEFT_UP ||
-            mc->prog == PROG_FEED_RIGHT_UP ||
-            mc->prog == PROG_FEED_LEFT_DOWN ||
-            mc->prog == PROG_FEED_RIGHT_DOWN) {
+    if (m->prog == PROG_FEED_LEFT ||
+            m->prog == PROG_FEED_RIGHT ||
+            m->prog == PROG_FEED_LEFT_UP ||
+            m->prog == PROG_FEED_RIGHT_UP ||
+            m->prog == PROG_FEED_LEFT_DOWN ||
+            m->prog == PROG_FEED_RIGHT_DOWN) {
         show_longitudal(um);
         return;
     }
 
-    if (mc->prog == PROG_FEED_UP ||
-            mc->prog == PROG_FEED_DOWN ||
-            mc->prog == PROG_FEED_UP_LEFT ||
-            mc->prog == PROG_FEED_UP_RIGHT ||
-            mc->prog == PROG_FEED_DOWN_LEFT ||
-            mc->prog == PROG_FEED_DOWN_RIGHT) {
+    if (m->prog == PROG_FEED_UP ||
+            m->prog == PROG_FEED_DOWN ||
+            m->prog == PROG_FEED_UP_LEFT ||
+            m->prog == PROG_FEED_UP_RIGHT ||
+            m->prog == PROG_FEED_DOWN_LEFT ||
+            m->prog == PROG_FEED_DOWN_RIGHT) {
         show_cross(um);
         return;
     }
 
-    if (mc->prog == PROG_FEED_UP ||
-            mc->prog == PROG_FEED_DOWN) {
+    if (m->prog == PROG_THREAD_LEFT ||
+            m->prog == PROG_THREAD_RIGHT) {
+        show_thread(um);
+        return;
+    }
+    if (m->prog == PROG_FEED_UP ||
+            m->prog == PROG_FEED_DOWN) {
 
         ui_items->sel_cross_or_target_diameter =
                 ui_button_register("key_cross_or_diameter", um->disp,
@@ -681,13 +1041,14 @@ static void show(struct ui_main *um)
                                      key_cross_or_diameter_value_show,
                                      onclick_cross_or_diameter_val, um);
     }
+
 }
 
 void ui_message_hide(void)
 {
     struct machine *m = &machine;
     struct disp *disp = m->disp2;
-    disp_fill(disp, 0, 80, 480, 240, BLACK);
+    disp_fill(disp, 0, 115, 480, 205, BLACK);
     m->is_disp2_needs_redraw = TRUE;
 }
 
@@ -700,7 +1061,7 @@ void ui_message_show(char *msg, enum msg_type mt)
     struct buf *msg_buf = buf_strdub(msg);
     struct text_style *ts;
     const int max_width = 480 - 4;
-    const int max_height = 230 - 4;
+    const int max_height = 205 - 4;
     int row_num;
     struct text_style ts_err = {
         .font = font_rus,
@@ -734,8 +1095,8 @@ void ui_message_show(char *msg, enum msg_type mt)
 
     rows = buf_split(msg_buf, '\n');
 
-    disp_rect(disp, 0, 90, 480, 230, 2, ts->color);
-    disp_fill(disp, 2, 92, max_width, max_height, DARK_GRAY);
+    disp_rect(disp, 0, 115, 480, 205, 2, ts->color);
+    disp_fill(disp, 2, 117, max_width, max_height, DARK_GRAY);
 
     row_num = 0;
     LIST_FOREACH(rows, le) {
@@ -743,7 +1104,7 @@ void ui_message_show(char *msg, enum msg_type mt)
         int row_width = disp_text_width(ts, buf_len(msg));
         int row_height = disp_text_height(ts);
         int x = (max_width / 2) - (row_width / 2);
-        int y = 102 + (row_height + 2) * row_num;
+        int y = 127 + (row_height + 2) * row_num;
         disp_text(disp, (char *)msg->d, x, y, ts);
         row_num ++;
     }
@@ -767,6 +1128,7 @@ static void ui_main_thread(void *priv)
     m->ui_main = um;
     um->disp = m->disp1;
     um->mc = &m->mc;
+    um->mt = &m->mt;
 
     show(um);
 

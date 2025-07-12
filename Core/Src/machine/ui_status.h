@@ -24,6 +24,8 @@ struct ui_status {
     struct ui_item *longitudal_speed;
     struct ui_item *feed_rate_icon;
     struct ui_item *feed_rate;
+    struct ui_item *cut_speed_icon;
+    struct ui_item *cut_speed;
 };
 
 void ui_status_init(void);

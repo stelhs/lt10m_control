@@ -23,8 +23,6 @@ struct mode_cut_ui_items {
     struct ui_item *text;
     struct ui_item *uptime;
     struct ui_item *number_passes;
-    struct ui_item *cutting_speed;
-    struct ui_item *feed_speed;
     struct ui_item *start_cross;
     struct ui_item *start_longitudal;
     struct ui_item *relative_cross;
@@ -63,27 +61,17 @@ static void ui_uptime_getter(struct ui_item *ut, char *str, size_t size)
 {
     struct mode_cut *mc = (struct mode_cut *)ut->priv;
     u32 uptime = (now() - mc->stat.start_time) / 1000;
-    snprintf(str, size, "%lu/%d", uptime, mc->stat.calc_time);
+    char *uptime_str = interval_to_str(uptime);
+    char *calc_time_str = interval_to_str(mc->stat.calc_time);
+    snprintf(str, size, "%s / %s ", uptime_str, calc_time_str);
+    kmem_deref(&uptime_str);
+    kmem_deref(&calc_time_str);
 }
 
 static void ui_number_passes_getter(struct ui_item *ut, char *str, size_t size)
 {
     struct mode_cut *mc = (struct mode_cut *)ut->priv;
     snprintf(str, size, "%d/%d", mc->cut_pass_cnt, mc->cut_pass_rest);
-}
-
-static void ui_cutting_speed_getter(struct ui_item *ut, char *str, size_t size)
-{
-    struct mode_cut *mc = (struct mode_cut *)ut->priv;
-    snprintf(str, size, "0.715");
-    UNUSED(mc); // TODO
-}
-
-static void ui_feed_speed_getter(struct ui_item *ut, char *str, size_t size)
-{
-    struct mode_cut *mc = (struct mode_cut *)ut->priv;
-    snprintf(str, size, "0.045");
-    UNUSED(mc); // TODO
 }
 
 static void ui_start_cross_getter(struct ui_item *ut, char *str, size_t size)
@@ -106,7 +94,7 @@ static void ui_relative_cross_getter(struct ui_item *ut, char *str, size_t size)
     int pos = stepper_motor_pos(sm);
     int percent;
 
-    switch (mc->prog) {
+    switch (m->prog) {
     case PROG_FEED_LEFT:
     case PROG_FEED_RIGHT:
     case PROG_FEED_LEFT_UP:
@@ -159,7 +147,7 @@ static void ui_relative_longitudal_getter(struct ui_item *ut,
     int pos = stepper_motor_pos(sm);
     int percent;
 
-    switch (mc->prog) {
+    switch (m->prog) {
     case PROG_FEED_LEFT:
     case PROG_FEED_RIGHT:
     case PROG_FEED_LEFT_UP:
@@ -229,8 +217,6 @@ static void ui_text(struct ui_item *ut)
     // draw text lines
     disp_text(disp, msg_uptime, 0, row_start + row_height * 0, ts);
     disp_text(disp, msg_feed_number, 0, row_start + row_height * 1, ts);
-    disp_text(disp, msg_cut_speed, 0, row_start + row_height * 2, ts);
-    disp_text(disp, msg_feed_speed, 0, row_start + row_height * 3, ts);
 
     disp_text(disp, msg_coordinates, 0, row_start + row_height * 4, ts);
     disp_text(disp, msg_start, 132, row_start + row_height * 4, ts);
@@ -283,23 +269,13 @@ static void display_status_init(struct mode_cut *mc)
 
     ui_items->uptime =
             ui_item_text_register("ui_uptime", disp,
-                                 220, row_start + row_height * 0, 9, ts,
+                                 220, row_start + row_height * 0, 25, ts,
                                  ui_uptime_getter, NULL, mc);
 
     ui_items->number_passes =
             ui_item_text_register("ui_number_passes", disp,
                                  220, row_start + row_height * 1,
                                  5, ts, ui_number_passes_getter, NULL, mc);
-
-    ui_items->cutting_speed =
-            ui_item_text_register("ui_cutting_speed", disp,
-                                 320, row_start + row_height * 2, 6, ts,
-                                 ui_cutting_speed_getter, NULL, mc);
-
-    ui_items->feed_speed =
-            ui_item_text_register("ui_feed_speed", disp,
-                                 305, row_start + row_height * 3, 6, ts,
-                                 ui_feed_speed_getter, NULL, mc);
 
     ui_items->start_cross =
             ui_item_text_register("ui_start_point", disp,
@@ -366,8 +342,6 @@ static void display_status_handler(struct mode_cut *mc)
         m->is_disp2_needs_redraw = FALSE;
         ui_item_show(ui_items->text);
         ui_item_update(ui_items->number_passes);
-        ui_item_update(ui_items->cutting_speed);
-        ui_item_update(ui_items->feed_speed);
         ui_item_update(ui_items->start_cross);
         ui_item_update(ui_items->finish_cross);
         ui_item_update(ui_items->relative_cross);
@@ -383,8 +357,6 @@ static void display_status_handler(struct mode_cut *mc)
 
     ui_item_show(ui_items->uptime);
     ui_item_show(ui_items->number_passes);
-    ui_item_show(ui_items->cutting_speed);
-    ui_item_show(ui_items->feed_speed);
     ui_item_show(ui_items->start_cross);
     ui_item_show(ui_items->finish_cross);
     ui_item_show(ui_items->relative_cross);
@@ -427,9 +399,10 @@ static int cross_distance(struct mode_cut *mc)
 static void calc_estimate_cut_longitudal_time(struct mode_cut *mc)
 {
     struct mode_cut_settings *mc_settings = &mc->settings;
-    int one_pass = mc->longitudal_distance * mc_settings->feed_rate / 1000000 +
+    int feed_per_turn = ((spindle_speed() / 60) * mc_settings->feed_rate) / 1000;
+    int one_pass = mc->longitudal_distance / feed_per_turn +
             7 + // cross return time sec
-            + mc->cross_distance / 1000 / 8; // longitudal return time sec
+            + mc->longitudal_distance / 1000 / 8; // longitudal return time sec
 
     mc->stat.calc_time = one_pass * (mc->cut_pass_rest + 1) -
             (now() - mc->stat.start_time) / 1000;
@@ -438,7 +411,8 @@ static void calc_estimate_cut_longitudal_time(struct mode_cut *mc)
 static void calc_estimate_cut_cross_time(struct mode_cut *mc)
 {
     struct mode_cut_settings *mc_settings = &mc->settings;
-    int one_pass = mc->cross_distance * mc_settings->feed_rate / 1000000 +
+    int feed_per_turn = ((spindle_speed() / 60) * mc_settings->feed_rate) / 1000;
+    int one_pass = mc->cross_distance / feed_per_turn +
             7 + // longitudal return time sec
             + mc->cross_distance / 1000 / 8; // cross return time sec
     mc->stat.calc_time = one_pass * (mc->cut_pass_rest + 1) -
@@ -447,6 +421,7 @@ static void calc_estimate_cut_cross_time(struct mode_cut *mc)
 
 static void calc_longitudal_cut_passes(struct mode_cut *mc)
 {
+    struct machine *m = &machine;
     int cross_distance_val = 0;
     bool dir;
     struct mode_cut_settings *mc_settings = &mc->settings;
@@ -461,8 +436,8 @@ static void calc_longitudal_cut_passes(struct mode_cut *mc)
                                          mc_settings->longitudal_distance,
                                          mc->longitudal_pass_dir);
 
-    if (mc->prog != PROG_FEED_LEFT &&
-            mc->prog != PROG_FEED_RIGHT) {
+    if (m->prog != PROG_FEED_LEFT &&
+            m->prog != PROG_FEED_RIGHT) {
         cross_distance_val = cross_distance(mc);
     }
 
@@ -495,6 +470,7 @@ static void calc_longitudal_cut_passes(struct mode_cut *mc)
 
 static void calc_cross_cut_passes(struct mode_cut *mc)
 {
+    struct machine *m = &machine;
     int longitudal_distance = 0;
     bool dir;
     struct mode_cut_settings *mc_settings = &mc->settings;
@@ -504,8 +480,8 @@ static void calc_cross_cut_passes(struct mode_cut *mc)
                 calc_cross_position(mc->start_cross_pos, cross_distance(mc),
                                     mc->cross_pass_dir);
 
-    if (mc->prog != PROG_FEED_UP &&
-            mc->prog != PROG_FEED_DOWN) {
+    if (m->prog != PROG_FEED_UP &&
+            m->prog != PROG_FEED_DOWN) {
         longitudal_distance = mc_settings->longitudal_distance;
     }
 
@@ -574,7 +550,7 @@ void mode_cut_settings_validate(void)
 
     if (!mc_settings->cross_distance) {
         int curr_diameter = abs_cross_curr_tool(m->ap) * 2;
-        switch (mc->prog) {
+        switch (m->prog) {
         case PROG_FEED_LEFT_UP:
         case PROG_FEED_RIGHT_UP:
         case PROG_FEED_UP_LEFT:
@@ -623,7 +599,8 @@ stabilization_cross_handler(struct mode_cut *mc)
 
     cur_pos = abs_cross_curr_tool(m->ap);
     if (cur_pos == target_pos) {
-        stepper_motor_stop(sm);
+        if (is_stepper_motor_run(sm))
+            stepper_motor_stop(sm);
         return;
     }
 
@@ -650,9 +627,19 @@ int longitudal_cut_run(struct mode_cut *mc, bool dir)
 {
     struct machine *m = &machine;
     struct mode_cut_settings *mc_settings = &mc->settings;
+    int prev_feed_rate;
     struct stepper_motor *sm = m->sm_longitudial_feed;
-    int prev_feed_rate = speed_to_freq(sm, mc_settings->feed_rate);
     int cur_pos = abs_longitudal_curr_tool(m->ap);
+
+    do {
+        prev_feed_rate = feed_rate_to_freq(sm, spindle_speed(),
+                                           mc_settings->feed_rate);
+        yield();
+        if (!is_switch_on(m->switch_run)) {
+            stepper_motor_stop(sm);
+            return -1;
+        }
+    } while(!prev_feed_rate);
 
     mc->cut_pass_cnt ++;
     mc->longitudal_distance =
@@ -660,16 +647,18 @@ int longitudal_cut_run(struct mode_cut *mc, bool dir)
     stepper_motor_run(sm, 1000, prev_feed_rate, dir,
                       mc->longitudal_distance);
     while(is_stepper_motor_run(sm)) {
+        int freq = feed_rate_to_freq(sm, spindle_speed(),
+                                     mc_settings->feed_rate);
         yield();
-        if (mc_settings->feed_rate != prev_feed_rate) {
-            int freq = speed_to_freq(sm, mc_settings->feed_rate);
-            prev_feed_rate = mc_settings->feed_rate;
+
+        if (freq != prev_feed_rate) {
+            prev_feed_rate = freq;
             stepper_motor_set_target_freq(sm, freq);
             stepper_motor_set_freq(sm, freq);
         }
 
         if (!is_switch_on(m->switch_run)) {
-            stepper_motor_stop(sm);
+            stepper_motor_stop(sm); // TODO
             return -1;
         }
         stabilization_cross_handler(mc);
@@ -686,16 +675,27 @@ int cross_cut_run(struct mode_cut *mc, bool dir)
     struct machine *m = &machine;
     struct mode_cut_settings *mc_settings = &mc->settings;
     struct stepper_motor *sm = m->sm_cross_feed;
-    int prev_feed_rate = speed_to_freq(sm, mc_settings->feed_rate);
+    int prev_feed_rate;
+
+    do {
+        prev_feed_rate = feed_rate_to_freq(sm, spindle_speed(),
+                                           mc_settings->feed_rate);
+        yield();
+        if (!is_switch_on(m->switch_run)) {
+            stepper_motor_stop(sm);
+            return -1;
+        }
+    } while(!prev_feed_rate);
 
     mc->cut_pass_cnt ++;
     mc->cross_distance = cross_distance(mc);
     stepper_motor_run(sm, 50, prev_feed_rate, dir, mc->cross_distance);
     while(is_stepper_motor_run(sm)) {
+        int freq = feed_rate_to_freq(sm, spindle_speed(),
+                                     mc_settings->feed_rate);
         yield();
-        if (mc_settings->feed_rate != prev_feed_rate) {
-            int freq = speed_to_freq(sm, mc_settings->feed_rate);
-            prev_feed_rate = mc_settings->feed_rate;
+        if (freq != prev_feed_rate) {
+            prev_feed_rate = freq;
             stepper_motor_set_target_freq(sm, freq);
             stepper_motor_set_freq(sm, freq);
         }
@@ -717,17 +717,17 @@ int cross_cut_run(struct mode_cut *mc, bool dir)
 int longitudal_return_run(struct mode_cut *mc)
 {
     struct machine *m = &machine;
-    struct mode_cut_settings *cm_settings = &mc->settings;
+    struct mode_cut_settings *mc_settings = &mc->settings;
     int start_longitudal_pos, longitudal_pos;
     int parking_cross_pos;
     int rc;
 
 
     start_longitudal_pos = longitudal_pos = abs_longitudal_curr_tool(m->ap);
-    switch(mc->prog) {
+    switch(m->prog) {
     case PROG_FEED_LEFT:
     case PROG_FEED_RIGHT: {
-        switch(cm_settings->longitudal_ret_mode) {
+        switch(mc_settings->longitudal_ret_mode) {
         case CUT_LONGITUDAL_RETURN_UP:
             start_longitudal_pos = mc->start_longitudal_pos;
         case CUT_LONGITUDAL_MOVE_UP:
@@ -753,16 +753,16 @@ int longitudal_return_run(struct mode_cut *mc)
     }
 
     case PROG_FEED_LEFT_UP:
-        start_longitudal_pos = mc->start_longitudal_pos;
     case PROG_FEED_RIGHT_UP:
+        start_longitudal_pos = mc->start_longitudal_pos;
         parking_cross_pos =
                 calc_cross_position(mc->cross_pos,
                                     CROSS_RETRACTION, MOVE_DOWN);
         break;
 
     case PROG_FEED_LEFT_DOWN:
-        start_longitudal_pos = mc->start_longitudal_pos;
     case PROG_FEED_RIGHT_DOWN:
+        start_longitudal_pos = mc->start_longitudal_pos;
         parking_cross_pos =
                 calc_cross_position(mc->cross_pos,
                                     CROSS_RETRACTION, MOVE_UP);
@@ -778,7 +778,7 @@ int longitudal_return_run(struct mode_cut *mc)
     }
 
     if (longitudal_pos != start_longitudal_pos) {
-        rc = longitudal_move_to(start_longitudal_pos, FALSE);
+        rc = longitudal_move_to(start_longitudal_pos, FALSE, 0);
         if(rc)
             return rc;
 
@@ -800,7 +800,7 @@ static int cross_return_run(struct mode_cut *mc)
     int rc;
 
     start_cross_pos = cross_pos = abs_cross_curr_tool(m->ap);
-    switch(mc->prog) {
+    switch(m->prog) {
     case PROG_FEED_UP:
     case PROG_FEED_DOWN: {
         switch(cm_settings->cross_ret_mode) {
@@ -848,7 +848,7 @@ static int cross_return_run(struct mode_cut *mc)
     }
 
     if (parking_longitudal_pos != mc->longitudal_pos) {
-        rc = longitudal_move_to(parking_longitudal_pos, FALSE);
+        rc = longitudal_move_to(parking_longitudal_pos, FALSE, 0);
         if(rc)
             return rc;
     }
@@ -858,7 +858,7 @@ static int cross_return_run(struct mode_cut *mc)
         if(rc)
             return rc;
         if (parking_longitudal_pos != mc->longitudal_pos) {
-            rc = longitudal_move_to(mc->longitudal_pos, FALSE);
+            rc = longitudal_move_to(mc->longitudal_pos, FALSE, 0);
             if(rc)
                 return rc;
         }
@@ -876,27 +876,27 @@ void longitudal_cut_auto_run(void)
     mc->start_longitudal_pos = abs_longitudal_curr_tool(m->ap);
     int i, rc;
 
-    if (mc->prog == PROG_FEED_UP ||
-            mc->prog == PROG_FEED_UP_LEFT ||
-            mc->prog == PROG_FEED_UP_RIGHT ||
-            mc->prog == PROG_FEED_DOWN ||
-            mc->prog == PROG_FEED_DOWN_LEFT ||
-            mc->prog == PROG_FEED_DOWN_RIGHT ||
-            mc->prog == PROG_THREAD_LEFT ||
-            mc->prog == PROG_THREAD_RIGHT) {
+    if (m->prog == PROG_FEED_UP ||
+            m->prog == PROG_FEED_UP_LEFT ||
+            m->prog == PROG_FEED_UP_RIGHT ||
+            m->prog == PROG_FEED_DOWN ||
+            m->prog == PROG_FEED_DOWN_LEFT ||
+            m->prog == PROG_FEED_DOWN_RIGHT ||
+            m->prog == PROG_THREAD_LEFT ||
+            m->prog == PROG_THREAD_RIGHT) {
         panic("longitudal_cut_auto_run() incorrect program");
     }
 
     mc->longitudal_pass_dir = MOVE_RIGHT;
-    if (mc->prog == PROG_FEED_LEFT ||
-            mc->prog == PROG_FEED_LEFT_UP ||
-            mc->prog == PROG_FEED_LEFT_DOWN) {
+    if (m->prog == PROG_FEED_LEFT ||
+            m->prog == PROG_FEED_LEFT_UP ||
+            m->prog == PROG_FEED_LEFT_DOWN) {
         mc->longitudal_pass_dir = MOVE_LEFT;
     }
 
     mc->cross_pass_dir = MOVE_DOWN;
-    if (mc->prog == PROG_FEED_LEFT_UP ||
-            mc->prog == PROG_FEED_RIGHT_UP) {
+    if (m->prog == PROG_FEED_LEFT_UP ||
+            m->prog == PROG_FEED_RIGHT_UP) {
         mc->cross_pass_dir = MOVE_UP;
     }
 
@@ -908,8 +908,8 @@ void longitudal_cut_auto_run(void)
     calc_longitudal_cut_passes(mc);
     display_status_handler(mc);
 
-    if (mc->prog == PROG_FEED_LEFT ||
-            mc->prog == PROG_FEED_RIGHT) {
+    if (m->prog == PROG_FEED_LEFT ||
+            m->prog == PROG_FEED_RIGHT) {
         longitudal_cut_run(mc, mc->longitudal_pass_dir);
         rc = longitudal_return_run(mc);
         if (rc)
@@ -934,7 +934,7 @@ void longitudal_cut_auto_run(void)
         mc->stat.cross_miss_down = 0;
 
         longitudal_cut_run(mc, mc->longitudal_pass_dir);
-        rc = longitudal_return_run(mc); // TODO: cross_pos fix
+        rc = longitudal_return_run(mc);
         if (rc)
             return;
         calc_longitudal_cut_passes(mc);
@@ -952,9 +952,9 @@ void longitudal_cut_auto_run(void)
         if (rc)
             return;
     }
-    if (mc->prog != PROG_FEED_LEFT &&
-            mc->prog != PROG_FEED_RIGHT) {
-        longitudal_move_to(mc->start_longitudal_pos, TRUE);
+    if (m->prog != PROG_FEED_LEFT &&
+            m->prog != PROG_FEED_RIGHT) {
+        longitudal_move_to(mc->start_longitudal_pos, TRUE, 0);
     }
 }
 
@@ -968,27 +968,27 @@ void cross_cut_auto_run(void)
     mc->longitudal_pos = mc->start_longitudal_pos;
     int rc;
 
-    if (mc->prog == PROG_FEED_LEFT ||
-            mc->prog == PROG_FEED_LEFT_UP ||
-            mc->prog == PROG_FEED_RIGHT_UP ||
-            mc->prog == PROG_FEED_RIGHT ||
-            mc->prog == PROG_FEED_LEFT_DOWN ||
-            mc->prog == PROG_FEED_RIGHT_DOWN ||
-            mc->prog == PROG_THREAD_LEFT ||
-            mc->prog == PROG_THREAD_RIGHT) {
+    if (m->prog == PROG_FEED_LEFT ||
+            m->prog == PROG_FEED_LEFT_UP ||
+            m->prog == PROG_FEED_RIGHT_UP ||
+            m->prog == PROG_FEED_RIGHT ||
+            m->prog == PROG_FEED_LEFT_DOWN ||
+            m->prog == PROG_FEED_RIGHT_DOWN ||
+            m->prog == PROG_THREAD_LEFT ||
+            m->prog == PROG_THREAD_RIGHT) {
         panic("cross_cut_auto_run() incorrect program");
     }
 
     mc->longitudal_pass_dir = MOVE_RIGHT;
-    if (mc->prog == PROG_FEED_UP_LEFT ||
-            mc->prog == PROG_FEED_DOWN_LEFT) {
+    if (m->prog == PROG_FEED_UP_LEFT ||
+            m->prog == PROG_FEED_DOWN_LEFT) {
         mc->longitudal_pass_dir = MOVE_LEFT;
     }
 
     mc->cross_pass_dir = MOVE_DOWN;
-    if (mc->prog == PROG_FEED_UP ||
-            mc->prog == PROG_FEED_UP_LEFT ||
-            mc->prog == PROG_FEED_UP_RIGHT) {
+    if (m->prog == PROG_FEED_UP ||
+            m->prog == PROG_FEED_UP_LEFT ||
+            m->prog == PROG_FEED_UP_RIGHT) {
         mc->cross_pass_dir = MOVE_UP;
     }
 
@@ -999,8 +999,8 @@ void cross_cut_auto_run(void)
 
     calc_cross_cut_passes(mc);
     display_status_handler(mc);
-    if (mc->prog == PROG_FEED_UP ||
-            mc->prog == PROG_FEED_DOWN) {
+    if (m->prog == PROG_FEED_UP ||
+            m->prog == PROG_FEED_DOWN) {
         cross_cut_run(mc, mc->cross_pass_dir);
         rc = cross_return_run(mc);
         if (rc)
@@ -1015,7 +1015,7 @@ void cross_cut_auto_run(void)
         new_pos = calc_longitudal_position(mc->longitudal_pos,
                                            mc->cut_depth,
                                            mc->longitudal_pass_dir);
-        rc = longitudal_move_to(new_pos, TRUE);
+        rc = longitudal_move_to(new_pos, TRUE, 0);
         if(rc)
             return;
         mc->longitudal_pos = new_pos;
@@ -1027,14 +1027,13 @@ void cross_cut_auto_run(void)
             return;
         display_status_handler(mc);
     }
-    if (mc->prog != PROG_FEED_UP &&
+    if (m->prog != PROG_FEED_UP &&
 
 
-            mc->prog != PROG_FEED_DOWN) {
-        longitudal_move_to(mc->start_longitudal_pos, TRUE);
+            m->prog != PROG_FEED_DOWN) {
+        longitudal_move_to(mc->start_longitudal_pos, TRUE, 0);
     }
 }
-
 
 static void ui_items_destructor(void *mem)
 {
@@ -1042,8 +1041,6 @@ static void ui_items_destructor(void *mem)
     kmem_deref(&ui_items->text);
     kmem_deref(&ui_items->uptime);
     kmem_deref(&ui_items->number_passes);
-    kmem_deref(&ui_items->cutting_speed);
-    kmem_deref(&ui_items->feed_speed);
     kmem_deref(&ui_items->start_cross);
     kmem_deref(&ui_items->start_longitudal);
     kmem_deref(&ui_items->relative_cross);
@@ -1055,7 +1052,6 @@ static void ui_items_destructor(void *mem)
     kmem_deref(&ui_items->longitudal_miss_left);
     kmem_deref(&ui_items->longitudal_miss_right);
 }
-
 
 void mode_cut_run(void)
 {
@@ -1077,7 +1073,7 @@ void mode_cut_run(void)
 
     set_normal_acceleration();
 
-    switch (mc->prog) {
+    switch (m->prog) {
     case PROG_FEED_LEFT:
     case PROG_FEED_RIGHT:
     case PROG_FEED_LEFT_UP:
@@ -1095,6 +1091,7 @@ void mode_cut_run(void)
     case PROG_FEED_DOWN_RIGHT:
         cross_cut_auto_run();
         break;
+
     default:
         break;
     }
@@ -1108,3 +1105,4 @@ void mode_cut_run(void)
     display_status_hide();
     kmem_deref(&ui_items);
 }
+

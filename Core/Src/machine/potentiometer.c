@@ -26,7 +26,8 @@ potentiometer_register(char *name, ADC_HandleTypeDef *hadc, int adc_offset)
     pm->name = name;
     pm->hadc = hadc;
     pm->adc_offset = adc_offset;
-    HAL_ADC_Start_IT(hadc);
+///    HAL_ADC_Start_IT(hadc);
+    // TODO
     return pm;
 }
 

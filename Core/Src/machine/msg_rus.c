@@ -10,8 +10,6 @@ char *msg_switch_run_needs_off = "Отключите тумблер запуска\n"
 
 char *msg_uptime = "Время работы, с:";
 char *msg_feed_number = "Кол-во проходов:";
-char *msg_cut_speed = "Скорость резания, м/мин:";
-char *msg_feed_speed = "Скорость подачи, мм/об:";
 char *msg_cross_position = "Попереч.:";
 char *msg_longitudal_position = "Продол.:";
 char *msg_coordinates = "Координаты:";
@@ -20,4 +18,7 @@ char *msg_end = "Стоп";
 char *msg_readiness = "Готовность %";
 char *msg_cuting_miss = "Промах:";
 char *msg_prog_finished = "Готово";
+char *msg_set_rpm = "Установите обороты\n"
+                    "шпинделя в интервале\n"
+                    "от %.1f до %.1f";
 

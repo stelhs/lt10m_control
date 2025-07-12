@@ -27,22 +27,6 @@ enum cut_cross_return_modes {
     CUT_CROSS_NO_RETURN,
 };
 
-enum progs {
-    PROG_FEED_LEFT,
-    PROG_FEED_RIGHT,
-    PROG_FEED_LEFT_UP,
-    PROG_FEED_RIGHT_UP,
-    PROG_FEED_LEFT_DOWN,
-    PROG_FEED_RIGHT_DOWN,
-    PROG_FEED_UP_LEFT,
-    PROG_FEED_UP_RIGHT,
-    PROG_FEED_DOWN_LEFT,
-    PROG_FEED_DOWN_RIGHT,
-    PROG_FEED_UP,
-    PROG_FEED_DOWN,
-    PROG_THREAD_LEFT,
-    PROG_THREAD_RIGHT
-};
 
 #define CROSS_RETRACTION 500
 #define LONGITUDAL_RETRACTION 500
@@ -68,7 +52,6 @@ struct mode_cut_settings {
 };
 
 struct mode_cut {
-    enum progs prog;
     struct mode_cut_ui_items *ui_items;
     struct mode_cut_settings settings;
     struct mode_cut_stat stat;

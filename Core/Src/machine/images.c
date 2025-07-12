@@ -1141,6 +1141,299 @@ struct img *img_feed_rate(void)
     return img;
 }
 
+struct img *img_spindle_angle(void)
+{
+    struct img *img = img_alloc("img", 26, 29);
+    u8 *p = img->buf->d;
+    p[39] = 0xB5; /* red */ p[40] = 0xBF; /* green */ p[41] = 0x6D; /* blue */ 
+    p[42] = 0xC6; /* red */ p[43] = 0xD1; /* green */ p[44] = 0x78; /* blue */ 
+    p[45] = 0x20; /* red */ p[46] = 0x22; /* green */ p[47] = 0x13; /* blue */ 
+    p[117] = 0xB9; /* red */ p[118] = 0xC4; /* green */ p[119] = 0x70; /* blue */ 
+    p[120] = 0xF1; /* red */ p[121] = 0xFF; /* green */ p[122] = 0x92; /* blue */ 
+    p[123] = 0xDF; /* red */ p[124] = 0xEC; /* green */ p[125] = 0x87; /* blue */ 
+    p[126] = 0x3B; /* red */ p[127] = 0x3E; /* green */ p[128] = 0x23; /* blue */ 
+    p[195] = 0x0D; /* red */ p[196] = 0x0E; /* green */ p[197] = 0x08; /* blue */ 
+    p[198] = 0xAB; /* red */ p[199] = 0xB5; /* green */ p[200] = 0x68; /* blue */ 
+    p[201] = 0xF1; /* red */ p[202] = 0xFF; /* green */ p[203] = 0x92; /* blue */ 
+    p[204] = 0xEC; /* red */ p[205] = 0xFA; /* green */ p[206] = 0x8F; /* blue */ 
+    p[207] = 0x5E; /* red */ p[208] = 0x63; /* green */ p[209] = 0x39; /* blue */ 
+    p[258] = 0x1D; /* red */ p[259] = 0x1F; /* green */ p[260] = 0x12; /* blue */ 
+    p[261] = 0x6B; /* red */ p[262] = 0x71; /* green */ p[263] = 0x41; /* blue */ 
+    p[264] = 0xB0; /* red */ p[265] = 0xBA; /* green */ p[266] = 0x6A; /* blue */ 
+    p[267] = 0xCD; /* red */ p[268] = 0xD9; /* green */ p[269] = 0x7C; /* blue */ 
+    p[270] = 0xE6; /* red */ p[271] = 0xF3; /* green */ p[272] = 0x8B; /* blue */ 
+    p[273] = 0xE6; /* red */ p[274] = 0xF3; /* green */ p[275] = 0x8B; /* blue */ 
+    p[276] = 0xCE; /* red */ p[277] = 0xD9; /* green */ p[278] = 0x7D; /* blue */ 
+    p[279] = 0xD4; /* red */ p[280] = 0xE0; /* green */ p[281] = 0x80; /* blue */ 
+    p[282] = 0xF1; /* red */ p[283] = 0xFF; /* green */ p[284] = 0x92; /* blue */ 
+    p[285] = 0xF1; /* red */ p[286] = 0xFF; /* green */ p[287] = 0x92; /* blue */ 
+    p[288] = 0x85; /* red */ p[289] = 0x8D; /* green */ p[290] = 0x51; /* blue */ 
+    p[291] = 0x03; /* red */ p[292] = 0x03; /* green */ p[293] = 0x02; /* blue */ 
+    p[330] = 0x26; /* red */ p[331] = 0x28; /* green */ p[332] = 0x17; /* blue */ 
+    p[333] = 0xA5; /* red */ p[334] = 0xAF; /* green */ p[335] = 0x64; /* blue */ 
+    p[336] = 0xF1; /* red */ p[337] = 0xFF; /* green */ p[338] = 0x92; /* blue */ 
+    p[339] = 0xF1; /* red */ p[340] = 0xFF; /* green */ p[341] = 0x92; /* blue */ 
+    p[342] = 0xF1; /* red */ p[343] = 0xFF; /* green */ p[344] = 0x92; /* blue */ 
+    p[345] = 0xF1; /* red */ p[346] = 0xFF; /* green */ p[347] = 0x92; /* blue */ 
+    p[348] = 0xF1; /* red */ p[349] = 0xFF; /* green */ p[350] = 0x92; /* blue */ 
+    p[351] = 0xF1; /* red */ p[352] = 0xFF; /* green */ p[353] = 0x92; /* blue */ 
+    p[354] = 0xF1; /* red */ p[355] = 0xFF; /* green */ p[356] = 0x92; /* blue */ 
+    p[357] = 0xF1; /* red */ p[358] = 0xFF; /* green */ p[359] = 0x92; /* blue */ 
+    p[360] = 0xF1; /* red */ p[361] = 0xFF; /* green */ p[362] = 0x92; /* blue */ 
+    p[363] = 0xF1; /* red */ p[364] = 0xFF; /* green */ p[365] = 0x92; /* blue */ 
+    p[366] = 0xF1; /* red */ p[367] = 0xFF; /* green */ p[368] = 0x92; /* blue */ 
+    p[369] = 0xB6; /* red */ p[370] = 0xC0; /* green */ p[371] = 0x6E; /* blue */ 
+    p[372] = 0x0D; /* red */ p[373] = 0x0E; /* green */ p[374] = 0x08; /* blue */ 
+    p[402] = 0x02; /* red */ p[403] = 0x02; /* green */ p[404] = 0x01; /* blue */ 
+    p[405] = 0x7A; /* red */ p[406] = 0x81; /* green */ p[407] = 0x4A; /* blue */ 
+    p[408] = 0xEE; /* red */ p[409] = 0xFC; /* green */ p[410] = 0x90; /* blue */ 
+    p[411] = 0xF1; /* red */ p[412] = 0xFF; /* green */ p[413] = 0x92; /* blue */ 
+    p[414] = 0xDB; /* red */ p[415] = 0xE8; /* green */ p[416] = 0x85; /* blue */ 
+    p[417] = 0x8F; /* red */ p[418] = 0x97; /* green */ p[419] = 0x56; /* blue */ 
+    p[420] = 0x49; /* red */ p[421] = 0x4D; /* green */ p[422] = 0x2C; /* blue */ 
+    p[423] = 0x24; /* red */ p[424] = 0x26; /* green */ p[425] = 0x16; /* blue */ 
+    p[426] = 0x1D; /* red */ p[427] = 0x1F; /* green */ p[428] = 0x11; /* blue */ 
+    p[429] = 0x3A; /* red */ p[430] = 0x3E; /* green */ p[431] = 0x24; /* blue */ 
+    p[432] = 0x66; /* red */ p[433] = 0x6D; /* green */ p[434] = 0x3E; /* blue */ 
+    p[435] = 0x96; /* red */ p[436] = 0x9E; /* green */ p[437] = 0x5A; /* blue */ 
+    p[438] = 0xC8; /* red */ p[439] = 0xD3; /* green */ p[440] = 0x79; /* blue */ 
+    p[441] = 0xEC; /* red */ p[442] = 0xFA; /* green */ p[443] = 0x8F; /* blue */ 
+    p[444] = 0xF1; /* red */ p[445] = 0xFF; /* green */ p[446] = 0x92; /* blue */ 
+    p[447] = 0xF1; /* red */ p[448] = 0xFF; /* green */ p[449] = 0x92; /* blue */ 
+    p[450] = 0xEA; /* red */ p[451] = 0xF8; /* green */ p[452] = 0x8E; /* blue */ 
+    p[453] = 0x02; /* red */ p[454] = 0x02; /* green */ p[455] = 0x01; /* blue */ 
+    p[477] = 0x09; /* red */ p[478] = 0x0A; /* green */ p[479] = 0x06; /* blue */ 
+    p[480] = 0xA3; /* red */ p[481] = 0xAC; /* green */ p[482] = 0x62; /* blue */ 
+    p[483] = 0xF1; /* red */ p[484] = 0xFF; /* green */ p[485] = 0x92; /* blue */ 
+    p[486] = 0xE5; /* red */ p[487] = 0xF2; /* green */ p[488] = 0x8B; /* blue */ 
+    p[489] = 0x70; /* red */ p[490] = 0x77; /* green */ p[491] = 0x44; /* blue */ 
+    p[492] = 0x09; /* red */ p[493] = 0x0A; /* green */ p[494] = 0x06; /* blue */ 
+    p[501] = 0xB5; /* red */ p[502] = 0xC0; /* green */ p[503] = 0x6E; /* blue */ 
+    p[504] = 0xF1; /* red */ p[505] = 0xFF; /* green */ p[506] = 0x92; /* blue */ 
+    p[507] = 0xF1; /* red */ p[508] = 0xFF; /* green */ p[509] = 0x92; /* blue */ 
+    p[510] = 0xF1; /* red */ p[511] = 0xFF; /* green */ p[512] = 0x92; /* blue */ 
+    p[513] = 0xF1; /* red */ p[514] = 0xFF; /* green */ p[515] = 0x92; /* blue */ 
+    p[516] = 0xF1; /* red */ p[517] = 0xFF; /* green */ p[518] = 0x92; /* blue */ 
+    p[519] = 0xF1; /* red */ p[520] = 0xFF; /* green */ p[521] = 0x92; /* blue */ 
+    p[522] = 0xF1; /* red */ p[523] = 0xFF; /* green */ p[524] = 0x92; /* blue */ 
+    p[525] = 0xF1; /* red */ p[526] = 0xFF; /* green */ p[527] = 0x92; /* blue */ 
+    p[528] = 0xE2; /* red */ p[529] = 0xEF; /* green */ p[530] = 0x89; /* blue */ 
+    p[552] = 0x02; /* red */ p[553] = 0x02; /* green */ p[554] = 0x01; /* blue */ 
+    p[555] = 0xA3; /* red */ p[556] = 0xAC; /* green */ p[557] = 0x62; /* blue */ 
+    p[558] = 0xF1; /* red */ p[559] = 0xFF; /* green */ p[560] = 0x92; /* blue */ 
+    p[561] = 0xCC; /* red */ p[562] = 0xD8; /* green */ p[563] = 0x7C; /* blue */ 
+    p[564] = 0x25; /* red */ p[565] = 0x27; /* green */ p[566] = 0x16; /* blue */ 
+    p[579] = 0xB5; /* red */ p[580] = 0xC0; /* green */ p[581] = 0x6E; /* blue */ 
+    p[582] = 0xE7; /* red */ p[583] = 0xF4; /* green */ p[584] = 0x8C; /* blue */ 
+    p[585] = 0xC8; /* red */ p[586] = 0xD4; /* green */ p[587] = 0x79; /* blue */ 
+    p[588] = 0xAA; /* red */ p[589] = 0xB4; /* green */ p[590] = 0x67; /* blue */ 
+    p[591] = 0x8C; /* red */ p[592] = 0x94; /* green */ p[593] = 0x55; /* blue */ 
+    p[594] = 0x6E; /* red */ p[595] = 0x74; /* green */ p[596] = 0x42; /* blue */ 
+    p[597] = 0x4F; /* red */ p[598] = 0x54; /* green */ p[599] = 0x30; /* blue */ 
+    p[600] = 0x31; /* red */ p[601] = 0x34; /* green */ p[602] = 0x1E; /* blue */ 
+    p[603] = 0x35; /* red */ p[604] = 0x38; /* green */ p[605] = 0x1F; /* blue */ 
+    p[606] = 0x01; /* red */ p[607] = 0x01; /* green */ p[608] = 0x01; /* blue */ 
+    p[630] = 0x79; /* red */ p[631] = 0x80; /* green */ p[632] = 0x49; /* blue */ 
+    p[633] = 0xF1; /* red */ p[634] = 0xFF; /* green */ p[635] = 0x92; /* blue */ 
+    p[636] = 0xCC; /* red */ p[637] = 0xD8; /* green */ p[638] = 0x7C; /* blue */ 
+    p[639] = 0x10; /* red */ p[640] = 0x11; /* green */ p[641] = 0x0A; /* blue */ 
+    p[705] = 0x26; /* red */ p[706] = 0x28; /* green */ p[707] = 0x17; /* blue */ 
+    p[708] = 0xEE; /* red */ p[709] = 0xFC; /* green */ p[710] = 0x90; /* blue */ 
+    p[711] = 0xE5; /* red */ p[712] = 0xF2; /* green */ p[713] = 0x8B; /* blue */ 
+    p[714] = 0x24; /* red */ p[715] = 0x26; /* green */ p[716] = 0x16; /* blue */ 
+    p[783] = 0xA5; /* red */ p[784] = 0xAF; /* green */ p[785] = 0x64; /* blue */ 
+    p[786] = 0xF1; /* red */ p[787] = 0xFF; /* green */ p[788] = 0x92; /* blue */ 
+    p[789] = 0x70; /* red */ p[790] = 0x77; /* green */ p[791] = 0x44; /* blue */ 
+    p[858] = 0x1D; /* red */ p[859] = 0x1F; /* green */ p[860] = 0x12; /* blue */ 
+    p[861] = 0xF1; /* red */ p[862] = 0xFF; /* green */ p[863] = 0x92; /* blue */ 
+    p[864] = 0xDB; /* red */ p[865] = 0xE8; /* green */ p[866] = 0x85; /* blue */ 
+    p[867] = 0x09; /* red */ p[868] = 0x0A; /* green */ p[869] = 0x06; /* blue */ 
+    p[933] = 0x1C; /* red */ p[934] = 0x1E; /* green */ p[935] = 0x11; /* blue */ 
+    p[936] = 0x6B; /* red */ p[937] = 0x71; /* green */ p[938] = 0x41; /* blue */ 
+    p[939] = 0xF1; /* red */ p[940] = 0xFF; /* green */ p[941] = 0x92; /* blue */ 
+    p[942] = 0x8F; /* red */ p[943] = 0x97; /* green */ p[944] = 0x56; /* blue */ 
+    p[978] = 0x48; /* red */ p[979] = 0x4C; /* green */ p[980] = 0x2C; /* blue */ 
+    p[981] = 0xD9; /* red */ p[982] = 0xE6; /* green */ p[983] = 0x84; /* blue */ 
+    p[984] = 0x79; /* red */ p[985] = 0x80; /* green */ p[986] = 0x49; /* blue */ 
+    p[1008] = 0xF1; /* red */ p[1009] = 0xFF; /* green */ p[1010] = 0x92; /* blue */ 
+    p[1011] = 0x6A; /* red */ p[1012] = 0x70; /* green */ p[1013] = 0x40; /* blue */ 
+    p[1014] = 0xB0; /* red */ p[1015] = 0xBA; /* green */ p[1016] = 0x6A; /* blue */ 
+    p[1017] = 0xF1; /* red */ p[1018] = 0xFF; /* green */ p[1019] = 0x92; /* blue */ 
+    p[1020] = 0x49; /* red */ p[1021] = 0x4D; /* green */ p[1022] = 0x2C; /* blue */ 
+    p[1023] = 0x0B; /* red */ p[1024] = 0x0C; /* green */ p[1025] = 0x07; /* blue */ 
+    p[1050] = 0x18; /* red */ p[1051] = 0x19; /* green */ p[1052] = 0x0E; /* blue */ 
+    p[1053] = 0xA9; /* red */ p[1054] = 0xB3; /* green */ p[1055] = 0x66; /* blue */ 
+    p[1056] = 0xA9; /* red */ p[1057] = 0xB3; /* green */ p[1058] = 0x66; /* blue */ 
+    p[1059] = 0x18; /* red */ p[1060] = 0x19; /* green */ p[1061] = 0x0E; /* blue */ 
+    p[1083] = 0x24; /* red */ p[1084] = 0x26; /* green */ p[1085] = 0x16; /* blue */ 
+    p[1086] = 0xF1; /* red */ p[1087] = 0xFF; /* green */ p[1088] = 0x92; /* blue */ 
+    p[1089] = 0xAF; /* red */ p[1090] = 0xB9; /* green */ p[1091] = 0x6A; /* blue */ 
+    p[1092] = 0xCD; /* red */ p[1093] = 0xD9; /* green */ p[1094] = 0x7C; /* blue */ 
+    p[1095] = 0xF1; /* red */ p[1096] = 0xFF; /* green */ p[1097] = 0x92; /* blue */ 
+    p[1098] = 0x23; /* red */ p[1099] = 0x25; /* green */ p[1100] = 0x15; /* blue */ 
+    p[1101] = 0x0B; /* red */ p[1102] = 0x0C; /* green */ p[1103] = 0x07; /* blue */ 
+    p[1125] = 0x78; /* red */ p[1126] = 0x7F; /* green */ p[1127] = 0x49; /* blue */ 
+    p[1128] = 0xD9; /* red */ p[1129] = 0xE6; /* green */ p[1130] = 0x84; /* blue */ 
+    p[1131] = 0x48; /* red */ p[1132] = 0x4C; /* green */ p[1133] = 0x2C; /* blue */ 
+    p[1161] = 0x1B; /* red */ p[1162] = 0x1C; /* green */ p[1163] = 0x10; /* blue */ 
+    p[1164] = 0xF1; /* red */ p[1165] = 0xFF; /* green */ p[1166] = 0x92; /* blue */ 
+    p[1167] = 0xCC; /* red */ p[1168] = 0xD8; /* green */ p[1169] = 0x7C; /* blue */ 
+    p[1170] = 0xE6; /* red */ p[1171] = 0xF3; /* green */ p[1172] = 0x8B; /* blue */ 
+    p[1173] = 0xF1; /* red */ p[1174] = 0xFF; /* green */ p[1175] = 0x92; /* blue */ 
+    p[1176] = 0x0B; /* red */ p[1177] = 0x0C; /* green */ p[1178] = 0x07; /* blue */ 
+    p[1179] = 0x0B; /* red */ p[1180] = 0x0C; /* green */ p[1181] = 0x07; /* blue */ 
+    p[1197] = 0x48; /* red */ p[1198] = 0x4C; /* green */ p[1199] = 0x2C; /* blue */ 
+    p[1200] = 0xD9; /* red */ p[1201] = 0xE6; /* green */ p[1202] = 0x84; /* blue */ 
+    p[1203] = 0x79; /* red */ p[1204] = 0x80; /* green */ p[1205] = 0x49; /* blue */ 
+    p[1239] = 0x0C; /* red */ p[1240] = 0x0D; /* green */ p[1241] = 0x07; /* blue */ 
+    p[1242] = 0xF1; /* red */ p[1243] = 0xFF; /* green */ p[1244] = 0x92; /* blue */ 
+    p[1245] = 0xE6; /* red */ p[1246] = 0xF3; /* green */ p[1247] = 0x8B; /* blue */ 
+    p[1248] = 0xE6; /* red */ p[1249] = 0xF3; /* green */ p[1250] = 0x8B; /* blue */ 
+    p[1251] = 0xF1; /* red */ p[1252] = 0xFF; /* green */ p[1253] = 0x92; /* blue */ 
+    p[1254] = 0x0B; /* red */ p[1255] = 0x0C; /* green */ p[1256] = 0x07; /* blue */ 
+    p[1257] = 0x0B; /* red */ p[1258] = 0x0C; /* green */ p[1259] = 0x07; /* blue */ 
+    p[1269] = 0x18; /* red */ p[1270] = 0x19; /* green */ p[1271] = 0x0E; /* blue */ 
+    p[1272] = 0xA9; /* red */ p[1273] = 0xB3; /* green */ p[1274] = 0x66; /* blue */ 
+    p[1275] = 0xA9; /* red */ p[1276] = 0xB3; /* green */ p[1277] = 0x66; /* blue */ 
+    p[1278] = 0x18; /* red */ p[1279] = 0x19; /* green */ p[1280] = 0x0E; /* blue */ 
+    p[1311] = 0x1A; /* red */ p[1312] = 0x1C; /* green */ p[1313] = 0x10; /* blue */ 
+    p[1317] = 0x0C; /* red */ p[1318] = 0x0D; /* green */ p[1319] = 0x07; /* blue */ 
+    p[1320] = 0xF1; /* red */ p[1321] = 0xFF; /* green */ p[1322] = 0x92; /* blue */ 
+    p[1323] = 0xE6; /* red */ p[1324] = 0xF3; /* green */ p[1325] = 0x8B; /* blue */ 
+    p[1326] = 0xCD; /* red */ p[1327] = 0xD9; /* green */ p[1328] = 0x7C; /* blue */ 
+    p[1329] = 0xF1; /* red */ p[1330] = 0xFF; /* green */ p[1331] = 0x92; /* blue */ 
+    p[1332] = 0x23; /* red */ p[1333] = 0x25; /* green */ p[1334] = 0x15; /* blue */ 
+    p[1335] = 0x0B; /* red */ p[1336] = 0x0C; /* green */ p[1337] = 0x07; /* blue */ 
+    p[1347] = 0xD9; /* red */ p[1348] = 0xE6; /* green */ p[1349] = 0x84; /* blue */ 
+    p[1350] = 0x48; /* red */ p[1351] = 0x4C; /* green */ p[1352] = 0x2C; /* blue */ 
+    p[1389] = 0x1A; /* red */ p[1390] = 0x1C; /* green */ p[1391] = 0x10; /* blue */ 
+    p[1395] = 0x24; /* red */ p[1396] = 0x26; /* green */ p[1397] = 0x16; /* blue */ 
+    p[1398] = 0xF1; /* red */ p[1399] = 0xFF; /* green */ p[1400] = 0x92; /* blue */ 
+    p[1401] = 0xCC; /* red */ p[1402] = 0xD8; /* green */ p[1403] = 0x7C; /* blue */ 
+    p[1404] = 0xB0; /* red */ p[1405] = 0xBA; /* green */ p[1406] = 0x6A; /* blue */ 
+    p[1407] = 0xF1; /* red */ p[1408] = 0xFF; /* green */ p[1409] = 0x92; /* blue */ 
+    p[1410] = 0x49; /* red */ p[1411] = 0x4D; /* green */ p[1412] = 0x2C; /* blue */ 
+    p[1413] = 0x0B; /* red */ p[1414] = 0x0C; /* green */ p[1415] = 0x07; /* blue */ 
+    p[1425] = 0x79; /* red */ p[1426] = 0x80; /* green */ p[1427] = 0x49; /* blue */ 
+    p[1428] = 0x79; /* red */ p[1429] = 0x80; /* green */ p[1430] = 0x49; /* blue */ 
+    p[1431] = 0x79; /* red */ p[1432] = 0x80; /* green */ p[1433] = 0x49; /* blue */ 
+    p[1434] = 0x79; /* red */ p[1435] = 0x80; /* green */ p[1436] = 0x49; /* blue */ 
+    p[1437] = 0x79; /* red */ p[1438] = 0x80; /* green */ p[1439] = 0x49; /* blue */ 
+    p[1440] = 0x79; /* red */ p[1441] = 0x80; /* green */ p[1442] = 0x49; /* blue */ 
+    p[1443] = 0x79; /* red */ p[1444] = 0x80; /* green */ p[1445] = 0x49; /* blue */ 
+    p[1446] = 0x79; /* red */ p[1447] = 0x80; /* green */ p[1448] = 0x49; /* blue */ 
+    p[1449] = 0x79; /* red */ p[1450] = 0x80; /* green */ p[1451] = 0x49; /* blue */ 
+    p[1452] = 0x79; /* red */ p[1453] = 0x80; /* green */ p[1454] = 0x49; /* blue */ 
+    p[1455] = 0x79; /* red */ p[1456] = 0x80; /* green */ p[1457] = 0x49; /* blue */ 
+    p[1458] = 0x3C; /* red */ p[1459] = 0x40; /* green */ p[1460] = 0x25; /* blue */ 
+    p[1467] = 0x1A; /* red */ p[1468] = 0x1C; /* green */ p[1469] = 0x10; /* blue */ 
+    p[1473] = 0x49; /* red */ p[1474] = 0x4D; /* green */ p[1475] = 0x2C; /* blue */ 
+    p[1476] = 0xF1; /* red */ p[1477] = 0xFF; /* green */ p[1478] = 0x92; /* blue */ 
+    p[1479] = 0xAF; /* red */ p[1480] = 0xB9; /* green */ p[1481] = 0x6A; /* blue */ 
+    p[1482] = 0x6B; /* red */ p[1483] = 0x71; /* green */ p[1484] = 0x41; /* blue */ 
+    p[1485] = 0xF1; /* red */ p[1486] = 0xFF; /* green */ p[1487] = 0x92; /* blue */ 
+    p[1488] = 0x8F; /* red */ p[1489] = 0x97; /* green */ p[1490] = 0x56; /* blue */ 
+    p[1551] = 0x90; /* red */ p[1552] = 0x98; /* green */ p[1553] = 0x57; /* blue */ 
+    p[1554] = 0xF1; /* red */ p[1555] = 0xFF; /* green */ p[1556] = 0x92; /* blue */ 
+    p[1557] = 0x6A; /* red */ p[1558] = 0x70; /* green */ p[1559] = 0x40; /* blue */ 
+    p[1560] = 0x1D; /* red */ p[1561] = 0x1F; /* green */ p[1562] = 0x12; /* blue */ 
+    p[1563] = 0xF1; /* red */ p[1564] = 0xFF; /* green */ p[1565] = 0x92; /* blue */ 
+    p[1566] = 0xDB; /* red */ p[1567] = 0xE8; /* green */ p[1568] = 0x85; /* blue */ 
+    p[1569] = 0x09; /* red */ p[1570] = 0x0A; /* green */ p[1571] = 0x06; /* blue */ 
+    p[1626] = 0x09; /* red */ p[1627] = 0x0A; /* green */ p[1628] = 0x06; /* blue */ 
+    p[1629] = 0xDC; /* red */ p[1630] = 0xE9; /* green */ p[1631] = 0x85; /* blue */ 
+    p[1632] = 0xF1; /* red */ p[1633] = 0xFF; /* green */ p[1634] = 0x92; /* blue */ 
+    p[1635] = 0x1C; /* red */ p[1636] = 0x1E; /* green */ p[1637] = 0x11; /* blue */ 
+    p[1641] = 0xA5; /* red */ p[1642] = 0xAF; /* green */ p[1643] = 0x64; /* blue */ 
+    p[1644] = 0xF1; /* red */ p[1645] = 0xFF; /* green */ p[1646] = 0x92; /* blue */ 
+    p[1647] = 0x70; /* red */ p[1648] = 0x77; /* green */ p[1649] = 0x44; /* blue */ 
+    p[1704] = 0x71; /* red */ p[1705] = 0x78; /* green */ p[1706] = 0x45; /* blue */ 
+    p[1707] = 0xF1; /* red */ p[1708] = 0xFF; /* green */ p[1709] = 0x92; /* blue */ 
+    p[1710] = 0xA4; /* red */ p[1711] = 0xAE; /* green */ p[1712] = 0x64; /* blue */ 
+    p[1719] = 0x26; /* red */ p[1720] = 0x28; /* green */ p[1721] = 0x17; /* blue */ 
+    p[1722] = 0xEE; /* red */ p[1723] = 0xFC; /* green */ p[1724] = 0x90; /* blue */ 
+    p[1725] = 0xE5; /* red */ p[1726] = 0xF2; /* green */ p[1727] = 0x8B; /* blue */ 
+    p[1728] = 0x25; /* red */ p[1729] = 0x27; /* green */ p[1730] = 0x16; /* blue */ 
+    p[1779] = 0x25; /* red */ p[1780] = 0x27; /* green */ p[1781] = 0x16; /* blue */ 
+    p[1782] = 0xE5; /* red */ p[1783] = 0xF2; /* green */ p[1784] = 0x8B; /* blue */ 
+    p[1785] = 0xEE; /* red */ p[1786] = 0xFC; /* green */ p[1787] = 0x90; /* blue */ 
+    p[1788] = 0x25; /* red */ p[1789] = 0x27; /* green */ p[1790] = 0x16; /* blue */ 
+    p[1800] = 0x79; /* red */ p[1801] = 0x80; /* green */ p[1802] = 0x49; /* blue */ 
+    p[1803] = 0xF1; /* red */ p[1804] = 0xFF; /* green */ p[1805] = 0x92; /* blue */ 
+    p[1806] = 0xCC; /* red */ p[1807] = 0xD8; /* green */ p[1808] = 0x7C; /* blue */ 
+    p[1809] = 0x10; /* red */ p[1810] = 0x11; /* green */ p[1811] = 0x0A; /* blue */ 
+    p[1854] = 0x10; /* red */ p[1855] = 0x11; /* green */ p[1856] = 0x0A; /* blue */ 
+    p[1857] = 0xCD; /* red */ p[1858] = 0xD9; /* green */ p[1859] = 0x7C; /* blue */ 
+    p[1860] = 0xF1; /* red */ p[1861] = 0xFF; /* green */ p[1862] = 0x92; /* blue */ 
+    p[1863] = 0x79; /* red */ p[1864] = 0x80; /* green */ p[1865] = 0x49; /* blue */ 
+    p[1878] = 0x02; /* red */ p[1879] = 0x02; /* green */ p[1880] = 0x01; /* blue */ 
+    p[1881] = 0xA3; /* red */ p[1882] = 0xAC; /* green */ p[1883] = 0x62; /* blue */ 
+    p[1884] = 0xF1; /* red */ p[1885] = 0xFF; /* green */ p[1886] = 0x92; /* blue */ 
+    p[1887] = 0xCC; /* red */ p[1888] = 0xD8; /* green */ p[1889] = 0x7C; /* blue */ 
+    p[1890] = 0x25; /* red */ p[1891] = 0x27; /* green */ p[1892] = 0x16; /* blue */ 
+    p[1929] = 0x25; /* red */ p[1930] = 0x27; /* green */ p[1931] = 0x16; /* blue */ 
+    p[1932] = 0xCD; /* red */ p[1933] = 0xD9; /* green */ p[1934] = 0x7C; /* blue */ 
+    p[1935] = 0xF1; /* red */ p[1936] = 0xFF; /* green */ p[1937] = 0x92; /* blue */ 
+    p[1938] = 0xA2; /* red */ p[1939] = 0xAB; /* green */ p[1940] = 0x62; /* blue */ 
+    p[1941] = 0x02; /* red */ p[1942] = 0x02; /* green */ p[1943] = 0x01; /* blue */ 
+    p[1959] = 0x09; /* red */ p[1960] = 0x0A; /* green */ p[1961] = 0x06; /* blue */ 
+    p[1962] = 0xA3; /* red */ p[1963] = 0xAC; /* green */ p[1964] = 0x62; /* blue */ 
+    p[1965] = 0xF1; /* red */ p[1966] = 0xFF; /* green */ p[1967] = 0x92; /* blue */ 
+    p[1968] = 0xE5; /* red */ p[1969] = 0xF2; /* green */ p[1970] = 0x8B; /* blue */ 
+    p[1971] = 0x71; /* red */ p[1972] = 0x78; /* green */ p[1973] = 0x45; /* blue */ 
+    p[1974] = 0x09; /* red */ p[1975] = 0x0A; /* green */ p[1976] = 0x06; /* blue */ 
+    p[2001] = 0x09; /* red */ p[2002] = 0x0A; /* green */ p[2003] = 0x06; /* blue */ 
+    p[2004] = 0x71; /* red */ p[2005] = 0x78; /* green */ p[2006] = 0x45; /* blue */ 
+    p[2007] = 0xE5; /* red */ p[2008] = 0xF2; /* green */ p[2009] = 0x8B; /* blue */ 
+    p[2010] = 0xF1; /* red */ p[2011] = 0xFF; /* green */ p[2012] = 0x92; /* blue */ 
+    p[2013] = 0xA2; /* red */ p[2014] = 0xAB; /* green */ p[2015] = 0x62; /* blue */ 
+    p[2016] = 0x09; /* red */ p[2017] = 0x0A; /* green */ p[2018] = 0x06; /* blue */ 
+    p[2040] = 0x02; /* red */ p[2041] = 0x02; /* green */ p[2042] = 0x01; /* blue */ 
+    p[2043] = 0x79; /* red */ p[2044] = 0x80; /* green */ p[2045] = 0x49; /* blue */ 
+    p[2046] = 0xEE; /* red */ p[2047] = 0xFC; /* green */ p[2048] = 0x90; /* blue */ 
+    p[2049] = 0xF1; /* red */ p[2050] = 0xFF; /* green */ p[2051] = 0x92; /* blue */ 
+    p[2052] = 0xDB; /* red */ p[2053] = 0xE8; /* green */ p[2054] = 0x85; /* blue */ 
+    p[2055] = 0x90; /* red */ p[2056] = 0x98; /* green */ p[2057] = 0x57; /* blue */ 
+    p[2058] = 0x49; /* red */ p[2059] = 0x4D; /* green */ p[2060] = 0x2C; /* blue */ 
+    p[2061] = 0x24; /* red */ p[2062] = 0x26; /* green */ p[2063] = 0x16; /* blue */ 
+    p[2064] = 0x0C; /* red */ p[2065] = 0x0D; /* green */ p[2066] = 0x07; /* blue */ 
+    p[2067] = 0x0C; /* red */ p[2068] = 0x0D; /* green */ p[2069] = 0x07; /* blue */ 
+    p[2070] = 0x24; /* red */ p[2071] = 0x26; /* green */ p[2072] = 0x16; /* blue */ 
+    p[2073] = 0x49; /* red */ p[2074] = 0x4D; /* green */ p[2075] = 0x2C; /* blue */ 
+    p[2076] = 0x90; /* red */ p[2077] = 0x98; /* green */ p[2078] = 0x57; /* blue */ 
+    p[2079] = 0xDB; /* red */ p[2080] = 0xE8; /* green */ p[2081] = 0x85; /* blue */ 
+    p[2082] = 0xF1; /* red */ p[2083] = 0xFF; /* green */ p[2084] = 0x92; /* blue */ 
+    p[2085] = 0xEE; /* red */ p[2086] = 0xFC; /* green */ p[2087] = 0x90; /* blue */ 
+    p[2088] = 0x79; /* red */ p[2089] = 0x80; /* green */ p[2090] = 0x49; /* blue */ 
+    p[2091] = 0x02; /* red */ p[2092] = 0x02; /* green */ p[2093] = 0x01; /* blue */ 
+    p[2124] = 0x25; /* red */ p[2125] = 0x27; /* green */ p[2126] = 0x16; /* blue */ 
+    p[2127] = 0xA4; /* red */ p[2128] = 0xAE; /* green */ p[2129] = 0x64; /* blue */ 
+    p[2130] = 0xF1; /* red */ p[2131] = 0xFF; /* green */ p[2132] = 0x92; /* blue */ 
+    p[2133] = 0xF1; /* red */ p[2134] = 0xFF; /* green */ p[2135] = 0x92; /* blue */ 
+    p[2136] = 0xF1; /* red */ p[2137] = 0xFF; /* green */ p[2138] = 0x92; /* blue */ 
+    p[2139] = 0xF1; /* red */ p[2140] = 0xFF; /* green */ p[2141] = 0x92; /* blue */ 
+    p[2142] = 0xF1; /* red */ p[2143] = 0xFF; /* green */ p[2144] = 0x92; /* blue */ 
+    p[2145] = 0xF1; /* red */ p[2146] = 0xFF; /* green */ p[2147] = 0x92; /* blue */ 
+    p[2148] = 0xF1; /* red */ p[2149] = 0xFF; /* green */ p[2150] = 0x92; /* blue */ 
+    p[2151] = 0xF1; /* red */ p[2152] = 0xFF; /* green */ p[2153] = 0x92; /* blue */ 
+    p[2154] = 0xF1; /* red */ p[2155] = 0xFF; /* green */ p[2156] = 0x92; /* blue */ 
+    p[2157] = 0xF1; /* red */ p[2158] = 0xFF; /* green */ p[2159] = 0x92; /* blue */ 
+    p[2160] = 0xA4; /* red */ p[2161] = 0xAE; /* green */ p[2162] = 0x64; /* blue */ 
+    p[2163] = 0x25; /* red */ p[2164] = 0x27; /* green */ p[2165] = 0x16; /* blue */ 
+    p[2208] = 0x1C; /* red */ p[2209] = 0x1E; /* green */ p[2210] = 0x11; /* blue */ 
+    p[2211] = 0x6A; /* red */ p[2212] = 0x70; /* green */ p[2213] = 0x40; /* blue */ 
+    p[2214] = 0xAF; /* red */ p[2215] = 0xB9; /* green */ p[2216] = 0x6A; /* blue */ 
+    p[2217] = 0xCC; /* red */ p[2218] = 0xD8; /* green */ p[2219] = 0x7C; /* blue */ 
+    p[2220] = 0xE6; /* red */ p[2221] = 0xF3; /* green */ p[2222] = 0x8B; /* blue */ 
+    p[2223] = 0xE6; /* red */ p[2224] = 0xF3; /* green */ p[2225] = 0x8B; /* blue */ 
+    p[2226] = 0xCC; /* red */ p[2227] = 0xD8; /* green */ p[2228] = 0x7C; /* blue */ 
+    p[2229] = 0xAF; /* red */ p[2230] = 0xB9; /* green */ p[2231] = 0x6A; /* blue */ 
+    p[2232] = 0x6A; /* red */ p[2233] = 0x70; /* green */ p[2234] = 0x40; /* blue */ 
+    p[2235] = 0x1C; /* red */ p[2236] = 0x1E; /* green */ p[2237] = 0x11; /* blue */ 
+    
+    return img;
+}
+
 struct img *img_feed_left_down(void)
 {
     struct img *img = img_alloc("img", 96, 50);
@@ -5067,6 +5360,568 @@ struct img *img_feed_right_up(void)
     p[12572] = 0x5C; /* blue */ 
     p[12575] = 0x69; /* blue */ 
     p[12578] = 0x1E; /* blue */ 
+    
+    return img;
+}
+
+struct img *img_cut_speed(void)
+{
+    struct img *img = img_alloc("img", 33, 36);
+    u8 *p = img->buf->d;
+    p[3] = 0x7F; /* red */ p[4] = 0x40; /* green */ p[5] = 0x40; /* blue */ 
+    p[6] = 0x7F; /* red */ p[7] = 0x40; /* green */ p[8] = 0x40; /* blue */ 
+    p[9] = 0x7F; /* red */ p[10] = 0x40; /* green */ p[11] = 0x40; /* blue */ 
+    p[12] = 0x7F; /* red */ p[13] = 0x40; /* green */ p[14] = 0x40; /* blue */ 
+    p[15] = 0x7F; /* red */ p[16] = 0x40; /* green */ p[17] = 0x40; /* blue */ 
+    p[18] = 0x7F; /* red */ p[19] = 0x40; /* green */ p[20] = 0x40; /* blue */ 
+    p[21] = 0x7F; /* red */ p[22] = 0x40; /* green */ p[23] = 0x40; /* blue */ 
+    p[24] = 0x7F; /* red */ p[25] = 0x40; /* green */ p[26] = 0x40; /* blue */ 
+    p[27] = 0x7F; /* red */ p[28] = 0x40; /* green */ p[29] = 0x40; /* blue */ 
+    p[30] = 0x7F; /* red */ p[31] = 0x40; /* green */ p[32] = 0x40; /* blue */ 
+    p[33] = 0x7F; /* red */ p[34] = 0x40; /* green */ p[35] = 0x40; /* blue */ 
+    p[36] = 0x7F; /* red */ p[37] = 0x40; /* green */ p[38] = 0x40; /* blue */ 
+    p[39] = 0x7F; /* red */ p[40] = 0x40; /* green */ p[41] = 0x40; /* blue */ 
+    p[42] = 0x7F; /* red */ p[43] = 0x40; /* green */ p[44] = 0x40; /* blue */ 
+    p[45] = 0x7F; /* red */ p[46] = 0x40; /* green */ p[47] = 0x40; /* blue */ 
+    p[48] = 0x7F; /* red */ p[49] = 0x40; /* green */ p[50] = 0x40; /* blue */ 
+    p[51] = 0x7F; /* red */ p[52] = 0x40; /* green */ p[53] = 0x40; /* blue */ 
+    p[54] = 0x7F; /* red */ p[55] = 0x40; /* green */ p[56] = 0x40; /* blue */ 
+    p[57] = 0x7F; /* red */ p[58] = 0x40; /* green */ p[59] = 0x40; /* blue */ 
+    p[60] = 0x7F; /* red */ p[61] = 0x40; /* green */ p[62] = 0x40; /* blue */ 
+    p[63] = 0x7F; /* red */ p[64] = 0x40; /* green */ p[65] = 0x40; /* blue */ 
+    p[66] = 0x7F; /* red */ p[67] = 0x40; /* green */ p[68] = 0x40; /* blue */ 
+    p[69] = 0x7F; /* red */ p[70] = 0x40; /* green */ p[71] = 0x40; /* blue */ 
+    p[72] = 0x7F; /* red */ p[73] = 0x40; /* green */ p[74] = 0x40; /* blue */ 
+    p[75] = 0x7F; /* red */ p[76] = 0x40; /* green */ p[77] = 0x40; /* blue */ 
+    p[78] = 0x7F; /* red */ p[79] = 0x40; /* green */ p[80] = 0x40; /* blue */ 
+    p[81] = 0x7F; /* red */ p[82] = 0x40; /* green */ p[83] = 0x40; /* blue */ 
+    p[84] = 0x7F; /* red */ p[85] = 0x40; /* green */ p[86] = 0x40; /* blue */ 
+    p[87] = 0x7F; /* red */ p[88] = 0x40; /* green */ p[89] = 0x40; /* blue */ 
+    p[90] = 0x7F; /* red */ p[91] = 0x40; /* green */ p[92] = 0x40; /* blue */ 
+    p[93] = 0x7F; /* red */ p[94] = 0x40; /* green */ p[95] = 0x40; /* blue */ 
+    p[99] = 0x7F; /* red */ p[100] = 0x40; /* green */ p[101] = 0x40; /* blue */ 
+    p[102] = 0xC0; /* red */ p[103] = 0x60; /* green */ p[104] = 0x60; /* blue */ 
+    p[105] = 0x80; /* red */ p[106] = 0x40; /* green */ p[107] = 0x40; /* blue */ 
+    p[108] = 0x80; /* red */ p[109] = 0x40; /* green */ p[110] = 0x40; /* blue */ 
+    p[111] = 0x80; /* red */ p[112] = 0x40; /* green */ p[113] = 0x40; /* blue */ 
+    p[114] = 0x80; /* red */ p[115] = 0x40; /* green */ p[116] = 0x40; /* blue */ 
+    p[117] = 0x80; /* red */ p[118] = 0x40; /* green */ p[119] = 0x40; /* blue */ 
+    p[120] = 0x80; /* red */ p[121] = 0x40; /* green */ p[122] = 0x40; /* blue */ 
+    p[123] = 0x80; /* red */ p[124] = 0x40; /* green */ p[125] = 0x40; /* blue */ 
+    p[126] = 0x80; /* red */ p[127] = 0x40; /* green */ p[128] = 0x40; /* blue */ 
+    p[129] = 0x80; /* red */ p[130] = 0x40; /* green */ p[131] = 0x40; /* blue */ 
+    p[132] = 0x80; /* red */ p[133] = 0x40; /* green */ p[134] = 0x40; /* blue */ 
+    p[135] = 0x80; /* red */ p[136] = 0x40; /* green */ p[137] = 0x40; /* blue */ 
+    p[138] = 0x80; /* red */ p[139] = 0x40; /* green */ p[140] = 0x40; /* blue */ 
+    p[141] = 0x80; /* red */ p[142] = 0x40; /* green */ p[143] = 0x40; /* blue */ 
+    p[144] = 0x80; /* red */ p[145] = 0x40; /* green */ p[146] = 0x40; /* blue */ 
+    p[147] = 0x80; /* red */ p[148] = 0x40; /* green */ p[149] = 0x40; /* blue */ 
+    p[150] = 0x80; /* red */ p[151] = 0x40; /* green */ p[152] = 0x40; /* blue */ 
+    p[153] = 0x80; /* red */ p[154] = 0x40; /* green */ p[155] = 0x40; /* blue */ 
+    p[156] = 0x80; /* red */ p[157] = 0x40; /* green */ p[158] = 0x40; /* blue */ 
+    p[159] = 0x80; /* red */ p[160] = 0x40; /* green */ p[161] = 0x40; /* blue */ 
+    p[162] = 0x80; /* red */ p[163] = 0x40; /* green */ p[164] = 0x40; /* blue */ 
+    p[165] = 0x80; /* red */ p[166] = 0x40; /* green */ p[167] = 0x40; /* blue */ 
+    p[168] = 0x80; /* red */ p[169] = 0x40; /* green */ p[170] = 0x40; /* blue */ 
+    p[171] = 0x80; /* red */ p[172] = 0x40; /* green */ p[173] = 0x40; /* blue */ 
+    p[174] = 0x80; /* red */ p[175] = 0x40; /* green */ p[176] = 0x40; /* blue */ 
+    p[177] = 0x80; /* red */ p[178] = 0x40; /* green */ p[179] = 0x40; /* blue */ 
+    p[180] = 0x80; /* red */ p[181] = 0x40; /* green */ p[182] = 0x40; /* blue */ 
+    p[183] = 0x80; /* red */ p[184] = 0x40; /* green */ p[185] = 0x40; /* blue */ 
+    p[186] = 0x80; /* red */ p[187] = 0x40; /* green */ p[188] = 0x40; /* blue */ 
+    p[189] = 0x80; /* red */ p[190] = 0x40; /* green */ p[191] = 0x40; /* blue */ 
+    p[192] = 0xBF; /* red */ p[193] = 0x60; /* green */ p[194] = 0x60; /* blue */ 
+    p[195] = 0x80; /* red */ p[196] = 0x40; /* green */ p[197] = 0x40; /* blue */ 
+    p[198] = 0x7F; /* red */ p[199] = 0x40; /* green */ p[200] = 0x40; /* blue */ 
+    p[201] = 0x80; /* red */ p[202] = 0x40; /* green */ p[203] = 0x40; /* blue */ 
+    p[291] = 0x7F; /* red */ p[292] = 0x40; /* green */ p[293] = 0x40; /* blue */ 
+    p[294] = 0x80; /* red */ p[295] = 0x40; /* green */ p[296] = 0x40; /* blue */ 
+    p[297] = 0x7F; /* red */ p[298] = 0x40; /* green */ p[299] = 0x40; /* blue */ 
+    p[300] = 0x80; /* red */ p[301] = 0x40; /* green */ p[302] = 0x40; /* blue */ 
+    p[390] = 0x7F; /* red */ p[391] = 0x40; /* green */ p[392] = 0x40; /* blue */ 
+    p[393] = 0x80; /* red */ p[394] = 0x40; /* green */ p[395] = 0x40; /* blue */ 
+    p[396] = 0x7F; /* red */ p[397] = 0x40; /* green */ p[398] = 0x40; /* blue */ 
+    p[399] = 0x80; /* red */ p[400] = 0x40; /* green */ p[401] = 0x40; /* blue */ 
+    p[429] = 0x05; /* red */ p[430] = 0x03; /* green */ p[431] = 0x03; /* blue */ 
+    p[432] = 0x42; /* red */ p[433] = 0x21; /* green */ p[434] = 0x21; /* blue */ 
+    p[435] = 0x93; /* red */ p[436] = 0x4A; /* green */ p[437] = 0x4A; /* blue */ 
+    p[438] = 0xCA; /* red */ p[439] = 0x65; /* green */ p[440] = 0x65; /* blue */ 
+    p[441] = 0xE5; /* red */ p[442] = 0x73; /* green */ p[443] = 0x73; /* blue */ 
+    p[444] = 0xFA; /* red */ p[445] = 0x7D; /* green */ p[446] = 0x7D; /* blue */ 
+    p[447] = 0xE5; /* red */ p[448] = 0x73; /* green */ p[449] = 0x73; /* blue */ 
+    p[450] = 0xCA; /* red */ p[451] = 0x65; /* green */ p[452] = 0x65; /* blue */ 
+    p[453] = 0x93; /* red */ p[454] = 0x4A; /* green */ p[455] = 0x4A; /* blue */ 
+    p[456] = 0x42; /* red */ p[457] = 0x21; /* green */ p[458] = 0x21; /* blue */ 
+    p[459] = 0x05; /* red */ p[460] = 0x03; /* green */ p[461] = 0x03; /* blue */ 
+    p[474] = 0x32; /* red */ p[475] = 0x19; /* green */ p[476] = 0x19; /* blue */ 
+    p[477] = 0xF4; /* red */ p[478] = 0x7B; /* green */ p[479] = 0x7B; /* blue */ 
+    p[480] = 0xEF; /* red */ p[481] = 0x77; /* green */ p[482] = 0x77; /* blue */ 
+    p[489] = 0x7F; /* red */ p[490] = 0x40; /* green */ p[491] = 0x40; /* blue */ 
+    p[492] = 0x80; /* red */ p[493] = 0x40; /* green */ p[494] = 0x40; /* blue */ 
+    p[495] = 0x7F; /* red */ p[496] = 0x40; /* green */ p[497] = 0x40; /* blue */ 
+    p[498] = 0x80; /* red */ p[499] = 0x40; /* green */ p[500] = 0x40; /* blue */ 
+    p[522] = 0x01; /* red */ p[523] = 0x01; /* green */ p[524] = 0x01; /* blue */ 
+    p[525] = 0x58; /* red */ p[526] = 0x2C; /* green */ p[527] = 0x2C; /* blue */ 
+    p[528] = 0xDF; /* red */ p[529] = 0x70; /* green */ p[530] = 0x70; /* blue */ 
+    p[531] = 0xFF; /* red */ p[532] = 0x80; /* green */ p[533] = 0x80; /* blue */ 
+    p[534] = 0xFF; /* red */ p[535] = 0x80; /* green */ p[536] = 0x80; /* blue */ 
+    p[537] = 0xFF; /* red */ p[538] = 0x80; /* green */ p[539] = 0x80; /* blue */ 
+    p[540] = 0xFF; /* red */ p[541] = 0x80; /* green */ p[542] = 0x80; /* blue */ 
+    p[543] = 0xFF; /* red */ p[544] = 0x80; /* green */ p[545] = 0x80; /* blue */ 
+    p[546] = 0xFF; /* red */ p[547] = 0x80; /* green */ p[548] = 0x80; /* blue */ 
+    p[549] = 0xFF; /* red */ p[550] = 0x80; /* green */ p[551] = 0x80; /* blue */ 
+    p[552] = 0xFF; /* red */ p[553] = 0x80; /* green */ p[554] = 0x80; /* blue */ 
+    p[555] = 0xFF; /* red */ p[556] = 0x80; /* green */ p[557] = 0x80; /* blue */ 
+    p[558] = 0xDF; /* red */ p[559] = 0x70; /* green */ p[560] = 0x70; /* blue */ 
+    p[561] = 0x58; /* red */ p[562] = 0x2C; /* green */ p[563] = 0x2C; /* blue */ 
+    p[564] = 0x01; /* red */ p[565] = 0x01; /* green */ p[566] = 0x01; /* blue */ 
+    p[570] = 0x47; /* red */ p[571] = 0x25; /* green */ p[572] = 0x25; /* blue */ 
+    p[573] = 0xFB; /* red */ p[574] = 0x7D; /* green */ p[575] = 0x7D; /* blue */ 
+    p[576] = 0xFF; /* red */ p[577] = 0x80; /* green */ p[578] = 0x80; /* blue */ 
+    p[579] = 0xF4; /* red */ p[580] = 0x7A; /* green */ p[581] = 0x7A; /* blue */ 
+    p[588] = 0x7F; /* red */ p[589] = 0x40; /* green */ p[590] = 0x40; /* blue */ 
+    p[591] = 0x80; /* red */ p[592] = 0x40; /* green */ p[593] = 0x40; /* blue */ 
+    p[594] = 0x7F; /* red */ p[595] = 0x40; /* green */ p[596] = 0x40; /* blue */ 
+    p[597] = 0x80; /* red */ p[598] = 0x40; /* green */ p[599] = 0x40; /* blue */ 
+    p[618] = 0x13; /* red */ p[619] = 0x0A; /* green */ p[620] = 0x0A; /* blue */ 
+    p[621] = 0xBD; /* red */ p[622] = 0x5F; /* green */ p[623] = 0x5F; /* blue */ 
+    p[624] = 0xFF; /* red */ p[625] = 0x80; /* green */ p[626] = 0x80; /* blue */ 
+    p[627] = 0xFF; /* red */ p[628] = 0x80; /* green */ p[629] = 0x80; /* blue */ 
+    p[630] = 0xC9; /* red */ p[631] = 0x65; /* green */ p[632] = 0x65; /* blue */ 
+    p[633] = 0x76; /* red */ p[634] = 0x3B; /* green */ p[635] = 0x3B; /* blue */ 
+    p[636] = 0x34; /* red */ p[637] = 0x1A; /* green */ p[638] = 0x1A; /* blue */ 
+    p[639] = 0x18; /* red */ p[640] = 0x0C; /* green */ p[641] = 0x0C; /* blue */ 
+    p[642] = 0x06; /* red */ p[643] = 0x03; /* green */ p[644] = 0x03; /* blue */ 
+    p[645] = 0x18; /* red */ p[646] = 0x0C; /* green */ p[647] = 0x0C; /* blue */ 
+    p[648] = 0x34; /* red */ p[649] = 0x1A; /* green */ p[650] = 0x1A; /* blue */ 
+    p[651] = 0x76; /* red */ p[652] = 0x3B; /* green */ p[653] = 0x3B; /* blue */ 
+    p[654] = 0xC9; /* red */ p[655] = 0x65; /* green */ p[656] = 0x65; /* blue */ 
+    p[657] = 0xFF; /* red */ p[658] = 0x80; /* green */ p[659] = 0x80; /* blue */ 
+    p[660] = 0xFF; /* red */ p[661] = 0x80; /* green */ p[662] = 0x80; /* blue */ 
+    p[663] = 0xBD; /* red */ p[664] = 0x5F; /* green */ p[665] = 0x5F; /* blue */ 
+    p[666] = 0x72; /* red */ p[667] = 0x3A; /* green */ p[668] = 0x3A; /* blue */ 
+    p[669] = 0xFE; /* red */ p[670] = 0x7F; /* green */ p[671] = 0x7F; /* blue */ 
+    p[672] = 0xFF; /* red */ p[673] = 0x80; /* green */ p[674] = 0x80; /* blue */ 
+    p[675] = 0xF6; /* red */ p[676] = 0x7B; /* green */ p[677] = 0x7B; /* blue */ 
+    p[678] = 0x28; /* red */ p[679] = 0x14; /* green */ p[680] = 0x14; /* blue */ 
+    p[687] = 0x7F; /* red */ p[688] = 0x40; /* green */ p[689] = 0x40; /* blue */ 
+    p[690] = 0x80; /* red */ p[691] = 0x40; /* green */ p[692] = 0x40; /* blue */ 
+    p[693] = 0x7F; /* red */ p[694] = 0x40; /* green */ p[695] = 0x40; /* blue */ 
+    p[696] = 0x80; /* red */ p[697] = 0x40; /* green */ p[698] = 0x40; /* blue */ 
+    p[714] = 0x26; /* red */ p[715] = 0x13; /* green */ p[716] = 0x13; /* blue */ 
+    p[717] = 0xDC; /* red */ p[718] = 0x6E; /* green */ p[719] = 0x6E; /* blue */ 
+    p[720] = 0xFF; /* red */ p[721] = 0x80; /* green */ p[722] = 0x80; /* blue */ 
+    p[723] = 0xCE; /* red */ p[724] = 0x67; /* green */ p[725] = 0x67; /* blue */ 
+    p[726] = 0x43; /* red */ p[727] = 0x22; /* green */ p[728] = 0x22; /* blue */ 
+    p[756] = 0x43; /* red */ p[757] = 0x22; /* green */ p[758] = 0x22; /* blue */ 
+    p[759] = 0xCF; /* red */ p[760] = 0x68; /* green */ p[761] = 0x68; /* blue */ 
+    p[762] = 0xFF; /* red */ p[763] = 0x80; /* green */ p[764] = 0x80; /* blue */ 
+    p[765] = 0xFF; /* red */ p[766] = 0x80; /* green */ p[767] = 0x80; /* blue */ 
+    p[768] = 0xFF; /* red */ p[769] = 0x80; /* green */ p[770] = 0x80; /* blue */ 
+    p[771] = 0xF6; /* red */ p[772] = 0x7B; /* green */ p[773] = 0x7B; /* blue */ 
+    p[774] = 0x28; /* red */ p[775] = 0x15; /* green */ p[776] = 0x15; /* blue */ 
+    p[786] = 0x7F; /* red */ p[787] = 0x40; /* green */ p[788] = 0x40; /* blue */ 
+    p[789] = 0x80; /* red */ p[790] = 0x40; /* green */ p[791] = 0x40; /* blue */ 
+    p[792] = 0x7F; /* red */ p[793] = 0x40; /* green */ p[794] = 0x40; /* blue */ 
+    p[795] = 0x80; /* red */ p[796] = 0x40; /* green */ p[797] = 0x40; /* blue */ 
+    p[810] = 0x13; /* red */ p[811] = 0x0A; /* green */ p[812] = 0x0A; /* blue */ 
+    p[813] = 0xDC; /* red */ p[814] = 0x6E; /* green */ p[815] = 0x6E; /* blue */ 
+    p[816] = 0xFF; /* red */ p[817] = 0x80; /* green */ p[818] = 0x80; /* blue */ 
+    p[819] = 0xA3; /* red */ p[820] = 0x52; /* green */ p[821] = 0x52; /* blue */ 
+    p[822] = 0x08; /* red */ p[823] = 0x04; /* green */ p[824] = 0x04; /* blue */ 
+    p[855] = 0x0E; /* red */ p[856] = 0x07; /* green */ p[857] = 0x07; /* blue */ 
+    p[858] = 0xB7; /* red */ p[859] = 0x5D; /* green */ p[860] = 0x5D; /* blue */ 
+    p[861] = 0xFF; /* red */ p[862] = 0x80; /* green */ p[863] = 0x80; /* blue */ 
+    p[864] = 0xFF; /* red */ p[865] = 0x80; /* green */ p[866] = 0x80; /* blue */ 
+    p[867] = 0xFE; /* red */ p[868] = 0x7F; /* green */ p[869] = 0x7F; /* blue */ 
+    p[870] = 0x41; /* red */ p[871] = 0x21; /* green */ p[872] = 0x21; /* blue */ 
+    p[885] = 0x7F; /* red */ p[886] = 0x40; /* green */ p[887] = 0x40; /* blue */ 
+    p[888] = 0x80; /* red */ p[889] = 0x40; /* green */ p[890] = 0x40; /* blue */ 
+    p[891] = 0x7F; /* red */ p[892] = 0x40; /* green */ p[893] = 0x40; /* blue */ 
+    p[894] = 0x80; /* red */ p[895] = 0x40; /* green */ p[896] = 0x40; /* blue */ 
+    p[906] = 0x01; /* red */ p[907] = 0x01; /* green */ p[908] = 0x01; /* blue */ 
+    p[909] = 0xBD; /* red */ p[910] = 0x5F; /* green */ p[911] = 0x5F; /* blue */ 
+    p[912] = 0xFF; /* red */ p[913] = 0x80; /* green */ p[914] = 0x80; /* blue */ 
+    p[915] = 0xA3; /* red */ p[916] = 0x52; /* green */ p[917] = 0x52; /* blue */ 
+    p[918] = 0x01; /* red */ p[919] = 0x01; /* green */ p[920] = 0x01; /* blue */ 
+    p[951] = 0x22; /* red */ p[952] = 0x11; /* green */ p[953] = 0x11; /* blue */ 
+    p[954] = 0xD5; /* red */ p[955] = 0x6B; /* green */ p[956] = 0x6B; /* blue */ 
+    p[957] = 0xFF; /* red */ p[958] = 0x80; /* green */ p[959] = 0x80; /* blue */ 
+    p[960] = 0xFF; /* red */ p[961] = 0x80; /* green */ p[962] = 0x80; /* blue */ 
+    p[963] = 0xFD; /* red */ p[964] = 0x7F; /* green */ p[965] = 0x7F; /* blue */ 
+    p[966] = 0xFF; /* red */ p[967] = 0x80; /* green */ p[968] = 0x80; /* blue */ 
+    p[969] = 0xBC; /* red */ p[970] = 0x5E; /* green */ p[971] = 0x5E; /* blue */ 
+    p[972] = 0x01; /* red */ p[973] = 0x01; /* green */ p[974] = 0x01; /* blue */ 
+    p[984] = 0x7F; /* red */ p[985] = 0x40; /* green */ p[986] = 0x40; /* blue */ 
+    p[987] = 0x80; /* red */ p[988] = 0x40; /* green */ p[989] = 0x40; /* blue */ 
+    p[990] = 0x7F; /* red */ p[991] = 0x40; /* green */ p[992] = 0x40; /* blue */ 
+    p[993] = 0x80; /* red */ p[994] = 0x40; /* green */ p[995] = 0x40; /* blue */ 
+    p[1005] = 0x58; /* red */ p[1006] = 0x2C; /* green */ p[1007] = 0x2C; /* blue */ 
+    p[1008] = 0xFF; /* red */ p[1009] = 0x80; /* green */ p[1010] = 0x80; /* blue */ 
+    p[1011] = 0xCE; /* red */ p[1012] = 0x67; /* green */ p[1013] = 0x67; /* blue */ 
+    p[1014] = 0x08; /* red */ p[1015] = 0x04; /* green */ p[1016] = 0x04; /* blue */ 
+    p[1047] = 0x3F; /* red */ p[1048] = 0x20; /* green */ p[1049] = 0x20; /* blue */ 
+    p[1050] = 0xEC; /* red */ p[1051] = 0x76; /* green */ p[1052] = 0x76; /* blue */ 
+    p[1053] = 0xFF; /* red */ p[1054] = 0x80; /* green */ p[1055] = 0x80; /* blue */ 
+    p[1056] = 0xFF; /* red */ p[1057] = 0x80; /* green */ p[1058] = 0x80; /* blue */ 
+    p[1059] = 0xFD; /* red */ p[1060] = 0x7F; /* green */ p[1061] = 0x7F; /* blue */ 
+    p[1062] = 0x57; /* red */ p[1063] = 0x2C; /* green */ p[1064] = 0x2C; /* blue */ 
+    p[1065] = 0xCE; /* red */ p[1066] = 0x67; /* green */ p[1067] = 0x67; /* blue */ 
+    p[1068] = 0xFF; /* red */ p[1069] = 0x80; /* green */ p[1070] = 0x80; /* blue */ 
+    p[1071] = 0x57; /* red */ p[1072] = 0x2C; /* green */ p[1073] = 0x2C; /* blue */ 
+    p[1083] = 0x7F; /* red */ p[1084] = 0x40; /* green */ p[1085] = 0x40; /* blue */ 
+    p[1086] = 0x80; /* red */ p[1087] = 0x40; /* green */ p[1088] = 0x40; /* blue */ 
+    p[1089] = 0x7F; /* red */ p[1090] = 0x40; /* green */ p[1091] = 0x40; /* blue */ 
+    p[1092] = 0x80; /* red */ p[1093] = 0x40; /* green */ p[1094] = 0x40; /* blue */ 
+    p[1101] = 0x05; /* red */ p[1102] = 0x03; /* green */ p[1103] = 0x03; /* blue */ 
+    p[1104] = 0xDF; /* red */ p[1105] = 0x70; /* green */ p[1106] = 0x70; /* blue */ 
+    p[1107] = 0xFF; /* red */ p[1108] = 0x80; /* green */ p[1109] = 0x80; /* blue */ 
+    p[1110] = 0x43; /* red */ p[1111] = 0x22; /* green */ p[1112] = 0x22; /* blue */ 
+    p[1143] = 0x63; /* red */ p[1144] = 0x32; /* green */ p[1145] = 0x32; /* blue */ 
+    p[1146] = 0xFB; /* red */ p[1147] = 0x7E; /* green */ p[1148] = 0x7E; /* blue */ 
+    p[1149] = 0xFF; /* red */ p[1150] = 0x80; /* green */ p[1151] = 0x80; /* blue */ 
+    p[1152] = 0xFE; /* red */ p[1153] = 0x80; /* green */ p[1154] = 0x80; /* blue */ 
+    p[1155] = 0xFF; /* red */ p[1156] = 0x80; /* green */ p[1157] = 0x80; /* blue */ 
+    p[1158] = 0x65; /* red */ p[1159] = 0x33; /* green */ p[1160] = 0x33; /* blue */ 
+    p[1164] = 0x43; /* red */ p[1165] = 0x22; /* green */ p[1166] = 0x22; /* blue */ 
+    p[1167] = 0xFF; /* red */ p[1168] = 0x80; /* green */ p[1169] = 0x80; /* blue */ 
+    p[1170] = 0xDF; /* red */ p[1171] = 0x70; /* green */ p[1172] = 0x70; /* blue */ 
+    p[1173] = 0x04; /* red */ p[1174] = 0x02; /* green */ p[1175] = 0x02; /* blue */ 
+    p[1182] = 0x7F; /* red */ p[1183] = 0x40; /* green */ p[1184] = 0x40; /* blue */ 
+    p[1185] = 0x80; /* red */ p[1186] = 0x40; /* green */ p[1187] = 0x40; /* blue */ 
+    p[1188] = 0x7F; /* red */ p[1189] = 0x40; /* green */ p[1190] = 0x40; /* blue */ 
+    p[1191] = 0x80; /* red */ p[1192] = 0x40; /* green */ p[1193] = 0x40; /* blue */ 
+    p[1200] = 0x42; /* red */ p[1201] = 0x21; /* green */ p[1202] = 0x21; /* blue */ 
+    p[1203] = 0xFF; /* red */ p[1204] = 0x80; /* green */ p[1205] = 0x80; /* blue */ 
+    p[1206] = 0xC9; /* red */ p[1207] = 0x65; /* green */ p[1208] = 0x65; /* blue */ 
+    p[1236] = 0x03; /* red */ p[1237] = 0x02; /* green */ p[1238] = 0x02; /* blue */ 
+    p[1239] = 0x8E; /* red */ p[1240] = 0x47; /* green */ p[1241] = 0x47; /* blue */ 
+    p[1242] = 0xFF; /* red */ p[1243] = 0x80; /* green */ p[1244] = 0x80; /* blue */ 
+    p[1245] = 0xFF; /* red */ p[1246] = 0x80; /* green */ p[1247] = 0x80; /* blue */ 
+    p[1248] = 0xFC; /* red */ p[1249] = 0x7F; /* green */ p[1250] = 0x7F; /* blue */ 
+    p[1251] = 0xFF; /* red */ p[1252] = 0x80; /* green */ p[1253] = 0x80; /* blue */ 
+    p[1254] = 0x7A; /* red */ p[1255] = 0x3D; /* green */ p[1256] = 0x3D; /* blue */ 
+    p[1266] = 0xC9; /* red */ p[1267] = 0x65; /* green */ p[1268] = 0x65; /* blue */ 
+    p[1269] = 0xFF; /* red */ p[1270] = 0x80; /* green */ p[1271] = 0x80; /* blue */ 
+    p[1272] = 0x41; /* red */ p[1273] = 0x21; /* green */ p[1274] = 0x21; /* blue */ 
+    p[1281] = 0x7F; /* red */ p[1282] = 0x40; /* green */ p[1283] = 0x40; /* blue */ 
+    p[1284] = 0x80; /* red */ p[1285] = 0x40; /* green */ p[1286] = 0x40; /* blue */ 
+    p[1287] = 0x7F; /* red */ p[1288] = 0x40; /* green */ p[1289] = 0x40; /* blue */ 
+    p[1290] = 0x80; /* red */ p[1291] = 0x40; /* green */ p[1292] = 0x40; /* blue */ 
+    p[1299] = 0x93; /* red */ p[1300] = 0x4A; /* green */ p[1301] = 0x4A; /* blue */ 
+    p[1302] = 0xFF; /* red */ p[1303] = 0x80; /* green */ p[1304] = 0x80; /* blue */ 
+    p[1305] = 0x76; /* red */ p[1306] = 0x3B; /* green */ p[1307] = 0x3B; /* blue */ 
+    p[1332] = 0x0E; /* red */ p[1333] = 0x07; /* green */ p[1334] = 0x07; /* blue */ 
+    p[1335] = 0xB5; /* red */ p[1336] = 0x5B; /* green */ p[1337] = 0x5B; /* blue */ 
+    p[1338] = 0xFF; /* red */ p[1339] = 0x80; /* green */ p[1340] = 0x80; /* blue */ 
+    p[1341] = 0xFB; /* red */ p[1342] = 0x7E; /* green */ p[1343] = 0x7E; /* blue */ 
+    p[1344] = 0xF8; /* red */ p[1345] = 0x7C; /* green */ p[1346] = 0x7C; /* blue */ 
+    p[1347] = 0xFF; /* red */ p[1348] = 0x80; /* green */ p[1349] = 0x80; /* blue */ 
+    p[1350] = 0x8F; /* red */ p[1351] = 0x48; /* green */ p[1352] = 0x48; /* blue */ 
+    p[1353] = 0x01; /* red */ p[1354] = 0x01; /* green */ p[1355] = 0x01; /* blue */ 
+    p[1380] = 0x7F; /* red */ p[1381] = 0x40; /* green */ p[1382] = 0x40; /* blue */ 
+    p[1383] = 0x80; /* red */ p[1384] = 0x40; /* green */ p[1385] = 0x40; /* blue */ 
+    p[1386] = 0x7F; /* red */ p[1387] = 0x40; /* green */ p[1388] = 0x40; /* blue */ 
+    p[1389] = 0x80; /* red */ p[1390] = 0x40; /* green */ p[1391] = 0x40; /* blue */ 
+    p[1398] = 0xCA; /* red */ p[1399] = 0x65; /* green */ p[1400] = 0x65; /* blue */ 
+    p[1401] = 0xFF; /* red */ p[1402] = 0x80; /* green */ p[1403] = 0x80; /* blue */ 
+    p[1404] = 0x34; /* red */ p[1405] = 0x1A; /* green */ p[1406] = 0x1A; /* blue */ 
+    p[1431] = 0xC4; /* red */ p[1432] = 0x62; /* green */ p[1433] = 0x62; /* blue */ 
+    p[1434] = 0xFF; /* red */ p[1435] = 0x80; /* green */ p[1436] = 0x80; /* blue */ 
+    p[1437] = 0xEF; /* red */ p[1438] = 0x77; /* green */ p[1439] = 0x77; /* blue */ 
+    p[1440] = 0xEF; /* red */ p[1441] = 0x78; /* green */ p[1442] = 0x78; /* blue */ 
+    p[1443] = 0xFF; /* red */ p[1444] = 0x80; /* green */ p[1445] = 0x80; /* blue */ 
+    p[1446] = 0xA3; /* red */ p[1447] = 0x52; /* green */ p[1448] = 0x52; /* blue */ 
+    p[1449] = 0x02; /* red */ p[1450] = 0x01; /* green */ p[1451] = 0x01; /* blue */ 
+    p[1479] = 0x7F; /* red */ p[1480] = 0x40; /* green */ p[1481] = 0x40; /* blue */ 
+    p[1482] = 0x80; /* red */ p[1483] = 0x40; /* green */ p[1484] = 0x40; /* blue */ 
+    p[1485] = 0x7F; /* red */ p[1486] = 0x40; /* green */ p[1487] = 0x40; /* blue */ 
+    p[1488] = 0x80; /* red */ p[1489] = 0x40; /* green */ p[1490] = 0x40; /* blue */ 
+    p[1497] = 0xE5; /* red */ p[1498] = 0x73; /* green */ p[1499] = 0x73; /* blue */ 
+    p[1500] = 0xFF; /* red */ p[1501] = 0x80; /* green */ p[1502] = 0x80; /* blue */ 
+    p[1503] = 0x18; /* red */ p[1504] = 0x0C; /* green */ p[1505] = 0x0C; /* blue */ 
+    p[1530] = 0xFC; /* red */ p[1531] = 0x7F; /* green */ p[1532] = 0x7F; /* blue */ 
+    p[1533] = 0xFD; /* red */ p[1534] = 0x7F; /* green */ p[1535] = 0x7F; /* blue */ 
+    p[1536] = 0xE4; /* red */ p[1537] = 0x74; /* green */ p[1538] = 0x74; /* blue */ 
+    p[1539] = 0xFF; /* red */ p[1540] = 0x80; /* green */ p[1541] = 0x80; /* blue */ 
+    p[1542] = 0xB5; /* red */ p[1543] = 0x5B; /* green */ p[1544] = 0x5B; /* blue */ 
+    p[1545] = 0x05; /* red */ p[1546] = 0x03; /* green */ p[1547] = 0x03; /* blue */ 
+    p[1578] = 0x7F; /* red */ p[1579] = 0x40; /* green */ p[1580] = 0x40; /* blue */ 
+    p[1581] = 0x80; /* red */ p[1582] = 0x40; /* green */ p[1583] = 0x40; /* blue */ 
+    p[1584] = 0x7F; /* red */ p[1585] = 0x40; /* green */ p[1586] = 0x40; /* blue */ 
+    p[1587] = 0x80; /* red */ p[1588] = 0x40; /* green */ p[1589] = 0x40; /* blue */ 
+    p[1596] = 0xFA; /* red */ p[1597] = 0x7D; /* green */ p[1598] = 0x7D; /* blue */ 
+    p[1599] = 0xFF; /* red */ p[1600] = 0x80; /* green */ p[1601] = 0x80; /* blue */ 
+    p[1602] = 0x06; /* red */ p[1603] = 0x03; /* green */ p[1604] = 0x03; /* blue */ 
+    p[1629] = 0xF4; /* red */ p[1630] = 0x7A; /* green */ p[1631] = 0x7A; /* blue */ 
+    p[1632] = 0xFD; /* red */ p[1633] = 0x7F; /* green */ p[1634] = 0x7F; /* blue */ 
+    p[1635] = 0xFF; /* red */ p[1636] = 0x80; /* green */ p[1637] = 0x80; /* blue */ 
+    p[1638] = 0xC5; /* red */ p[1639] = 0x63; /* green */ p[1640] = 0x63; /* blue */ 
+    p[1641] = 0x0A; /* red */ p[1642] = 0x05; /* green */ p[1643] = 0x05; /* blue */ 
+    p[1677] = 0x7F; /* red */ p[1678] = 0x40; /* green */ p[1679] = 0x40; /* blue */ 
+    p[1680] = 0x80; /* red */ p[1681] = 0x40; /* green */ p[1682] = 0x40; /* blue */ 
+    p[1683] = 0x7F; /* red */ p[1684] = 0x40; /* green */ p[1685] = 0x40; /* blue */ 
+    p[1686] = 0x80; /* red */ p[1687] = 0x40; /* green */ p[1688] = 0x40; /* blue */ 
+    p[1695] = 0xE5; /* red */ p[1696] = 0x73; /* green */ p[1697] = 0x73; /* blue */ 
+    p[1698] = 0xFF; /* red */ p[1699] = 0x80; /* green */ p[1700] = 0x80; /* blue */ 
+    p[1701] = 0x18; /* red */ p[1702] = 0x0C; /* green */ p[1703] = 0x0C; /* blue */ 
+    p[1731] = 0xBE; /* red */ p[1732] = 0x5F; /* green */ p[1733] = 0x5F; /* blue */ 
+    p[1734] = 0xC3; /* red */ p[1735] = 0x62; /* green */ p[1736] = 0x62; /* blue */ 
+    p[1737] = 0x11; /* red */ p[1738] = 0x09; /* green */ p[1739] = 0x09; /* blue */ 
+    p[1776] = 0x7F; /* red */ p[1777] = 0x40; /* green */ p[1778] = 0x40; /* blue */ 
+    p[1779] = 0x80; /* red */ p[1780] = 0x40; /* green */ p[1781] = 0x40; /* blue */ 
+    p[1782] = 0x7F; /* red */ p[1783] = 0x40; /* green */ p[1784] = 0x40; /* blue */ 
+    p[1785] = 0x80; /* red */ p[1786] = 0x40; /* green */ p[1787] = 0x40; /* blue */ 
+    p[1794] = 0xCA; /* red */ p[1795] = 0x65; /* green */ p[1796] = 0x65; /* blue */ 
+    p[1797] = 0xFF; /* red */ p[1798] = 0x80; /* green */ p[1799] = 0x80; /* blue */ 
+    p[1800] = 0x34; /* red */ p[1801] = 0x1A; /* green */ p[1802] = 0x1A; /* blue */ 
+    p[1875] = 0x7F; /* red */ p[1876] = 0x40; /* green */ p[1877] = 0x40; /* blue */ 
+    p[1878] = 0x80; /* red */ p[1879] = 0x40; /* green */ p[1880] = 0x40; /* blue */ 
+    p[1881] = 0x7F; /* red */ p[1882] = 0x40; /* green */ p[1883] = 0x40; /* blue */ 
+    p[1884] = 0x80; /* red */ p[1885] = 0x40; /* green */ p[1886] = 0x40; /* blue */ 
+    p[1893] = 0x93; /* red */ p[1894] = 0x4A; /* green */ p[1895] = 0x4A; /* blue */ 
+    p[1896] = 0xFF; /* red */ p[1897] = 0x80; /* green */ p[1898] = 0x80; /* blue */ 
+    p[1899] = 0x76; /* red */ p[1900] = 0x3B; /* green */ p[1901] = 0x3B; /* blue */ 
+    p[1974] = 0x7F; /* red */ p[1975] = 0x40; /* green */ p[1976] = 0x40; /* blue */ 
+    p[1977] = 0x80; /* red */ p[1978] = 0x40; /* green */ p[1979] = 0x40; /* blue */ 
+    p[1980] = 0x7F; /* red */ p[1981] = 0x40; /* green */ p[1982] = 0x40; /* blue */ 
+    p[1983] = 0x80; /* red */ p[1984] = 0x40; /* green */ p[1985] = 0x40; /* blue */ 
+    p[1992] = 0x42; /* red */ p[1993] = 0x21; /* green */ p[1994] = 0x21; /* blue */ 
+    p[1995] = 0xFF; /* red */ p[1996] = 0x80; /* green */ p[1997] = 0x80; /* blue */ 
+    p[1998] = 0xC9; /* red */ p[1999] = 0x65; /* green */ p[2000] = 0x65; /* blue */ 
+    p[2073] = 0x7F; /* red */ p[2074] = 0x40; /* green */ p[2075] = 0x40; /* blue */ 
+    p[2076] = 0x80; /* red */ p[2077] = 0x40; /* green */ p[2078] = 0x40; /* blue */ 
+    p[2079] = 0x7F; /* red */ p[2080] = 0x40; /* green */ p[2081] = 0x40; /* blue */ 
+    p[2082] = 0x80; /* red */ p[2083] = 0x40; /* green */ p[2084] = 0x40; /* blue */ 
+    p[2091] = 0x05; /* red */ p[2092] = 0x03; /* green */ p[2093] = 0x03; /* blue */ 
+    p[2094] = 0xDF; /* red */ p[2095] = 0x70; /* green */ p[2096] = 0x70; /* blue */ 
+    p[2097] = 0xFF; /* red */ p[2098] = 0x80; /* green */ p[2099] = 0x80; /* blue */ 
+    p[2100] = 0x43; /* red */ p[2101] = 0x22; /* green */ p[2102] = 0x22; /* blue */ 
+    p[2172] = 0x7F; /* red */ p[2173] = 0x40; /* green */ p[2174] = 0x40; /* blue */ 
+    p[2175] = 0x80; /* red */ p[2176] = 0x40; /* green */ p[2177] = 0x40; /* blue */ 
+    p[2178] = 0x7F; /* red */ p[2179] = 0x40; /* green */ p[2180] = 0x40; /* blue */ 
+    p[2181] = 0x80; /* red */ p[2182] = 0x40; /* green */ p[2183] = 0x40; /* blue */ 
+    p[2193] = 0x58; /* red */ p[2194] = 0x2C; /* green */ p[2195] = 0x2C; /* blue */ 
+    p[2196] = 0xFF; /* red */ p[2197] = 0x80; /* green */ p[2198] = 0x80; /* blue */ 
+    p[2199] = 0xCE; /* red */ p[2200] = 0x67; /* green */ p[2201] = 0x67; /* blue */ 
+    p[2202] = 0x08; /* red */ p[2203] = 0x04; /* green */ p[2204] = 0x04; /* blue */ 
+    p[2271] = 0x7F; /* red */ p[2272] = 0x40; /* green */ p[2273] = 0x40; /* blue */ 
+    p[2274] = 0x80; /* red */ p[2275] = 0x40; /* green */ p[2276] = 0x40; /* blue */ 
+    p[2277] = 0x7F; /* red */ p[2278] = 0x40; /* green */ p[2279] = 0x40; /* blue */ 
+    p[2280] = 0x80; /* red */ p[2281] = 0x40; /* green */ p[2282] = 0x40; /* blue */ 
+    p[2292] = 0x01; /* red */ p[2293] = 0x01; /* green */ p[2294] = 0x01; /* blue */ 
+    p[2295] = 0xBD; /* red */ p[2296] = 0x5F; /* green */ p[2297] = 0x5F; /* blue */ 
+    p[2298] = 0xFF; /* red */ p[2299] = 0x80; /* green */ p[2300] = 0x80; /* blue */ 
+    p[2301] = 0xA4; /* red */ p[2302] = 0x52; /* green */ p[2303] = 0x52; /* blue */ 
+    p[2304] = 0x01; /* red */ p[2305] = 0x01; /* green */ p[2306] = 0x01; /* blue */ 
+    p[2370] = 0x7F; /* red */ p[2371] = 0x40; /* green */ p[2372] = 0x40; /* blue */ 
+    p[2373] = 0x80; /* red */ p[2374] = 0x40; /* green */ p[2375] = 0x40; /* blue */ 
+    p[2376] = 0x7F; /* red */ p[2377] = 0x40; /* green */ p[2378] = 0x40; /* blue */ 
+    p[2379] = 0x80; /* red */ p[2380] = 0x40; /* green */ p[2381] = 0x40; /* blue */ 
+    p[2394] = 0x13; /* red */ p[2395] = 0x0A; /* green */ p[2396] = 0x0A; /* blue */ 
+    p[2397] = 0xDC; /* red */ p[2398] = 0x6E; /* green */ p[2399] = 0x6E; /* blue */ 
+    p[2400] = 0xFF; /* red */ p[2401] = 0x80; /* green */ p[2402] = 0x80; /* blue */ 
+    p[2469] = 0x7F; /* red */ p[2470] = 0x40; /* green */ p[2471] = 0x40; /* blue */ 
+    p[2472] = 0x80; /* red */ p[2473] = 0x40; /* green */ p[2474] = 0x40; /* blue */ 
+    p[2475] = 0x7F; /* red */ p[2476] = 0x40; /* green */ p[2477] = 0x40; /* blue */ 
+    p[2478] = 0x80; /* red */ p[2479] = 0x40; /* green */ p[2480] = 0x40; /* blue */ 
+    p[2511] = 0x17; /* red */ p[2512] = 0x0C; /* green */ p[2513] = 0x0C; /* blue */ 
+    p[2514] = 0xBC; /* red */ p[2515] = 0x5E; /* green */ p[2516] = 0x5E; /* blue */ 
+    p[2541] = 0x98; /* red */ p[2542] = 0x4C; /* green */ p[2543] = 0x4C; /* blue */ 
+    p[2544] = 0x34; /* red */ p[2545] = 0x1A; /* green */ p[2546] = 0x1A; /* blue */ 
+    p[2568] = 0x7F; /* red */ p[2569] = 0x40; /* green */ p[2570] = 0x40; /* blue */ 
+    p[2571] = 0x80; /* red */ p[2572] = 0x40; /* green */ p[2573] = 0x40; /* blue */ 
+    p[2574] = 0x7F; /* red */ p[2575] = 0x40; /* green */ p[2576] = 0x40; /* blue */ 
+    p[2577] = 0x80; /* red */ p[2578] = 0x40; /* green */ p[2579] = 0x40; /* blue */ 
+    p[2610] = 0x85; /* red */ p[2611] = 0x43; /* green */ p[2612] = 0x43; /* blue */ 
+    p[2613] = 0x4F; /* red */ p[2614] = 0x28; /* green */ p[2615] = 0x28; /* blue */ 
+    p[2640] = 0x02; /* red */ p[2641] = 0x01; /* green */ p[2642] = 0x01; /* blue */ 
+    p[2667] = 0x7F; /* red */ p[2668] = 0x40; /* green */ p[2669] = 0x40; /* blue */ 
+    p[2670] = 0x80; /* red */ p[2671] = 0x40; /* green */ p[2672] = 0x40; /* blue */ 
+    p[2673] = 0x7F; /* red */ p[2674] = 0x40; /* green */ p[2675] = 0x40; /* blue */ 
+    p[2676] = 0x80; /* red */ p[2677] = 0x40; /* green */ p[2678] = 0x40; /* blue */ 
+    p[2685] = 0x80; /* red */ p[2686] = 0x40; /* green */ p[2687] = 0x40; /* blue */ 
+    p[2688] = 0xAF; /* red */ p[2689] = 0x58; /* green */ p[2690] = 0x58; /* blue */ 
+    p[2691] = 0xC6; /* red */ p[2692] = 0x63; /* green */ p[2693] = 0x63; /* blue */ 
+    p[2694] = 0xA2; /* red */ p[2695] = 0x51; /* green */ p[2696] = 0x51; /* blue */ 
+    p[2697] = 0xA6; /* red */ p[2698] = 0x53; /* green */ p[2699] = 0x53; /* blue */ 
+    p[2706] = 0x0C; /* red */ p[2707] = 0x06; /* green */ p[2708] = 0x06; /* blue */ 
+    p[2709] = 0xC6; /* red */ p[2710] = 0x63; /* green */ p[2711] = 0x63; /* blue */ 
+    p[2712] = 0x01; /* red */ p[2713] = 0x01; /* green */ p[2714] = 0x01; /* blue */ 
+    p[2718] = 0xBD; /* red */ p[2719] = 0x5F; /* green */ p[2720] = 0x5F; /* blue */ 
+    p[2721] = 0xA7; /* red */ p[2722] = 0x54; /* green */ p[2723] = 0x54; /* blue */ 
+    p[2724] = 0xB3; /* red */ p[2725] = 0x5A; /* green */ p[2726] = 0x5A; /* blue */ 
+    p[2727] = 0xB7; /* red */ p[2728] = 0x5C; /* green */ p[2729] = 0x5C; /* blue */ 
+    p[2730] = 0x6D; /* red */ p[2731] = 0x37; /* green */ p[2732] = 0x37; /* blue */ 
+    p[2736] = 0x89; /* red */ p[2737] = 0x45; /* green */ p[2738] = 0x45; /* blue */ 
+    p[2739] = 0xD9; /* red */ p[2740] = 0x6D; /* green */ p[2741] = 0x6D; /* blue */ 
+    p[2742] = 0x34; /* red */ p[2743] = 0x1A; /* green */ p[2744] = 0x1A; /* blue */ 
+    p[2751] = 0xA0; /* red */ p[2752] = 0x50; /* green */ p[2753] = 0x50; /* blue */ 
+    p[2754] = 0x95; /* red */ p[2755] = 0x4B; /* green */ p[2756] = 0x4B; /* blue */ 
+    p[2757] = 0x96; /* red */ p[2758] = 0x4B; /* green */ p[2759] = 0x4B; /* blue */ 
+    p[2760] = 0xA1; /* red */ p[2761] = 0x51; /* green */ p[2762] = 0x51; /* blue */ 
+    p[2766] = 0x7F; /* red */ p[2767] = 0x40; /* green */ p[2768] = 0x40; /* blue */ 
+    p[2769] = 0x80; /* red */ p[2770] = 0x40; /* green */ p[2771] = 0x40; /* blue */ 
+    p[2772] = 0x7F; /* red */ p[2773] = 0x40; /* green */ p[2774] = 0x40; /* blue */ 
+    p[2775] = 0x80; /* red */ p[2776] = 0x40; /* green */ p[2777] = 0x40; /* blue */ 
+    p[2784] = 0x80; /* red */ p[2785] = 0x40; /* green */ p[2786] = 0x40; /* blue */ 
+    p[2787] = 0x46; /* red */ p[2788] = 0x23; /* green */ p[2789] = 0x23; /* blue */ 
+    p[2790] = 0xA9; /* red */ p[2791] = 0x55; /* green */ p[2792] = 0x55; /* blue */ 
+    p[2793] = 0x26; /* red */ p[2794] = 0x13; /* green */ p[2795] = 0x13; /* blue */ 
+    p[2796] = 0xBA; /* red */ p[2797] = 0x5D; /* green */ p[2798] = 0x5D; /* blue */ 
+    p[2805] = 0x71; /* red */ p[2806] = 0x39; /* green */ p[2807] = 0x39; /* blue */ 
+    p[2808] = 0x63; /* red */ p[2809] = 0x32; /* green */ p[2810] = 0x32; /* blue */ 
+    p[2817] = 0xBF; /* red */ p[2818] = 0x60; /* green */ p[2819] = 0x60; /* blue */ 
+    p[2820] = 0x06; /* red */ p[2821] = 0x03; /* green */ p[2822] = 0x03; /* blue */ 
+    p[2823] = 0xD0; /* red */ p[2824] = 0x68; /* green */ p[2825] = 0x68; /* blue */ 
+    p[2826] = 0x05; /* red */ p[2827] = 0x03; /* green */ p[2828] = 0x03; /* blue */ 
+    p[2829] = 0xB4; /* red */ p[2830] = 0x5A; /* green */ p[2831] = 0x5A; /* blue */ 
+    p[2838] = 0x98; /* red */ p[2839] = 0x4C; /* green */ p[2840] = 0x4C; /* blue */ 
+    p[2841] = 0x34; /* red */ p[2842] = 0x1A; /* green */ p[2843] = 0x1A; /* blue */ 
+    p[2850] = 0xA0; /* red */ p[2851] = 0x50; /* green */ p[2852] = 0x50; /* blue */ 
+    p[2853] = 0x4C; /* red */ p[2854] = 0x26; /* green */ p[2855] = 0x26; /* blue */ 
+    p[2859] = 0xBA; /* red */ p[2860] = 0x5D; /* green */ p[2861] = 0x5D; /* blue */ 
+    p[2862] = 0x16; /* red */ p[2863] = 0x0B; /* green */ p[2864] = 0x0B; /* blue */ 
+    p[2865] = 0x7F; /* red */ p[2866] = 0x40; /* green */ p[2867] = 0x40; /* blue */ 
+    p[2868] = 0x80; /* red */ p[2869] = 0x40; /* green */ p[2870] = 0x40; /* blue */ 
+    p[2871] = 0x7F; /* red */ p[2872] = 0x40; /* green */ p[2873] = 0x40; /* blue */ 
+    p[2874] = 0x80; /* red */ p[2875] = 0x40; /* green */ p[2876] = 0x40; /* blue */ 
+    p[2883] = 0x80; /* red */ p[2884] = 0x40; /* green */ p[2885] = 0x40; /* blue */ 
+    p[2886] = 0x3C; /* red */ p[2887] = 0x1E; /* green */ p[2888] = 0x1E; /* blue */ 
+    p[2889] = 0xA0; /* red */ p[2890] = 0x50; /* green */ p[2891] = 0x50; /* blue */ 
+    p[2892] = 0x1C; /* red */ p[2893] = 0x0E; /* green */ p[2894] = 0x0E; /* blue */ 
+    p[2895] = 0xBB; /* red */ p[2896] = 0x5E; /* green */ p[2897] = 0x5E; /* blue */ 
+    p[2901] = 0x04; /* red */ p[2902] = 0x02; /* green */ p[2903] = 0x02; /* blue */ 
+    p[2904] = 0xC8; /* red */ p[2905] = 0x64; /* green */ p[2906] = 0x64; /* blue */ 
+    p[2907] = 0x06; /* red */ p[2908] = 0x03; /* green */ p[2909] = 0x03; /* blue */ 
+    p[2916] = 0xBC; /* red */ p[2917] = 0x5E; /* green */ p[2918] = 0x5E; /* blue */ 
+    p[2922] = 0xBC; /* red */ p[2923] = 0x5E; /* green */ p[2924] = 0x5E; /* blue */ 
+    p[2928] = 0xBB; /* red */ p[2929] = 0x5E; /* green */ p[2930] = 0x5E; /* blue */ 
+    p[2937] = 0x98; /* red */ p[2938] = 0x4C; /* green */ p[2939] = 0x4C; /* blue */ 
+    p[2940] = 0x34; /* red */ p[2941] = 0x1A; /* green */ p[2942] = 0x1A; /* blue */ 
+    p[2949] = 0xA0; /* red */ p[2950] = 0x50; /* green */ p[2951] = 0x50; /* blue */ 
+    p[2952] = 0x30; /* red */ p[2953] = 0x18; /* green */ p[2954] = 0x18; /* blue */ 
+    p[2958] = 0xAC; /* red */ p[2959] = 0x56; /* green */ p[2960] = 0x56; /* blue */ 
+    p[2961] = 0x24; /* red */ p[2962] = 0x12; /* green */ p[2963] = 0x12; /* blue */ 
+    p[2964] = 0x7F; /* red */ p[2965] = 0x40; /* green */ p[2966] = 0x40; /* blue */ 
+    p[2967] = 0x80; /* red */ p[2968] = 0x40; /* green */ p[2969] = 0x40; /* blue */ 
+    p[2970] = 0x7F; /* red */ p[2971] = 0x40; /* green */ p[2972] = 0x40; /* blue */ 
+    p[2973] = 0x80; /* red */ p[2974] = 0x40; /* green */ p[2975] = 0x40; /* blue */ 
+    p[2982] = 0x80; /* red */ p[2983] = 0x40; /* green */ p[2984] = 0x40; /* blue */ 
+    p[2985] = 0x3C; /* red */ p[2986] = 0x1E; /* green */ p[2987] = 0x1E; /* blue */ 
+    p[2988] = 0xA0; /* red */ p[2989] = 0x50; /* green */ p[2990] = 0x50; /* blue */ 
+    p[2991] = 0x1C; /* red */ p[2992] = 0x0E; /* green */ p[2993] = 0x0E; /* blue */ 
+    p[2994] = 0xBC; /* red */ p[2995] = 0x5E; /* green */ p[2996] = 0x5E; /* blue */ 
+    p[3000] = 0x5D; /* red */ p[3001] = 0x2F; /* green */ p[3002] = 0x2F; /* blue */ 
+    p[3003] = 0x77; /* red */ p[3004] = 0x3C; /* green */ p[3005] = 0x3C; /* blue */ 
+    p[3015] = 0xBC; /* red */ p[3016] = 0x5E; /* green */ p[3017] = 0x5E; /* blue */ 
+    p[3021] = 0xBC; /* red */ p[3022] = 0x5E; /* green */ p[3023] = 0x5E; /* blue */ 
+    p[3027] = 0xBC; /* red */ p[3028] = 0x5E; /* green */ p[3029] = 0x5E; /* blue */ 
+    p[3036] = 0x98; /* red */ p[3037] = 0x4C; /* green */ p[3038] = 0x4C; /* blue */ 
+    p[3039] = 0x34; /* red */ p[3040] = 0x1A; /* green */ p[3041] = 0x1A; /* blue */ 
+    p[3048] = 0xA0; /* red */ p[3049] = 0x50; /* green */ p[3050] = 0x50; /* blue */ 
+    p[3051] = 0x30; /* red */ p[3052] = 0x18; /* green */ p[3053] = 0x18; /* blue */ 
+    p[3057] = 0xAC; /* red */ p[3058] = 0x56; /* green */ p[3059] = 0x56; /* blue */ 
+    p[3060] = 0x24; /* red */ p[3061] = 0x12; /* green */ p[3062] = 0x12; /* blue */ 
+    p[3063] = 0x7F; /* red */ p[3064] = 0x40; /* green */ p[3065] = 0x40; /* blue */ 
+    p[3066] = 0x80; /* red */ p[3067] = 0x40; /* green */ p[3068] = 0x40; /* blue */ 
+    p[3069] = 0x7F; /* red */ p[3070] = 0x40; /* green */ p[3071] = 0x40; /* blue */ 
+    p[3072] = 0x80; /* red */ p[3073] = 0x40; /* green */ p[3074] = 0x40; /* blue */ 
+    p[3081] = 0x80; /* red */ p[3082] = 0x40; /* green */ p[3083] = 0x40; /* blue */ 
+    p[3084] = 0x3C; /* red */ p[3085] = 0x1E; /* green */ p[3086] = 0x1E; /* blue */ 
+    p[3087] = 0xA0; /* red */ p[3088] = 0x50; /* green */ p[3089] = 0x50; /* blue */ 
+    p[3090] = 0x1C; /* red */ p[3091] = 0x0E; /* green */ p[3092] = 0x0E; /* blue */ 
+    p[3093] = 0xBC; /* red */ p[3094] = 0x5E; /* green */ p[3095] = 0x5E; /* blue */ 
+    p[3099] = 0xC3; /* red */ p[3100] = 0x62; /* green */ p[3101] = 0x62; /* blue */ 
+    p[3102] = 0x0F; /* red */ p[3103] = 0x08; /* green */ p[3104] = 0x08; /* blue */ 
+    p[3114] = 0xBC; /* red */ p[3115] = 0x5E; /* green */ p[3116] = 0x5E; /* blue */ 
+    p[3120] = 0xBC; /* red */ p[3121] = 0x5E; /* green */ p[3122] = 0x5E; /* blue */ 
+    p[3126] = 0xBC; /* red */ p[3127] = 0x5E; /* green */ p[3128] = 0x5E; /* blue */ 
+    p[3129] = 0x20; /* red */ p[3130] = 0x10; /* green */ p[3131] = 0x10; /* blue */ 
+    p[3132] = 0xA0; /* red */ p[3133] = 0x50; /* green */ p[3134] = 0x50; /* blue */ 
+    p[3135] = 0xD9; /* red */ p[3136] = 0x6D; /* green */ p[3137] = 0x6D; /* blue */ 
+    p[3138] = 0xB3; /* red */ p[3139] = 0x5A; /* green */ p[3140] = 0x5A; /* blue */ 
+    p[3141] = 0x82; /* red */ p[3142] = 0x41; /* green */ p[3143] = 0x41; /* blue */ 
+    p[3147] = 0xA0; /* red */ p[3148] = 0x50; /* green */ p[3149] = 0x50; /* blue */ 
+    p[3150] = 0x30; /* red */ p[3151] = 0x18; /* green */ p[3152] = 0x18; /* blue */ 
+    p[3156] = 0xAC; /* red */ p[3157] = 0x56; /* green */ p[3158] = 0x56; /* blue */ 
+    p[3159] = 0x24; /* red */ p[3160] = 0x12; /* green */ p[3161] = 0x12; /* blue */ 
+    p[3162] = 0x7F; /* red */ p[3163] = 0x40; /* green */ p[3164] = 0x40; /* blue */ 
+    p[3165] = 0x80; /* red */ p[3166] = 0x40; /* green */ p[3167] = 0x40; /* blue */ 
+    p[3168] = 0x7F; /* red */ p[3169] = 0x40; /* green */ p[3170] = 0x40; /* blue */ 
+    p[3171] = 0x80; /* red */ p[3172] = 0x40; /* green */ p[3173] = 0x40; /* blue */ 
+    p[3195] = 0x15; /* red */ p[3196] = 0x0B; /* green */ p[3197] = 0x0B; /* blue */ 
+    p[3198] = 0x54; /* red */ p[3199] = 0x2A; /* green */ p[3200] = 0x2A; /* blue */ 
+    p[3261] = 0x7F; /* red */ p[3262] = 0x40; /* green */ p[3263] = 0x40; /* blue */ 
+    p[3264] = 0x80; /* red */ p[3265] = 0x40; /* green */ p[3266] = 0x40; /* blue */ 
+    p[3267] = 0x7F; /* red */ p[3268] = 0x40; /* green */ p[3269] = 0x40; /* blue */ 
+    p[3270] = 0x80; /* red */ p[3271] = 0x40; /* green */ p[3272] = 0x40; /* blue */ 
+    p[3360] = 0x7F; /* red */ p[3361] = 0x40; /* green */ p[3362] = 0x40; /* blue */ 
+    p[3363] = 0x80; /* red */ p[3364] = 0x40; /* green */ p[3365] = 0x40; /* blue */ 
+    p[3366] = 0x7F; /* red */ p[3367] = 0x40; /* green */ p[3368] = 0x40; /* blue */ 
+    p[3369] = 0xBF; /* red */ p[3370] = 0x60; /* green */ p[3371] = 0x60; /* blue */ 
+    p[3372] = 0x7F; /* red */ p[3373] = 0x40; /* green */ p[3374] = 0x40; /* blue */ 
+    p[3375] = 0x7F; /* red */ p[3376] = 0x40; /* green */ p[3377] = 0x40; /* blue */ 
+    p[3378] = 0x7F; /* red */ p[3379] = 0x40; /* green */ p[3380] = 0x40; /* blue */ 
+    p[3381] = 0x7F; /* red */ p[3382] = 0x40; /* green */ p[3383] = 0x40; /* blue */ 
+    p[3384] = 0x7F; /* red */ p[3385] = 0x40; /* green */ p[3386] = 0x40; /* blue */ 
+    p[3387] = 0x7F; /* red */ p[3388] = 0x40; /* green */ p[3389] = 0x40; /* blue */ 
+    p[3390] = 0x7F; /* red */ p[3391] = 0x40; /* green */ p[3392] = 0x40; /* blue */ 
+    p[3393] = 0x7F; /* red */ p[3394] = 0x40; /* green */ p[3395] = 0x40; /* blue */ 
+    p[3396] = 0x7F; /* red */ p[3397] = 0x40; /* green */ p[3398] = 0x40; /* blue */ 
+    p[3399] = 0x7F; /* red */ p[3400] = 0x40; /* green */ p[3401] = 0x40; /* blue */ 
+    p[3402] = 0x7F; /* red */ p[3403] = 0x40; /* green */ p[3404] = 0x40; /* blue */ 
+    p[3405] = 0x7F; /* red */ p[3406] = 0x40; /* green */ p[3407] = 0x40; /* blue */ 
+    p[3408] = 0x7F; /* red */ p[3409] = 0x40; /* green */ p[3410] = 0x40; /* blue */ 
+    p[3411] = 0x7F; /* red */ p[3412] = 0x40; /* green */ p[3413] = 0x40; /* blue */ 
+    p[3414] = 0x7F; /* red */ p[3415] = 0x40; /* green */ p[3416] = 0x40; /* blue */ 
+    p[3417] = 0x7F; /* red */ p[3418] = 0x40; /* green */ p[3419] = 0x40; /* blue */ 
+    p[3420] = 0x7F; /* red */ p[3421] = 0x40; /* green */ p[3422] = 0x40; /* blue */ 
+    p[3423] = 0x7F; /* red */ p[3424] = 0x40; /* green */ p[3425] = 0x40; /* blue */ 
+    p[3426] = 0x7F; /* red */ p[3427] = 0x40; /* green */ p[3428] = 0x40; /* blue */ 
+    p[3429] = 0x7F; /* red */ p[3430] = 0x40; /* green */ p[3431] = 0x40; /* blue */ 
+    p[3432] = 0x7F; /* red */ p[3433] = 0x40; /* green */ p[3434] = 0x40; /* blue */ 
+    p[3435] = 0x7F; /* red */ p[3436] = 0x40; /* green */ p[3437] = 0x40; /* blue */ 
+    p[3438] = 0x7F; /* red */ p[3439] = 0x40; /* green */ p[3440] = 0x40; /* blue */ 
+    p[3441] = 0x7F; /* red */ p[3442] = 0x40; /* green */ p[3443] = 0x40; /* blue */ 
+    p[3444] = 0x7F; /* red */ p[3445] = 0x40; /* green */ p[3446] = 0x40; /* blue */ 
+    p[3447] = 0x7F; /* red */ p[3448] = 0x40; /* green */ p[3449] = 0x40; /* blue */ 
+    p[3450] = 0x7F; /* red */ p[3451] = 0x40; /* green */ p[3452] = 0x40; /* blue */ 
+    p[3453] = 0x7F; /* red */ p[3454] = 0x40; /* green */ p[3455] = 0x40; /* blue */ 
+    p[3456] = 0x7F; /* red */ p[3457] = 0x40; /* green */ p[3458] = 0x40; /* blue */ 
+    p[3459] = 0xBF; /* red */ p[3460] = 0x60; /* green */ p[3461] = 0x60; /* blue */ 
+    p[3462] = 0x80; /* red */ p[3463] = 0x40; /* green */ p[3464] = 0x40; /* blue */ 
+    p[3468] = 0x80; /* red */ p[3469] = 0x40; /* green */ p[3470] = 0x40; /* blue */ 
+    p[3471] = 0x80; /* red */ p[3472] = 0x40; /* green */ p[3473] = 0x40; /* blue */ 
+    p[3474] = 0x80; /* red */ p[3475] = 0x40; /* green */ p[3476] = 0x40; /* blue */ 
+    p[3477] = 0x80; /* red */ p[3478] = 0x40; /* green */ p[3479] = 0x40; /* blue */ 
+    p[3480] = 0x80; /* red */ p[3481] = 0x40; /* green */ p[3482] = 0x40; /* blue */ 
+    p[3483] = 0x80; /* red */ p[3484] = 0x40; /* green */ p[3485] = 0x40; /* blue */ 
+    p[3486] = 0x80; /* red */ p[3487] = 0x40; /* green */ p[3488] = 0x40; /* blue */ 
+    p[3489] = 0x80; /* red */ p[3490] = 0x40; /* green */ p[3491] = 0x40; /* blue */ 
+    p[3492] = 0x80; /* red */ p[3493] = 0x40; /* green */ p[3494] = 0x40; /* blue */ 
+    p[3495] = 0x80; /* red */ p[3496] = 0x40; /* green */ p[3497] = 0x40; /* blue */ 
+    p[3498] = 0x80; /* red */ p[3499] = 0x40; /* green */ p[3500] = 0x40; /* blue */ 
+    p[3501] = 0x80; /* red */ p[3502] = 0x40; /* green */ p[3503] = 0x40; /* blue */ 
+    p[3504] = 0x80; /* red */ p[3505] = 0x40; /* green */ p[3506] = 0x40; /* blue */ 
+    p[3507] = 0x80; /* red */ p[3508] = 0x40; /* green */ p[3509] = 0x40; /* blue */ 
+    p[3510] = 0x80; /* red */ p[3511] = 0x40; /* green */ p[3512] = 0x40; /* blue */ 
+    p[3513] = 0x80; /* red */ p[3514] = 0x40; /* green */ p[3515] = 0x40; /* blue */ 
+    p[3516] = 0x80; /* red */ p[3517] = 0x40; /* green */ p[3518] = 0x40; /* blue */ 
+    p[3519] = 0x80; /* red */ p[3520] = 0x40; /* green */ p[3521] = 0x40; /* blue */ 
+    p[3522] = 0x80; /* red */ p[3523] = 0x40; /* green */ p[3524] = 0x40; /* blue */ 
+    p[3525] = 0x80; /* red */ p[3526] = 0x40; /* green */ p[3527] = 0x40; /* blue */ 
+    p[3528] = 0x80; /* red */ p[3529] = 0x40; /* green */ p[3530] = 0x40; /* blue */ 
+    p[3531] = 0x80; /* red */ p[3532] = 0x40; /* green */ p[3533] = 0x40; /* blue */ 
+    p[3534] = 0x80; /* red */ p[3535] = 0x40; /* green */ p[3536] = 0x40; /* blue */ 
+    p[3537] = 0x80; /* red */ p[3538] = 0x40; /* green */ p[3539] = 0x40; /* blue */ 
+    p[3540] = 0x80; /* red */ p[3541] = 0x40; /* green */ p[3542] = 0x40; /* blue */ 
+    p[3543] = 0x80; /* red */ p[3544] = 0x40; /* green */ p[3545] = 0x40; /* blue */ 
+    p[3546] = 0x80; /* red */ p[3547] = 0x40; /* green */ p[3548] = 0x40; /* blue */ 
+    p[3549] = 0x80; /* red */ p[3550] = 0x40; /* green */ p[3551] = 0x40; /* blue */ 
+    p[3552] = 0x80; /* red */ p[3553] = 0x40; /* green */ p[3554] = 0x40; /* blue */ 
+    p[3555] = 0x80; /* red */ p[3556] = 0x40; /* green */ p[3557] = 0x40; /* blue */ 
+    p[3558] = 0x80; /* red */ p[3559] = 0x40; /* green */ p[3560] = 0x40; /* blue */ 
     
     return img;
 }
@@ -10313,6 +11168,469 @@ struct img *img_feed_arrow_right_down(void)
     return img;
 }
 
+struct img *img_feed_arrow_right_up2(void)
+{
+    struct img *img = img_alloc("img", 60, 35);
+    u8 *p = img->buf->d;
+    p[596] = 0x02; /* blue */ 
+    p[599] = 0xFB; /* blue */ 
+    p[602] = 0xFB; /* blue */ 
+    p[605] = 0x02; /* blue */ 
+    p[776] = 0x41; /* blue */ 
+    p[779] = 0xFF; /* blue */ 
+    p[782] = 0xFF; /* blue */ 
+    p[785] = 0x41; /* blue */ 
+    p[878] = 0x02; /* blue */ 
+    p[881] = 0x4C; /* blue */ 
+    p[884] = 0x4C; /* blue */ 
+    p[887] = 0x02; /* blue */ 
+    p[956] = 0xA1; /* blue */ 
+    p[959] = 0xFF; /* blue */ 
+    p[962] = 0xFF; /* blue */ 
+    p[965] = 0xA1; /* blue */ 
+    p[1058] = 0x4B; /* blue */ 
+    p[1061] = 0xFF; /* blue */ 
+    p[1064] = 0xFF; /* blue */ 
+    p[1067] = 0x4C; /* blue */ 
+    p[1133] = 0x0D; /* blue */ 
+    p[1136] = 0xF5; /* blue */ 
+    p[1139] = 0xFF; /* blue */ 
+    p[1142] = 0xFF; /* blue */ 
+    p[1145] = 0xF5; /* blue */ 
+    p[1148] = 0x0D; /* blue */ 
+    p[1238] = 0x80; /* blue */ 
+    p[1241] = 0xFF; /* blue */ 
+    p[1244] = 0xFF; /* blue */ 
+    p[1247] = 0x80; /* blue */ 
+    p[1313] = 0x61; /* blue */ 
+    p[1316] = 0xFF; /* blue */ 
+    p[1319] = 0xFF; /* blue */ 
+    p[1322] = 0xFF; /* blue */ 
+    p[1325] = 0xFF; /* blue */ 
+    p[1328] = 0x61; /* blue */ 
+    p[1418] = 0x80; /* blue */ 
+    p[1421] = 0xFF; /* blue */ 
+    p[1424] = 0xFF; /* blue */ 
+    p[1427] = 0x80; /* blue */ 
+    p[1493] = 0xC1; /* blue */ 
+    p[1496] = 0xFF; /* blue */ 
+    p[1499] = 0xFF; /* blue */ 
+    p[1502] = 0xFF; /* blue */ 
+    p[1505] = 0xFF; /* blue */ 
+    p[1508] = 0xC1; /* blue */ 
+    p[1598] = 0x80; /* blue */ 
+    p[1601] = 0xFF; /* blue */ 
+    p[1604] = 0xFF; /* blue */ 
+    p[1607] = 0x80; /* blue */ 
+    p[1670] = 0x23; /* blue */ 
+    p[1673] = 0xFF; /* blue */ 
+    p[1676] = 0xF5; /* blue */ 
+    p[1679] = 0xFF; /* blue */ 
+    p[1682] = 0xFF; /* blue */ 
+    p[1685] = 0xF5; /* blue */ 
+    p[1688] = 0xFF; /* blue */ 
+    p[1691] = 0x23; /* blue */ 
+    p[1778] = 0x80; /* blue */ 
+    p[1781] = 0xFF; /* blue */ 
+    p[1784] = 0xFF; /* blue */ 
+    p[1787] = 0x80; /* blue */ 
+    p[1850] = 0x81; /* blue */ 
+    p[1853] = 0xFF; /* blue */ 
+    p[1856] = 0xA1; /* blue */ 
+    p[1859] = 0xFF; /* blue */ 
+    p[1862] = 0xFF; /* blue */ 
+    p[1865] = 0xA1; /* blue */ 
+    p[1868] = 0xFF; /* blue */ 
+    p[1871] = 0x81; /* blue */ 
+    p[1958] = 0x80; /* blue */ 
+    p[1961] = 0xFF; /* blue */ 
+    p[1964] = 0xFF; /* blue */ 
+    p[1967] = 0x80; /* blue */ 
+    p[2030] = 0xDF; /* blue */ 
+    p[2033] = 0xFF; /* blue */ 
+    p[2036] = 0x41; /* blue */ 
+    p[2039] = 0xFF; /* blue */ 
+    p[2042] = 0xFF; /* blue */ 
+    p[2045] = 0x41; /* blue */ 
+    p[2048] = 0xFF; /* blue */ 
+    p[2051] = 0xDF; /* blue */ 
+    p[2087] = 0x59; /* blue */ 
+    p[2090] = 0x65; /* blue */ 
+    p[2093] = 0x13; /* blue */ 
+    p[2138] = 0x80; /* blue */ 
+    p[2141] = 0xFF; /* blue */ 
+    p[2144] = 0xFF; /* blue */ 
+    p[2147] = 0x80; /* blue */ 
+    p[2210] = 0xBD; /* blue */ 
+    p[2213] = 0xBE; /* blue */ 
+    p[2216] = 0x02; /* blue */ 
+    p[2219] = 0xFF; /* blue */ 
+    p[2222] = 0xFF; /* blue */ 
+    p[2225] = 0x02; /* blue */ 
+    p[2228] = 0xBF; /* blue */ 
+    p[2231] = 0xBE; /* blue */ 
+    p[2264] = 0x54; /* blue */ 
+    p[2267] = 0xFF; /* blue */ 
+    p[2270] = 0xFF; /* blue */ 
+    p[2273] = 0xFB; /* blue */ 
+    p[2276] = 0xB2; /* blue */ 
+    p[2279] = 0x57; /* blue */ 
+    p[2282] = 0x09; /* blue */ 
+    p[2318] = 0x80; /* blue */ 
+    p[2321] = 0xFF; /* blue */ 
+    p[2324] = 0xFF; /* blue */ 
+    p[2327] = 0x80; /* blue */ 
+    p[2399] = 0xFF; /* blue */ 
+    p[2402] = 0xFF; /* blue */ 
+    p[2444] = 0x59; /* blue */ 
+    p[2447] = 0xFF; /* blue */ 
+    p[2450] = 0xFF; /* blue */ 
+    p[2453] = 0xFF; /* blue */ 
+    p[2456] = 0xFF; /* blue */ 
+    p[2459] = 0xFF; /* blue */ 
+    p[2462] = 0xF2; /* blue */ 
+    p[2465] = 0xA0; /* blue */ 
+    p[2468] = 0x44; /* blue */ 
+    p[2471] = 0x03; /* blue */ 
+    p[2477] = 0x02; /* blue */ 
+    p[2498] = 0x80; /* blue */ 
+    p[2501] = 0xFF; /* blue */ 
+    p[2504] = 0xFF; /* blue */ 
+    p[2507] = 0x80; /* blue */ 
+    p[2579] = 0xFF; /* blue */ 
+    p[2582] = 0xFF; /* blue */ 
+    p[2627] = 0x57; /* blue */ 
+    p[2630] = 0xC3; /* blue */ 
+    p[2633] = 0xFF; /* blue */ 
+    p[2636] = 0xFF; /* blue */ 
+    p[2639] = 0xFF; /* blue */ 
+    p[2642] = 0xFF; /* blue */ 
+    p[2645] = 0xFF; /* blue */ 
+    p[2648] = 0xFF; /* blue */ 
+    p[2651] = 0xE6; /* blue */ 
+    p[2654] = 0x8D; /* blue */ 
+    p[2657] = 0x32; /* blue */ 
+    p[2660] = 0x01; /* blue */ 
+    p[2678] = 0x80; /* blue */ 
+    p[2681] = 0xFF; /* blue */ 
+    p[2684] = 0xFF; /* blue */ 
+    p[2687] = 0x80; /* blue */ 
+    p[2759] = 0xFF; /* blue */ 
+    p[2762] = 0xFF; /* blue */ 
+    p[2813] = 0x20; /* blue */ 
+    p[2816] = 0x7A; /* blue */ 
+    p[2819] = 0xD6; /* blue */ 
+    p[2822] = 0xFF; /* blue */ 
+    p[2825] = 0xFF; /* blue */ 
+    p[2828] = 0xFF; /* blue */ 
+    p[2831] = 0xFF; /* blue */ 
+    p[2834] = 0xFF; /* blue */ 
+    p[2837] = 0xFF; /* blue */ 
+    p[2840] = 0xD7; /* blue */ 
+    p[2843] = 0x7B; /* blue */ 
+    p[2846] = 0x21; /* blue */ 
+    p[2858] = 0x80; /* blue */ 
+    p[2861] = 0xFF; /* blue */ 
+    p[2864] = 0xFF; /* blue */ 
+    p[2867] = 0x80; /* blue */ 
+    p[2894] = 0x02; /* blue */ 
+    p[2897] = 0x4C; /* blue */ 
+    p[2900] = 0x80; /* blue */ 
+    p[2903] = 0x80; /* blue */ 
+    p[2906] = 0x80; /* blue */ 
+    p[2909] = 0x80; /* blue */ 
+    p[2912] = 0x80; /* blue */ 
+    p[2915] = 0x80; /* blue */ 
+    p[2918] = 0x80; /* blue */ 
+    p[2921] = 0x80; /* blue */ 
+    p[2924] = 0x80; /* blue */ 
+    p[2927] = 0x80; /* blue */ 
+    p[2930] = 0x80; /* blue */ 
+    p[2933] = 0x80; /* blue */ 
+    p[2936] = 0x80; /* blue */ 
+    p[2939] = 0xFF; /* blue */ 
+    p[2942] = 0xFF; /* blue */ 
+    p[2945] = 0x80; /* blue */ 
+    p[2948] = 0x80; /* blue */ 
+    p[2951] = 0x80; /* blue */ 
+    p[2954] = 0x80; /* blue */ 
+    p[2957] = 0x80; /* blue */ 
+    p[2960] = 0x80; /* blue */ 
+    p[2963] = 0x80; /* blue */ 
+    p[2966] = 0x80; /* blue */ 
+    p[2969] = 0x80; /* blue */ 
+    p[2972] = 0x80; /* blue */ 
+    p[2975] = 0x80; /* blue */ 
+    p[2978] = 0x80; /* blue */ 
+    p[2981] = 0x80; /* blue */ 
+    p[2984] = 0x80; /* blue */ 
+    p[2987] = 0x80; /* blue */ 
+    p[2990] = 0x80; /* blue */ 
+    p[2993] = 0x80; /* blue */ 
+    p[2996] = 0x80; /* blue */ 
+    p[2999] = 0x80; /* blue */ 
+    p[3002] = 0x98; /* blue */ 
+    p[3005] = 0xC6; /* blue */ 
+    p[3008] = 0xF3; /* blue */ 
+    p[3011] = 0xFF; /* blue */ 
+    p[3014] = 0xFF; /* blue */ 
+    p[3017] = 0xFF; /* blue */ 
+    p[3020] = 0xFF; /* blue */ 
+    p[3023] = 0xFF; /* blue */ 
+    p[3026] = 0xFF; /* blue */ 
+    p[3029] = 0xE6; /* blue */ 
+    p[3032] = 0x94; /* blue */ 
+    p[3038] = 0x80; /* blue */ 
+    p[3041] = 0xFF; /* blue */ 
+    p[3044] = 0xFF; /* blue */ 
+    p[3047] = 0x80; /* blue */ 
+    p[3074] = 0x4B; /* blue */ 
+    p[3077] = 0xFF; /* blue */ 
+    p[3080] = 0xFF; /* blue */ 
+    p[3083] = 0xFF; /* blue */ 
+    p[3086] = 0xFF; /* blue */ 
+    p[3089] = 0xFF; /* blue */ 
+    p[3092] = 0xFF; /* blue */ 
+    p[3095] = 0xFF; /* blue */ 
+    p[3098] = 0xFF; /* blue */ 
+    p[3101] = 0xFF; /* blue */ 
+    p[3104] = 0xFF; /* blue */ 
+    p[3107] = 0xFF; /* blue */ 
+    p[3110] = 0xFF; /* blue */ 
+    p[3113] = 0xFF; /* blue */ 
+    p[3116] = 0xFF; /* blue */ 
+    p[3119] = 0xFF; /* blue */ 
+    p[3122] = 0xFF; /* blue */ 
+    p[3125] = 0xFF; /* blue */ 
+    p[3128] = 0xFF; /* blue */ 
+    p[3131] = 0xFF; /* blue */ 
+    p[3134] = 0xFF; /* blue */ 
+    p[3137] = 0xFF; /* blue */ 
+    p[3140] = 0xFF; /* blue */ 
+    p[3143] = 0xFF; /* blue */ 
+    p[3146] = 0xFF; /* blue */ 
+    p[3149] = 0xFF; /* blue */ 
+    p[3152] = 0xFF; /* blue */ 
+    p[3155] = 0xFF; /* blue */ 
+    p[3158] = 0xFF; /* blue */ 
+    p[3161] = 0xFF; /* blue */ 
+    p[3164] = 0xFF; /* blue */ 
+    p[3167] = 0xFF; /* blue */ 
+    p[3170] = 0xFF; /* blue */ 
+    p[3173] = 0xFF; /* blue */ 
+    p[3176] = 0xFF; /* blue */ 
+    p[3179] = 0xFF; /* blue */ 
+    p[3182] = 0xFF; /* blue */ 
+    p[3185] = 0xFF; /* blue */ 
+    p[3188] = 0xFF; /* blue */ 
+    p[3191] = 0xFF; /* blue */ 
+    p[3194] = 0xFF; /* blue */ 
+    p[3197] = 0xFF; /* blue */ 
+    p[3200] = 0xFF; /* blue */ 
+    p[3203] = 0xFF; /* blue */ 
+    p[3206] = 0xFF; /* blue */ 
+    p[3209] = 0xFF; /* blue */ 
+    p[3212] = 0xFF; /* blue */ 
+    p[3215] = 0x90; /* blue */ 
+    p[3218] = 0x80; /* blue */ 
+    p[3221] = 0xFF; /* blue */ 
+    p[3224] = 0xFF; /* blue */ 
+    p[3227] = 0x80; /* blue */ 
+    p[3254] = 0x4B; /* blue */ 
+    p[3257] = 0xFF; /* blue */ 
+    p[3260] = 0xFF; /* blue */ 
+    p[3263] = 0xFF; /* blue */ 
+    p[3266] = 0xFF; /* blue */ 
+    p[3269] = 0xFF; /* blue */ 
+    p[3272] = 0xFF; /* blue */ 
+    p[3275] = 0xFF; /* blue */ 
+    p[3278] = 0xFF; /* blue */ 
+    p[3281] = 0xFF; /* blue */ 
+    p[3284] = 0xFF; /* blue */ 
+    p[3287] = 0xFF; /* blue */ 
+    p[3290] = 0xFF; /* blue */ 
+    p[3293] = 0xFF; /* blue */ 
+    p[3296] = 0xFF; /* blue */ 
+    p[3299] = 0xFF; /* blue */ 
+    p[3302] = 0xFF; /* blue */ 
+    p[3305] = 0xFF; /* blue */ 
+    p[3308] = 0xFF; /* blue */ 
+    p[3311] = 0xFF; /* blue */ 
+    p[3314] = 0xFF; /* blue */ 
+    p[3317] = 0xFF; /* blue */ 
+    p[3320] = 0xFF; /* blue */ 
+    p[3323] = 0xFF; /* blue */ 
+    p[3326] = 0xFF; /* blue */ 
+    p[3329] = 0xFF; /* blue */ 
+    p[3332] = 0xFF; /* blue */ 
+    p[3335] = 0xFF; /* blue */ 
+    p[3338] = 0xFF; /* blue */ 
+    p[3341] = 0xFF; /* blue */ 
+    p[3344] = 0xFF; /* blue */ 
+    p[3347] = 0xFF; /* blue */ 
+    p[3350] = 0xFF; /* blue */ 
+    p[3353] = 0xFF; /* blue */ 
+    p[3356] = 0xFF; /* blue */ 
+    p[3359] = 0xFF; /* blue */ 
+    p[3362] = 0xFF; /* blue */ 
+    p[3365] = 0xFF; /* blue */ 
+    p[3368] = 0xFF; /* blue */ 
+    p[3371] = 0xFF; /* blue */ 
+    p[3374] = 0xFF; /* blue */ 
+    p[3377] = 0xFF; /* blue */ 
+    p[3380] = 0xFF; /* blue */ 
+    p[3383] = 0xFF; /* blue */ 
+    p[3386] = 0xFF; /* blue */ 
+    p[3389] = 0xFF; /* blue */ 
+    p[3392] = 0xFF; /* blue */ 
+    p[3395] = 0x90; /* blue */ 
+    p[3398] = 0x80; /* blue */ 
+    p[3401] = 0xFF; /* blue */ 
+    p[3404] = 0xFF; /* blue */ 
+    p[3407] = 0x80; /* blue */ 
+    p[3434] = 0x02; /* blue */ 
+    p[3437] = 0x4B; /* blue */ 
+    p[3440] = 0x80; /* blue */ 
+    p[3443] = 0x80; /* blue */ 
+    p[3446] = 0x80; /* blue */ 
+    p[3449] = 0x80; /* blue */ 
+    p[3452] = 0x80; /* blue */ 
+    p[3455] = 0x80; /* blue */ 
+    p[3458] = 0x80; /* blue */ 
+    p[3461] = 0x80; /* blue */ 
+    p[3464] = 0x80; /* blue */ 
+    p[3467] = 0x80; /* blue */ 
+    p[3470] = 0x80; /* blue */ 
+    p[3473] = 0x80; /* blue */ 
+    p[3476] = 0x80; /* blue */ 
+    p[3479] = 0x80; /* blue */ 
+    p[3482] = 0x80; /* blue */ 
+    p[3485] = 0x80; /* blue */ 
+    p[3488] = 0x80; /* blue */ 
+    p[3491] = 0x80; /* blue */ 
+    p[3494] = 0x80; /* blue */ 
+    p[3497] = 0x80; /* blue */ 
+    p[3500] = 0x80; /* blue */ 
+    p[3503] = 0x80; /* blue */ 
+    p[3506] = 0x80; /* blue */ 
+    p[3509] = 0x80; /* blue */ 
+    p[3512] = 0x80; /* blue */ 
+    p[3515] = 0x80; /* blue */ 
+    p[3518] = 0x80; /* blue */ 
+    p[3521] = 0x80; /* blue */ 
+    p[3524] = 0x80; /* blue */ 
+    p[3527] = 0x80; /* blue */ 
+    p[3530] = 0x80; /* blue */ 
+    p[3533] = 0x80; /* blue */ 
+    p[3536] = 0x80; /* blue */ 
+    p[3539] = 0x80; /* blue */ 
+    p[3542] = 0x99; /* blue */ 
+    p[3545] = 0xC6; /* blue */ 
+    p[3548] = 0xF3; /* blue */ 
+    p[3551] = 0xFF; /* blue */ 
+    p[3554] = 0xFF; /* blue */ 
+    p[3557] = 0xFF; /* blue */ 
+    p[3560] = 0xFF; /* blue */ 
+    p[3563] = 0xFF; /* blue */ 
+    p[3566] = 0xFF; /* blue */ 
+    p[3569] = 0xE5; /* blue */ 
+    p[3572] = 0x94; /* blue */ 
+    p[3578] = 0x80; /* blue */ 
+    p[3581] = 0xFF; /* blue */ 
+    p[3584] = 0xFF; /* blue */ 
+    p[3587] = 0x80; /* blue */ 
+    p[3713] = 0x21; /* blue */ 
+    p[3716] = 0x7B; /* blue */ 
+    p[3719] = 0xD6; /* blue */ 
+    p[3722] = 0xFF; /* blue */ 
+    p[3725] = 0xFF; /* blue */ 
+    p[3728] = 0xFF; /* blue */ 
+    p[3731] = 0xFF; /* blue */ 
+    p[3734] = 0xFF; /* blue */ 
+    p[3737] = 0xFF; /* blue */ 
+    p[3740] = 0xD6; /* blue */ 
+    p[3743] = 0x7A; /* blue */ 
+    p[3746] = 0x20; /* blue */ 
+    p[3758] = 0x80; /* blue */ 
+    p[3761] = 0xFF; /* blue */ 
+    p[3764] = 0xFF; /* blue */ 
+    p[3767] = 0x80; /* blue */ 
+    p[3887] = 0x58; /* blue */ 
+    p[3890] = 0xC4; /* blue */ 
+    p[3893] = 0xFF; /* blue */ 
+    p[3896] = 0xFF; /* blue */ 
+    p[3899] = 0xFF; /* blue */ 
+    p[3902] = 0xFF; /* blue */ 
+    p[3905] = 0xFF; /* blue */ 
+    p[3908] = 0xFF; /* blue */ 
+    p[3911] = 0xE6; /* blue */ 
+    p[3914] = 0x8C; /* blue */ 
+    p[3917] = 0x31; /* blue */ 
+    p[3920] = 0x01; /* blue */ 
+    p[3938] = 0x80; /* blue */ 
+    p[3941] = 0xFF; /* blue */ 
+    p[3944] = 0xFF; /* blue */ 
+    p[3947] = 0x80; /* blue */ 
+    p[4064] = 0x5A; /* blue */ 
+    p[4067] = 0xFF; /* blue */ 
+    p[4070] = 0xFF; /* blue */ 
+    p[4073] = 0xFF; /* blue */ 
+    p[4076] = 0xFF; /* blue */ 
+    p[4079] = 0xFF; /* blue */ 
+    p[4082] = 0xF2; /* blue */ 
+    p[4085] = 0x9F; /* blue */ 
+    p[4088] = 0x43; /* blue */ 
+    p[4091] = 0x03; /* blue */ 
+    p[4118] = 0x80; /* blue */ 
+    p[4121] = 0xFF; /* blue */ 
+    p[4124] = 0xFF; /* blue */ 
+    p[4127] = 0x80; /* blue */ 
+    p[4244] = 0x54; /* blue */ 
+    p[4247] = 0xFF; /* blue */ 
+    p[4250] = 0xFF; /* blue */ 
+    p[4253] = 0xFB; /* blue */ 
+    p[4256] = 0xB1; /* blue */ 
+    p[4259] = 0x56; /* blue */ 
+    p[4262] = 0x09; /* blue */ 
+    p[4298] = 0x80; /* blue */ 
+    p[4301] = 0xFF; /* blue */ 
+    p[4304] = 0xFF; /* blue */ 
+    p[4307] = 0x80; /* blue */ 
+    p[4427] = 0x59; /* blue */ 
+    p[4430] = 0x65; /* blue */ 
+    p[4433] = 0x13; /* blue */ 
+    p[4478] = 0x80; /* blue */ 
+    p[4481] = 0xFF; /* blue */ 
+    p[4484] = 0xFF; /* blue */ 
+    p[4487] = 0x80; /* blue */ 
+    p[4658] = 0x80; /* blue */ 
+    p[4661] = 0xFF; /* blue */ 
+    p[4664] = 0xFF; /* blue */ 
+    p[4667] = 0x80; /* blue */ 
+    p[4838] = 0x80; /* blue */ 
+    p[4841] = 0xFF; /* blue */ 
+    p[4844] = 0xFF; /* blue */ 
+    p[4847] = 0x80; /* blue */ 
+    p[5018] = 0x80; /* blue */ 
+    p[5021] = 0xFF; /* blue */ 
+    p[5024] = 0xFF; /* blue */ 
+    p[5027] = 0x80; /* blue */ 
+    p[5198] = 0x80; /* blue */ 
+    p[5201] = 0xFF; /* blue */ 
+    p[5204] = 0xFF; /* blue */ 
+    p[5207] = 0x80; /* blue */ 
+    p[5378] = 0x4B; /* blue */ 
+    p[5381] = 0xFF; /* blue */ 
+    p[5384] = 0xFF; /* blue */ 
+    p[5387] = 0x4C; /* blue */ 
+    p[5558] = 0x02; /* blue */ 
+    p[5561] = 0x4B; /* blue */ 
+    p[5564] = 0x4B; /* blue */ 
+    p[5567] = 0x02; /* blue */ 
+    
+    return img;
+}
+
 struct img *img_moveto(void)
 {
     struct img *img = img_alloc("img", 70, 72);
@@ -15414,6 +16732,285 @@ struct img *img_feed_down(void)
     return img;
 }
 
+struct img *img_thread_cut_depth(void)
+{
+    struct img *img = img_alloc("img", 37, 35);
+    u8 *p = img->buf->d;
+    p[203] = 0x80; /* blue */ 
+    p[311] = 0xD5; /* blue */ 
+    p[314] = 0x95; /* blue */ 
+    p[317] = 0xD5; /* blue */ 
+    p[422] = 0xD5; /* blue */ 
+    p[425] = 0xEE; /* blue */ 
+    p[428] = 0x2A; /* blue */ 
+    p[533] = 0x7F; /* blue */ 
+    p[536] = 0xE0; /* blue */ 
+    p[581] = 0x06; /* blue */ 
+    p[584] = 0xF0; /* blue */ 
+    p[587] = 0xF0; /* blue */ 
+    p[590] = 0x06; /* blue */ 
+    p[596] = 0x80; /* blue */ 
+    p[599] = 0x80; /* blue */ 
+    p[602] = 0x80; /* blue */ 
+    p[605] = 0x80; /* blue */ 
+    p[608] = 0x80; /* blue */ 
+    p[611] = 0x80; /* blue */ 
+    p[614] = 0x80; /* blue */ 
+    p[617] = 0x80; /* blue */ 
+    p[620] = 0x80; /* blue */ 
+    p[623] = 0x80; /* blue */ 
+    p[626] = 0x80; /* blue */ 
+    p[629] = 0x80; /* blue */ 
+    p[632] = 0x80; /* blue */ 
+    p[635] = 0x80; /* blue */ 
+    p[638] = 0x80; /* blue */ 
+    p[641] = 0x80; /* blue */ 
+    p[644] = 0x8A; /* blue */ 
+    p[647] = 0xDA; /* blue */ 
+    p[650] = 0x80; /* blue */ 
+    p[653] = 0x80; /* blue */ 
+    p[656] = 0x80; /* blue */ 
+    p[659] = 0x80; /* blue */ 
+    p[662] = 0x80; /* blue */ 
+    p[665] = 0x40; /* blue */ 
+    p[692] = 0x73; /* blue */ 
+    p[695] = 0xFF; /* blue */ 
+    p[698] = 0xFF; /* blue */ 
+    p[701] = 0x72; /* blue */ 
+    p[758] = 0x80; /* blue */ 
+    p[800] = 0x15; /* blue */ 
+    p[803] = 0xF1; /* blue */ 
+    p[806] = 0xFF; /* blue */ 
+    p[809] = 0xFF; /* blue */ 
+    p[812] = 0xF0; /* blue */ 
+    p[815] = 0x15; /* blue */ 
+    p[869] = 0x80; /* blue */ 
+    p[911] = 0x97; /* blue */ 
+    p[914] = 0xFF; /* blue */ 
+    p[917] = 0xBB; /* blue */ 
+    p[920] = 0xBC; /* blue */ 
+    p[923] = 0xFF; /* blue */ 
+    p[926] = 0x97; /* blue */ 
+    p[980] = 0x80; /* blue */ 
+    p[1019] = 0x2E; /* blue */ 
+    p[1022] = 0xFD; /* blue */ 
+    p[1025] = 0xFD; /* blue */ 
+    p[1028] = 0x2D; /* blue */ 
+    p[1031] = 0x2D; /* blue */ 
+    p[1034] = 0xFD; /* blue */ 
+    p[1037] = 0xFD; /* blue */ 
+    p[1040] = 0x2D; /* blue */ 
+    p[1091] = 0x80; /* blue */ 
+    p[1127] = 0x01; /* blue */ 
+    p[1130] = 0xBC; /* blue */ 
+    p[1133] = 0xFF; /* blue */ 
+    p[1136] = 0x97; /* blue */ 
+    p[1145] = 0x97; /* blue */ 
+    p[1148] = 0xFF; /* blue */ 
+    p[1151] = 0xBC; /* blue */ 
+    p[1154] = 0x01; /* blue */ 
+    p[1202] = 0x80; /* blue */ 
+    p[1238] = 0x4E; /* blue */ 
+    p[1241] = 0xFF; /* blue */ 
+    p[1244] = 0xF0; /* blue */ 
+    p[1247] = 0x15; /* blue */ 
+    p[1256] = 0x15; /* blue */ 
+    p[1259] = 0xF1; /* blue */ 
+    p[1262] = 0xFF; /* blue */ 
+    p[1265] = 0x4D; /* blue */ 
+    p[1313] = 0x80; /* blue */ 
+    p[1346] = 0x07; /* blue */ 
+    p[1349] = 0xDB; /* blue */ 
+    p[1352] = 0xFF; /* blue */ 
+    p[1355] = 0x72; /* blue */ 
+    p[1370] = 0x73; /* blue */ 
+    p[1373] = 0xFF; /* blue */ 
+    p[1376] = 0xDA; /* blue */ 
+    p[1379] = 0x06; /* blue */ 
+    p[1385] = 0x80; /* blue */ 
+    p[1388] = 0x80; /* blue */ 
+    p[1391] = 0x80; /* blue */ 
+    p[1394] = 0x80; /* blue */ 
+    p[1397] = 0x80; /* blue */ 
+    p[1400] = 0x80; /* blue */ 
+    p[1403] = 0x80; /* blue */ 
+    p[1406] = 0x80; /* blue */ 
+    p[1409] = 0x80; /* blue */ 
+    p[1412] = 0x80; /* blue */ 
+    p[1415] = 0x80; /* blue */ 
+    p[1418] = 0x80; /* blue */ 
+    p[1421] = 0x80; /* blue */ 
+    p[1424] = 0xFF; /* blue */ 
+    p[1427] = 0xE0; /* blue */ 
+    p[1430] = 0x80; /* blue */ 
+    p[1433] = 0x80; /* blue */ 
+    p[1436] = 0x80; /* blue */ 
+    p[1439] = 0x80; /* blue */ 
+    p[1442] = 0x40; /* blue */ 
+    p[1457] = 0x73; /* blue */ 
+    p[1460] = 0xFF; /* blue */ 
+    p[1463] = 0xDA; /* blue */ 
+    p[1466] = 0x06; /* blue */ 
+    p[1481] = 0x06; /* blue */ 
+    p[1484] = 0xDB; /* blue */ 
+    p[1487] = 0xFF; /* blue */ 
+    p[1490] = 0x72; /* blue */ 
+    p[1532] = 0x7F; /* blue */ 
+    p[1535] = 0xC0; /* blue */ 
+    p[1538] = 0xFF; /* blue */ 
+    p[1565] = 0x15; /* blue */ 
+    p[1568] = 0xF1; /* blue */ 
+    p[1571] = 0xFF; /* blue */ 
+    p[1574] = 0x4D; /* blue */ 
+    p[1595] = 0x4E; /* blue */ 
+    p[1598] = 0xFF; /* blue */ 
+    p[1601] = 0xF0; /* blue */ 
+    p[1604] = 0x15; /* blue */ 
+    p[1643] = 0xFF; /* blue */ 
+    p[1646] = 0x80; /* blue */ 
+    p[1649] = 0xBF; /* blue */ 
+    p[1652] = 0x40; /* blue */ 
+    p[1676] = 0x97; /* blue */ 
+    p[1679] = 0xFF; /* blue */ 
+    p[1682] = 0xBB; /* blue */ 
+    p[1685] = 0x01; /* blue */ 
+    p[1706] = 0x01; /* blue */ 
+    p[1709] = 0xBC; /* blue */ 
+    p[1712] = 0xFF; /* blue */ 
+    p[1715] = 0x97; /* blue */ 
+    p[1754] = 0x80; /* blue */ 
+    p[1757] = 0x80; /* blue */ 
+    p[1760] = 0x7F; /* blue */ 
+    p[1763] = 0x80; /* blue */ 
+    p[1784] = 0x2E; /* blue */ 
+    p[1787] = 0xFD; /* blue */ 
+    p[1790] = 0xFD; /* blue */ 
+    p[1793] = 0x2D; /* blue */ 
+    p[1820] = 0x2D; /* blue */ 
+    p[1823] = 0xFD; /* blue */ 
+    p[1826] = 0xFD; /* blue */ 
+    p[1829] = 0x2D; /* blue */ 
+    p[1868] = 0x80; /* blue */ 
+    p[1871] = 0x1F; /* blue */ 
+    p[1874] = 0x60; /* blue */ 
+    p[1892] = 0x01; /* blue */ 
+    p[1895] = 0xBC; /* blue */ 
+    p[1898] = 0xFF; /* blue */ 
+    p[1901] = 0x97; /* blue */ 
+    p[1934] = 0x97; /* blue */ 
+    p[1937] = 0xFF; /* blue */ 
+    p[1940] = 0xBC; /* blue */ 
+    p[1943] = 0x01; /* blue */ 
+    p[1979] = 0x80; /* blue */ 
+    p[2003] = 0x4E; /* blue */ 
+    p[2006] = 0xFF; /* blue */ 
+    p[2009] = 0xF0; /* blue */ 
+    p[2012] = 0x15; /* blue */ 
+    p[2045] = 0x15; /* blue */ 
+    p[2048] = 0xF1; /* blue */ 
+    p[2051] = 0xFF; /* blue */ 
+    p[2054] = 0x4D; /* blue */ 
+    p[2090] = 0x80; /* blue */ 
+    p[2114] = 0xF7; /* blue */ 
+    p[2117] = 0xFF; /* blue */ 
+    p[2120] = 0x72; /* blue */ 
+    p[2159] = 0x73; /* blue */ 
+    p[2162] = 0xFF; /* blue */ 
+    p[2165] = 0xF7; /* blue */ 
+    p[2201] = 0x80; /* blue */ 
+    p[2225] = 0xFF; /* blue */ 
+    p[2228] = 0xFF; /* blue */ 
+    p[2231] = 0x06; /* blue */ 
+    p[2270] = 0x06; /* blue */ 
+    p[2273] = 0xFF; /* blue */ 
+    p[2276] = 0xFF; /* blue */ 
+    p[2312] = 0x80; /* blue */ 
+    p[2336] = 0xFF; /* blue */ 
+    p[2339] = 0xFF; /* blue */ 
+    p[2384] = 0xFF; /* blue */ 
+    p[2387] = 0xFF; /* blue */ 
+    p[2423] = 0x80; /* blue */ 
+    p[2447] = 0xFF; /* blue */ 
+    p[2450] = 0xFF; /* blue */ 
+    p[2495] = 0xFF; /* blue */ 
+    p[2498] = 0xFF; /* blue */ 
+    p[2534] = 0x80; /* blue */ 
+    p[2558] = 0xFF; /* blue */ 
+    p[2561] = 0xFF; /* blue */ 
+    p[2606] = 0xFF; /* blue */ 
+    p[2609] = 0xFF; /* blue */ 
+    p[2645] = 0x80; /* blue */ 
+    p[2669] = 0xFF; /* blue */ 
+    p[2672] = 0xFF; /* blue */ 
+    p[2717] = 0xFF; /* blue */ 
+    p[2720] = 0xFF; /* blue */ 
+    p[2756] = 0x80; /* blue */ 
+    p[2780] = 0xFF; /* blue */ 
+    p[2783] = 0xFF; /* blue */ 
+    p[2828] = 0xFF; /* blue */ 
+    p[2831] = 0xFF; /* blue */ 
+    p[2867] = 0x80; /* blue */ 
+    p[2891] = 0xFF; /* blue */ 
+    p[2894] = 0xFF; /* blue */ 
+    p[2939] = 0xFF; /* blue */ 
+    p[2942] = 0xFF; /* blue */ 
+    p[2978] = 0x40; /* blue */ 
+    p[3002] = 0xFF; /* blue */ 
+    p[3005] = 0xFF; /* blue */ 
+    p[3050] = 0xFF; /* blue */ 
+    p[3053] = 0xFF; /* blue */ 
+    p[3113] = 0xFF; /* blue */ 
+    p[3116] = 0xFF; /* blue */ 
+    p[3161] = 0xFF; /* blue */ 
+    p[3164] = 0xFF; /* blue */ 
+    p[3224] = 0xFF; /* blue */ 
+    p[3227] = 0xFF; /* blue */ 
+    p[3272] = 0xFF; /* blue */ 
+    p[3275] = 0xFF; /* blue */ 
+    p[3335] = 0xFF; /* blue */ 
+    p[3338] = 0xFF; /* blue */ 
+    p[3383] = 0xFF; /* blue */ 
+    p[3386] = 0xFF; /* blue */ 
+    p[3446] = 0xF1; /* blue */ 
+    p[3449] = 0xFF; /* blue */ 
+    p[3452] = 0xFF; /* blue */ 
+    p[3455] = 0xFF; /* blue */ 
+    p[3458] = 0xFF; /* blue */ 
+    p[3461] = 0xFF; /* blue */ 
+    p[3464] = 0xFF; /* blue */ 
+    p[3467] = 0xFF; /* blue */ 
+    p[3470] = 0xFF; /* blue */ 
+    p[3473] = 0xFF; /* blue */ 
+    p[3476] = 0xFF; /* blue */ 
+    p[3479] = 0xFF; /* blue */ 
+    p[3482] = 0xFF; /* blue */ 
+    p[3485] = 0xFF; /* blue */ 
+    p[3488] = 0xFF; /* blue */ 
+    p[3491] = 0xFF; /* blue */ 
+    p[3494] = 0xFF; /* blue */ 
+    p[3497] = 0xFF; /* blue */ 
+    p[3557] = 0xC9; /* blue */ 
+    p[3560] = 0xFF; /* blue */ 
+    p[3563] = 0xFF; /* blue */ 
+    p[3566] = 0xFF; /* blue */ 
+    p[3569] = 0xFF; /* blue */ 
+    p[3572] = 0xFF; /* blue */ 
+    p[3575] = 0xFF; /* blue */ 
+    p[3578] = 0xFF; /* blue */ 
+    p[3581] = 0xFF; /* blue */ 
+    p[3584] = 0xFF; /* blue */ 
+    p[3587] = 0xFF; /* blue */ 
+    p[3590] = 0xFF; /* blue */ 
+    p[3593] = 0xFF; /* blue */ 
+    p[3596] = 0xFF; /* blue */ 
+    p[3599] = 0xFF; /* blue */ 
+    p[3602] = 0xFF; /* blue */ 
+    p[3605] = 0xFF; /* blue */ 
+    p[3608] = 0xEF; /* blue */ 
+    
+    return img;
+}
+
 struct img *img_feed_arrow_down_left(void)
 {
     struct img *img = img_alloc("img", 31, 44);
@@ -16302,6 +17899,469 @@ struct img *img_feed_arrow_up_right(void)
     p[4037] = 0xFF; /* blue */ 
     p[4040] = 0xFF; /* blue */ 
     p[4043] = 0x4C; /* blue */ 
+    
+    return img;
+}
+
+struct img *img_feed_arrow_left_down2(void)
+{
+    struct img *img = img_alloc("img", 60, 35);
+    u8 *p = img->buf->d;
+    p[734] = 0x02; /* blue */ 
+    p[737] = 0x4B; /* blue */ 
+    p[740] = 0x4B; /* blue */ 
+    p[743] = 0x02; /* blue */ 
+    p[914] = 0x4C; /* blue */ 
+    p[917] = 0xFF; /* blue */ 
+    p[920] = 0xFF; /* blue */ 
+    p[923] = 0x4B; /* blue */ 
+    p[1094] = 0x80; /* blue */ 
+    p[1097] = 0xFF; /* blue */ 
+    p[1100] = 0xFF; /* blue */ 
+    p[1103] = 0x80; /* blue */ 
+    p[1274] = 0x80; /* blue */ 
+    p[1277] = 0xFF; /* blue */ 
+    p[1280] = 0xFF; /* blue */ 
+    p[1283] = 0x80; /* blue */ 
+    p[1454] = 0x80; /* blue */ 
+    p[1457] = 0xFF; /* blue */ 
+    p[1460] = 0xFF; /* blue */ 
+    p[1463] = 0x80; /* blue */ 
+    p[1634] = 0x80; /* blue */ 
+    p[1637] = 0xFF; /* blue */ 
+    p[1640] = 0xFF; /* blue */ 
+    p[1643] = 0x80; /* blue */ 
+    p[1814] = 0x80; /* blue */ 
+    p[1817] = 0xFF; /* blue */ 
+    p[1820] = 0xFF; /* blue */ 
+    p[1823] = 0x80; /* blue */ 
+    p[1868] = 0x13; /* blue */ 
+    p[1871] = 0x65; /* blue */ 
+    p[1874] = 0x59; /* blue */ 
+    p[1994] = 0x80; /* blue */ 
+    p[1997] = 0xFF; /* blue */ 
+    p[2000] = 0xFF; /* blue */ 
+    p[2003] = 0x80; /* blue */ 
+    p[2039] = 0x09; /* blue */ 
+    p[2042] = 0x56; /* blue */ 
+    p[2045] = 0xB1; /* blue */ 
+    p[2048] = 0xFB; /* blue */ 
+    p[2051] = 0xFF; /* blue */ 
+    p[2054] = 0xFF; /* blue */ 
+    p[2057] = 0x54; /* blue */ 
+    p[2174] = 0x80; /* blue */ 
+    p[2177] = 0xFF; /* blue */ 
+    p[2180] = 0xFF; /* blue */ 
+    p[2183] = 0x80; /* blue */ 
+    p[2210] = 0x03; /* blue */ 
+    p[2213] = 0x43; /* blue */ 
+    p[2216] = 0x9F; /* blue */ 
+    p[2219] = 0xF2; /* blue */ 
+    p[2222] = 0xFF; /* blue */ 
+    p[2225] = 0xFF; /* blue */ 
+    p[2228] = 0xFF; /* blue */ 
+    p[2231] = 0xFF; /* blue */ 
+    p[2234] = 0xFF; /* blue */ 
+    p[2237] = 0x5A; /* blue */ 
+    p[2354] = 0x80; /* blue */ 
+    p[2357] = 0xFF; /* blue */ 
+    p[2360] = 0xFF; /* blue */ 
+    p[2363] = 0x80; /* blue */ 
+    p[2381] = 0x01; /* blue */ 
+    p[2384] = 0x31; /* blue */ 
+    p[2387] = 0x8C; /* blue */ 
+    p[2390] = 0xE6; /* blue */ 
+    p[2393] = 0xFF; /* blue */ 
+    p[2396] = 0xFF; /* blue */ 
+    p[2399] = 0xFF; /* blue */ 
+    p[2402] = 0xFF; /* blue */ 
+    p[2405] = 0xFF; /* blue */ 
+    p[2408] = 0xFF; /* blue */ 
+    p[2411] = 0xC4; /* blue */ 
+    p[2414] = 0x58; /* blue */ 
+    p[2534] = 0x80; /* blue */ 
+    p[2537] = 0xFF; /* blue */ 
+    p[2540] = 0xFF; /* blue */ 
+    p[2543] = 0x80; /* blue */ 
+    p[2555] = 0x20; /* blue */ 
+    p[2558] = 0x7A; /* blue */ 
+    p[2561] = 0xD6; /* blue */ 
+    p[2564] = 0xFF; /* blue */ 
+    p[2567] = 0xFF; /* blue */ 
+    p[2570] = 0xFF; /* blue */ 
+    p[2573] = 0xFF; /* blue */ 
+    p[2576] = 0xFF; /* blue */ 
+    p[2579] = 0xFF; /* blue */ 
+    p[2582] = 0xD6; /* blue */ 
+    p[2585] = 0x7B; /* blue */ 
+    p[2588] = 0x21; /* blue */ 
+    p[2714] = 0x80; /* blue */ 
+    p[2717] = 0xFF; /* blue */ 
+    p[2720] = 0xFF; /* blue */ 
+    p[2723] = 0x80; /* blue */ 
+    p[2729] = 0x94; /* blue */ 
+    p[2732] = 0xE5; /* blue */ 
+    p[2735] = 0xFF; /* blue */ 
+    p[2738] = 0xFF; /* blue */ 
+    p[2741] = 0xFF; /* blue */ 
+    p[2744] = 0xFF; /* blue */ 
+    p[2747] = 0xFF; /* blue */ 
+    p[2750] = 0xFF; /* blue */ 
+    p[2753] = 0xF3; /* blue */ 
+    p[2756] = 0xC6; /* blue */ 
+    p[2759] = 0x99; /* blue */ 
+    p[2762] = 0x80; /* blue */ 
+    p[2765] = 0x80; /* blue */ 
+    p[2768] = 0x80; /* blue */ 
+    p[2771] = 0x80; /* blue */ 
+    p[2774] = 0x80; /* blue */ 
+    p[2777] = 0x80; /* blue */ 
+    p[2780] = 0x80; /* blue */ 
+    p[2783] = 0x80; /* blue */ 
+    p[2786] = 0x80; /* blue */ 
+    p[2789] = 0x80; /* blue */ 
+    p[2792] = 0x80; /* blue */ 
+    p[2795] = 0x80; /* blue */ 
+    p[2798] = 0x80; /* blue */ 
+    p[2801] = 0x80; /* blue */ 
+    p[2804] = 0x80; /* blue */ 
+    p[2807] = 0x80; /* blue */ 
+    p[2810] = 0x80; /* blue */ 
+    p[2813] = 0x80; /* blue */ 
+    p[2816] = 0x80; /* blue */ 
+    p[2819] = 0x80; /* blue */ 
+    p[2822] = 0x80; /* blue */ 
+    p[2825] = 0x80; /* blue */ 
+    p[2828] = 0x80; /* blue */ 
+    p[2831] = 0x80; /* blue */ 
+    p[2834] = 0x80; /* blue */ 
+    p[2837] = 0x80; /* blue */ 
+    p[2840] = 0x80; /* blue */ 
+    p[2843] = 0x80; /* blue */ 
+    p[2846] = 0x80; /* blue */ 
+    p[2849] = 0x80; /* blue */ 
+    p[2852] = 0x80; /* blue */ 
+    p[2855] = 0x80; /* blue */ 
+    p[2858] = 0x80; /* blue */ 
+    p[2861] = 0x80; /* blue */ 
+    p[2864] = 0x4B; /* blue */ 
+    p[2867] = 0x02; /* blue */ 
+    p[2894] = 0x80; /* blue */ 
+    p[2897] = 0xFF; /* blue */ 
+    p[2900] = 0xFF; /* blue */ 
+    p[2903] = 0x80; /* blue */ 
+    p[2906] = 0x90; /* blue */ 
+    p[2909] = 0xFF; /* blue */ 
+    p[2912] = 0xFF; /* blue */ 
+    p[2915] = 0xFF; /* blue */ 
+    p[2918] = 0xFF; /* blue */ 
+    p[2921] = 0xFF; /* blue */ 
+    p[2924] = 0xFF; /* blue */ 
+    p[2927] = 0xFF; /* blue */ 
+    p[2930] = 0xFF; /* blue */ 
+    p[2933] = 0xFF; /* blue */ 
+    p[2936] = 0xFF; /* blue */ 
+    p[2939] = 0xFF; /* blue */ 
+    p[2942] = 0xFF; /* blue */ 
+    p[2945] = 0xFF; /* blue */ 
+    p[2948] = 0xFF; /* blue */ 
+    p[2951] = 0xFF; /* blue */ 
+    p[2954] = 0xFF; /* blue */ 
+    p[2957] = 0xFF; /* blue */ 
+    p[2960] = 0xFF; /* blue */ 
+    p[2963] = 0xFF; /* blue */ 
+    p[2966] = 0xFF; /* blue */ 
+    p[2969] = 0xFF; /* blue */ 
+    p[2972] = 0xFF; /* blue */ 
+    p[2975] = 0xFF; /* blue */ 
+    p[2978] = 0xFF; /* blue */ 
+    p[2981] = 0xFF; /* blue */ 
+    p[2984] = 0xFF; /* blue */ 
+    p[2987] = 0xFF; /* blue */ 
+    p[2990] = 0xFF; /* blue */ 
+    p[2993] = 0xFF; /* blue */ 
+    p[2996] = 0xFF; /* blue */ 
+    p[2999] = 0xFF; /* blue */ 
+    p[3002] = 0xFF; /* blue */ 
+    p[3005] = 0xFF; /* blue */ 
+    p[3008] = 0xFF; /* blue */ 
+    p[3011] = 0xFF; /* blue */ 
+    p[3014] = 0xFF; /* blue */ 
+    p[3017] = 0xFF; /* blue */ 
+    p[3020] = 0xFF; /* blue */ 
+    p[3023] = 0xFF; /* blue */ 
+    p[3026] = 0xFF; /* blue */ 
+    p[3029] = 0xFF; /* blue */ 
+    p[3032] = 0xFF; /* blue */ 
+    p[3035] = 0xFF; /* blue */ 
+    p[3038] = 0xFF; /* blue */ 
+    p[3041] = 0xFF; /* blue */ 
+    p[3044] = 0xFF; /* blue */ 
+    p[3047] = 0x4B; /* blue */ 
+    p[3074] = 0x80; /* blue */ 
+    p[3077] = 0xFF; /* blue */ 
+    p[3080] = 0xFF; /* blue */ 
+    p[3083] = 0x80; /* blue */ 
+    p[3086] = 0x90; /* blue */ 
+    p[3089] = 0xFF; /* blue */ 
+    p[3092] = 0xFF; /* blue */ 
+    p[3095] = 0xFF; /* blue */ 
+    p[3098] = 0xFF; /* blue */ 
+    p[3101] = 0xFF; /* blue */ 
+    p[3104] = 0xFF; /* blue */ 
+    p[3107] = 0xFF; /* blue */ 
+    p[3110] = 0xFF; /* blue */ 
+    p[3113] = 0xFF; /* blue */ 
+    p[3116] = 0xFF; /* blue */ 
+    p[3119] = 0xFF; /* blue */ 
+    p[3122] = 0xFF; /* blue */ 
+    p[3125] = 0xFF; /* blue */ 
+    p[3128] = 0xFF; /* blue */ 
+    p[3131] = 0xFF; /* blue */ 
+    p[3134] = 0xFF; /* blue */ 
+    p[3137] = 0xFF; /* blue */ 
+    p[3140] = 0xFF; /* blue */ 
+    p[3143] = 0xFF; /* blue */ 
+    p[3146] = 0xFF; /* blue */ 
+    p[3149] = 0xFF; /* blue */ 
+    p[3152] = 0xFF; /* blue */ 
+    p[3155] = 0xFF; /* blue */ 
+    p[3158] = 0xFF; /* blue */ 
+    p[3161] = 0xFF; /* blue */ 
+    p[3164] = 0xFF; /* blue */ 
+    p[3167] = 0xFF; /* blue */ 
+    p[3170] = 0xFF; /* blue */ 
+    p[3173] = 0xFF; /* blue */ 
+    p[3176] = 0xFF; /* blue */ 
+    p[3179] = 0xFF; /* blue */ 
+    p[3182] = 0xFF; /* blue */ 
+    p[3185] = 0xFF; /* blue */ 
+    p[3188] = 0xFF; /* blue */ 
+    p[3191] = 0xFF; /* blue */ 
+    p[3194] = 0xFF; /* blue */ 
+    p[3197] = 0xFF; /* blue */ 
+    p[3200] = 0xFF; /* blue */ 
+    p[3203] = 0xFF; /* blue */ 
+    p[3206] = 0xFF; /* blue */ 
+    p[3209] = 0xFF; /* blue */ 
+    p[3212] = 0xFF; /* blue */ 
+    p[3215] = 0xFF; /* blue */ 
+    p[3218] = 0xFF; /* blue */ 
+    p[3221] = 0xFF; /* blue */ 
+    p[3224] = 0xFF; /* blue */ 
+    p[3227] = 0x4B; /* blue */ 
+    p[3254] = 0x80; /* blue */ 
+    p[3257] = 0xFF; /* blue */ 
+    p[3260] = 0xFF; /* blue */ 
+    p[3263] = 0x80; /* blue */ 
+    p[3269] = 0x94; /* blue */ 
+    p[3272] = 0xE6; /* blue */ 
+    p[3275] = 0xFF; /* blue */ 
+    p[3278] = 0xFF; /* blue */ 
+    p[3281] = 0xFF; /* blue */ 
+    p[3284] = 0xFF; /* blue */ 
+    p[3287] = 0xFF; /* blue */ 
+    p[3290] = 0xFF; /* blue */ 
+    p[3293] = 0xF3; /* blue */ 
+    p[3296] = 0xC6; /* blue */ 
+    p[3299] = 0x98; /* blue */ 
+    p[3302] = 0x80; /* blue */ 
+    p[3305] = 0x80; /* blue */ 
+    p[3308] = 0x80; /* blue */ 
+    p[3311] = 0x80; /* blue */ 
+    p[3314] = 0x80; /* blue */ 
+    p[3317] = 0x80; /* blue */ 
+    p[3320] = 0x80; /* blue */ 
+    p[3323] = 0x80; /* blue */ 
+    p[3326] = 0x80; /* blue */ 
+    p[3329] = 0x80; /* blue */ 
+    p[3332] = 0x80; /* blue */ 
+    p[3335] = 0x80; /* blue */ 
+    p[3338] = 0x80; /* blue */ 
+    p[3341] = 0x80; /* blue */ 
+    p[3344] = 0x80; /* blue */ 
+    p[3347] = 0x80; /* blue */ 
+    p[3350] = 0x80; /* blue */ 
+    p[3353] = 0x80; /* blue */ 
+    p[3356] = 0x80; /* blue */ 
+    p[3359] = 0xFF; /* blue */ 
+    p[3362] = 0xFF; /* blue */ 
+    p[3365] = 0x80; /* blue */ 
+    p[3368] = 0x80; /* blue */ 
+    p[3371] = 0x80; /* blue */ 
+    p[3374] = 0x80; /* blue */ 
+    p[3377] = 0x80; /* blue */ 
+    p[3380] = 0x80; /* blue */ 
+    p[3383] = 0x80; /* blue */ 
+    p[3386] = 0x80; /* blue */ 
+    p[3389] = 0x80; /* blue */ 
+    p[3392] = 0x80; /* blue */ 
+    p[3395] = 0x80; /* blue */ 
+    p[3398] = 0x80; /* blue */ 
+    p[3401] = 0x80; /* blue */ 
+    p[3404] = 0x4C; /* blue */ 
+    p[3407] = 0x02; /* blue */ 
+    p[3434] = 0x80; /* blue */ 
+    p[3437] = 0xFF; /* blue */ 
+    p[3440] = 0xFF; /* blue */ 
+    p[3443] = 0x80; /* blue */ 
+    p[3455] = 0x21; /* blue */ 
+    p[3458] = 0x7B; /* blue */ 
+    p[3461] = 0xD7; /* blue */ 
+    p[3464] = 0xFF; /* blue */ 
+    p[3467] = 0xFF; /* blue */ 
+    p[3470] = 0xFF; /* blue */ 
+    p[3473] = 0xFF; /* blue */ 
+    p[3476] = 0xFF; /* blue */ 
+    p[3479] = 0xFF; /* blue */ 
+    p[3482] = 0xD6; /* blue */ 
+    p[3485] = 0x7A; /* blue */ 
+    p[3488] = 0x20; /* blue */ 
+    p[3539] = 0xFF; /* blue */ 
+    p[3542] = 0xFF; /* blue */ 
+    p[3614] = 0x80; /* blue */ 
+    p[3617] = 0xFF; /* blue */ 
+    p[3620] = 0xFF; /* blue */ 
+    p[3623] = 0x80; /* blue */ 
+    p[3641] = 0x01; /* blue */ 
+    p[3644] = 0x32; /* blue */ 
+    p[3647] = 0x8D; /* blue */ 
+    p[3650] = 0xE6; /* blue */ 
+    p[3653] = 0xFF; /* blue */ 
+    p[3656] = 0xFF; /* blue */ 
+    p[3659] = 0xFF; /* blue */ 
+    p[3662] = 0xFF; /* blue */ 
+    p[3665] = 0xFF; /* blue */ 
+    p[3668] = 0xFF; /* blue */ 
+    p[3671] = 0xC3; /* blue */ 
+    p[3674] = 0x57; /* blue */ 
+    p[3719] = 0xFF; /* blue */ 
+    p[3722] = 0xFF; /* blue */ 
+    p[3794] = 0x80; /* blue */ 
+    p[3797] = 0xFF; /* blue */ 
+    p[3800] = 0xFF; /* blue */ 
+    p[3803] = 0x80; /* blue */ 
+    p[3824] = 0x02; /* blue */ 
+    p[3830] = 0x03; /* blue */ 
+    p[3833] = 0x44; /* blue */ 
+    p[3836] = 0xA0; /* blue */ 
+    p[3839] = 0xF2; /* blue */ 
+    p[3842] = 0xFF; /* blue */ 
+    p[3845] = 0xFF; /* blue */ 
+    p[3848] = 0xFF; /* blue */ 
+    p[3851] = 0xFF; /* blue */ 
+    p[3854] = 0xFF; /* blue */ 
+    p[3857] = 0x59; /* blue */ 
+    p[3899] = 0xFF; /* blue */ 
+    p[3902] = 0xFF; /* blue */ 
+    p[3974] = 0x80; /* blue */ 
+    p[3977] = 0xFF; /* blue */ 
+    p[3980] = 0xFF; /* blue */ 
+    p[3983] = 0x80; /* blue */ 
+    p[4019] = 0x09; /* blue */ 
+    p[4022] = 0x57; /* blue */ 
+    p[4025] = 0xB2; /* blue */ 
+    p[4028] = 0xFB; /* blue */ 
+    p[4031] = 0xFF; /* blue */ 
+    p[4034] = 0xFF; /* blue */ 
+    p[4037] = 0x54; /* blue */ 
+    p[4070] = 0xBE; /* blue */ 
+    p[4073] = 0xBF; /* blue */ 
+    p[4076] = 0x02; /* blue */ 
+    p[4079] = 0xFF; /* blue */ 
+    p[4082] = 0xFF; /* blue */ 
+    p[4085] = 0x02; /* blue */ 
+    p[4088] = 0xBE; /* blue */ 
+    p[4091] = 0xBD; /* blue */ 
+    p[4154] = 0x80; /* blue */ 
+    p[4157] = 0xFF; /* blue */ 
+    p[4160] = 0xFF; /* blue */ 
+    p[4163] = 0x80; /* blue */ 
+    p[4208] = 0x13; /* blue */ 
+    p[4211] = 0x65; /* blue */ 
+    p[4214] = 0x59; /* blue */ 
+    p[4250] = 0xDF; /* blue */ 
+    p[4253] = 0xFF; /* blue */ 
+    p[4256] = 0x41; /* blue */ 
+    p[4259] = 0xFF; /* blue */ 
+    p[4262] = 0xFF; /* blue */ 
+    p[4265] = 0x41; /* blue */ 
+    p[4268] = 0xFF; /* blue */ 
+    p[4271] = 0xDF; /* blue */ 
+    p[4334] = 0x80; /* blue */ 
+    p[4337] = 0xFF; /* blue */ 
+    p[4340] = 0xFF; /* blue */ 
+    p[4343] = 0x80; /* blue */ 
+    p[4430] = 0x81; /* blue */ 
+    p[4433] = 0xFF; /* blue */ 
+    p[4436] = 0xA1; /* blue */ 
+    p[4439] = 0xFF; /* blue */ 
+    p[4442] = 0xFF; /* blue */ 
+    p[4445] = 0xA1; /* blue */ 
+    p[4448] = 0xFF; /* blue */ 
+    p[4451] = 0x81; /* blue */ 
+    p[4514] = 0x80; /* blue */ 
+    p[4517] = 0xFF; /* blue */ 
+    p[4520] = 0xFF; /* blue */ 
+    p[4523] = 0x80; /* blue */ 
+    p[4610] = 0x23; /* blue */ 
+    p[4613] = 0xFF; /* blue */ 
+    p[4616] = 0xF5; /* blue */ 
+    p[4619] = 0xFF; /* blue */ 
+    p[4622] = 0xFF; /* blue */ 
+    p[4625] = 0xF5; /* blue */ 
+    p[4628] = 0xFF; /* blue */ 
+    p[4631] = 0x23; /* blue */ 
+    p[4694] = 0x80; /* blue */ 
+    p[4697] = 0xFF; /* blue */ 
+    p[4700] = 0xFF; /* blue */ 
+    p[4703] = 0x80; /* blue */ 
+    p[4793] = 0xC1; /* blue */ 
+    p[4796] = 0xFF; /* blue */ 
+    p[4799] = 0xFF; /* blue */ 
+    p[4802] = 0xFF; /* blue */ 
+    p[4805] = 0xFF; /* blue */ 
+    p[4808] = 0xC1; /* blue */ 
+    p[4874] = 0x80; /* blue */ 
+    p[4877] = 0xFF; /* blue */ 
+    p[4880] = 0xFF; /* blue */ 
+    p[4883] = 0x80; /* blue */ 
+    p[4973] = 0x61; /* blue */ 
+    p[4976] = 0xFF; /* blue */ 
+    p[4979] = 0xFF; /* blue */ 
+    p[4982] = 0xFF; /* blue */ 
+    p[4985] = 0xFF; /* blue */ 
+    p[4988] = 0x61; /* blue */ 
+    p[5054] = 0x80; /* blue */ 
+    p[5057] = 0xFF; /* blue */ 
+    p[5060] = 0xFF; /* blue */ 
+    p[5063] = 0x80; /* blue */ 
+    p[5153] = 0x0D; /* blue */ 
+    p[5156] = 0xF5; /* blue */ 
+    p[5159] = 0xFF; /* blue */ 
+    p[5162] = 0xFF; /* blue */ 
+    p[5165] = 0xF5; /* blue */ 
+    p[5168] = 0x0D; /* blue */ 
+    p[5234] = 0x4C; /* blue */ 
+    p[5237] = 0xFF; /* blue */ 
+    p[5240] = 0xFF; /* blue */ 
+    p[5243] = 0x4B; /* blue */ 
+    p[5336] = 0xA1; /* blue */ 
+    p[5339] = 0xFF; /* blue */ 
+    p[5342] = 0xFF; /* blue */ 
+    p[5345] = 0xA1; /* blue */ 
+    p[5414] = 0x02; /* blue */ 
+    p[5417] = 0x4C; /* blue */ 
+    p[5420] = 0x4C; /* blue */ 
+    p[5423] = 0x02; /* blue */ 
+    p[5516] = 0x41; /* blue */ 
+    p[5519] = 0xFF; /* blue */ 
+    p[5522] = 0xFF; /* blue */ 
+    p[5525] = 0x41; /* blue */ 
+    p[5696] = 0x02; /* blue */ 
+    p[5699] = 0xFB; /* blue */ 
+    p[5702] = 0xFB; /* blue */ 
+    p[5705] = 0x02; /* blue */ 
     
     return img;
 }
@@ -19563,6 +21623,365 @@ struct img *img_longitudal_speed(void)
     return img;
 }
 
+struct img *img_thread_inch(void)
+{
+    struct img *img = img_alloc("img", 60, 35);
+    u8 *p = img->buf->d;
+    p[1286] = 0x07; /* blue */ 
+    p[1289] = 0xF0; /* blue */ 
+    p[1292] = 0xF0; /* blue */ 
+    p[1295] = 0x07; /* blue */ 
+    p[1325] = 0x07; /* blue */ 
+    p[1328] = 0xF0; /* blue */ 
+    p[1331] = 0xF0; /* blue */ 
+    p[1334] = 0x07; /* blue */ 
+    p[1364] = 0x07; /* blue */ 
+    p[1367] = 0xF0; /* blue */ 
+    p[1370] = 0xF0; /* blue */ 
+    p[1373] = 0x07; /* blue */ 
+    p[1403] = 0x07; /* blue */ 
+    p[1406] = 0xF0; /* blue */ 
+    p[1409] = 0xF0; /* blue */ 
+    p[1412] = 0x07; /* blue */ 
+    p[1466] = 0x79; /* blue */ 
+    p[1469] = 0xFF; /* blue */ 
+    p[1472] = 0xFF; /* blue */ 
+    p[1475] = 0x78; /* blue */ 
+    p[1505] = 0x79; /* blue */ 
+    p[1508] = 0xFF; /* blue */ 
+    p[1511] = 0xFF; /* blue */ 
+    p[1514] = 0x78; /* blue */ 
+    p[1544] = 0x79; /* blue */ 
+    p[1547] = 0xFF; /* blue */ 
+    p[1550] = 0xFF; /* blue */ 
+    p[1553] = 0x78; /* blue */ 
+    p[1583] = 0x79; /* blue */ 
+    p[1586] = 0xFF; /* blue */ 
+    p[1589] = 0xFF; /* blue */ 
+    p[1592] = 0x78; /* blue */ 
+    p[1643] = 0x1E; /* blue */ 
+    p[1646] = 0xF5; /* blue */ 
+    p[1649] = 0xFF; /* blue */ 
+    p[1652] = 0xFF; /* blue */ 
+    p[1655] = 0xF5; /* blue */ 
+    p[1658] = 0x1D; /* blue */ 
+    p[1682] = 0x1E; /* blue */ 
+    p[1685] = 0xF5; /* blue */ 
+    p[1688] = 0xFF; /* blue */ 
+    p[1691] = 0xFF; /* blue */ 
+    p[1694] = 0xF5; /* blue */ 
+    p[1697] = 0x1D; /* blue */ 
+    p[1721] = 0x1E; /* blue */ 
+    p[1724] = 0xF5; /* blue */ 
+    p[1727] = 0xFF; /* blue */ 
+    p[1730] = 0xFF; /* blue */ 
+    p[1733] = 0xF5; /* blue */ 
+    p[1736] = 0x1D; /* blue */ 
+    p[1760] = 0x1E; /* blue */ 
+    p[1763] = 0xF5; /* blue */ 
+    p[1766] = 0xFF; /* blue */ 
+    p[1769] = 0xFF; /* blue */ 
+    p[1772] = 0xF5; /* blue */ 
+    p[1775] = 0x1D; /* blue */ 
+    p[1823] = 0xAC; /* blue */ 
+    p[1826] = 0xFF; /* blue */ 
+    p[1829] = 0xAB; /* blue */ 
+    p[1832] = 0xAC; /* blue */ 
+    p[1835] = 0xFF; /* blue */ 
+    p[1838] = 0xAB; /* blue */ 
+    p[1862] = 0xAC; /* blue */ 
+    p[1865] = 0xFF; /* blue */ 
+    p[1868] = 0xAB; /* blue */ 
+    p[1871] = 0xAC; /* blue */ 
+    p[1874] = 0xFF; /* blue */ 
+    p[1877] = 0xAB; /* blue */ 
+    p[1901] = 0xAC; /* blue */ 
+    p[1904] = 0xFF; /* blue */ 
+    p[1907] = 0xAB; /* blue */ 
+    p[1910] = 0xAC; /* blue */ 
+    p[1913] = 0xFF; /* blue */ 
+    p[1916] = 0xAB; /* blue */ 
+    p[1940] = 0xAC; /* blue */ 
+    p[1943] = 0xFF; /* blue */ 
+    p[1946] = 0xAB; /* blue */ 
+    p[1949] = 0xAC; /* blue */ 
+    p[1952] = 0xFF; /* blue */ 
+    p[1955] = 0xAB; /* blue */ 
+    p[2000] = 0x46; /* blue */ 
+    p[2003] = 0xFF; /* blue */ 
+    p[2006] = 0xF5; /* blue */ 
+    p[2009] = 0x1D; /* blue */ 
+    p[2012] = 0x1E; /* blue */ 
+    p[2015] = 0xF5; /* blue */ 
+    p[2018] = 0xFF; /* blue */ 
+    p[2021] = 0x45; /* blue */ 
+    p[2039] = 0x46; /* blue */ 
+    p[2042] = 0xFF; /* blue */ 
+    p[2045] = 0xF5; /* blue */ 
+    p[2048] = 0x1D; /* blue */ 
+    p[2051] = 0x1E; /* blue */ 
+    p[2054] = 0xF5; /* blue */ 
+    p[2057] = 0xFF; /* blue */ 
+    p[2060] = 0x45; /* blue */ 
+    p[2078] = 0x46; /* blue */ 
+    p[2081] = 0xFF; /* blue */ 
+    p[2084] = 0xF5; /* blue */ 
+    p[2087] = 0x1D; /* blue */ 
+    p[2090] = 0x1E; /* blue */ 
+    p[2093] = 0xF5; /* blue */ 
+    p[2096] = 0xFF; /* blue */ 
+    p[2099] = 0x45; /* blue */ 
+    p[2117] = 0x46; /* blue */ 
+    p[2120] = 0xFF; /* blue */ 
+    p[2123] = 0xF5; /* blue */ 
+    p[2126] = 0x1D; /* blue */ 
+    p[2129] = 0x1E; /* blue */ 
+    p[2132] = 0xF5; /* blue */ 
+    p[2135] = 0xFF; /* blue */ 
+    p[2138] = 0x45; /* blue */ 
+    p[2177] = 0x07; /* blue */ 
+    p[2180] = 0xD9; /* blue */ 
+    p[2183] = 0xFF; /* blue */ 
+    p[2186] = 0x78; /* blue */ 
+    p[2195] = 0x79; /* blue */ 
+    p[2198] = 0xFF; /* blue */ 
+    p[2201] = 0xD9; /* blue */ 
+    p[2204] = 0x07; /* blue */ 
+    p[2216] = 0x07; /* blue */ 
+    p[2219] = 0xD9; /* blue */ 
+    p[2222] = 0xFF; /* blue */ 
+    p[2225] = 0x78; /* blue */ 
+    p[2234] = 0x79; /* blue */ 
+    p[2237] = 0xFF; /* blue */ 
+    p[2240] = 0xD9; /* blue */ 
+    p[2243] = 0x07; /* blue */ 
+    p[2255] = 0x07; /* blue */ 
+    p[2258] = 0xD9; /* blue */ 
+    p[2261] = 0xFF; /* blue */ 
+    p[2264] = 0x78; /* blue */ 
+    p[2273] = 0x79; /* blue */ 
+    p[2276] = 0xFF; /* blue */ 
+    p[2279] = 0xD9; /* blue */ 
+    p[2282] = 0x07; /* blue */ 
+    p[2294] = 0x07; /* blue */ 
+    p[2297] = 0xD9; /* blue */ 
+    p[2300] = 0xFF; /* blue */ 
+    p[2303] = 0x78; /* blue */ 
+    p[2312] = 0x79; /* blue */ 
+    p[2315] = 0xFF; /* blue */ 
+    p[2318] = 0xD9; /* blue */ 
+    p[2321] = 0x07; /* blue */ 
+    p[2357] = 0x79; /* blue */ 
+    p[2360] = 0xFF; /* blue */ 
+    p[2363] = 0xD8; /* blue */ 
+    p[2366] = 0x06; /* blue */ 
+    p[2375] = 0x07; /* blue */ 
+    p[2378] = 0xD9; /* blue */ 
+    p[2381] = 0xFF; /* blue */ 
+    p[2384] = 0x78; /* blue */ 
+    p[2396] = 0x79; /* blue */ 
+    p[2399] = 0xFF; /* blue */ 
+    p[2402] = 0xD8; /* blue */ 
+    p[2405] = 0x06; /* blue */ 
+    p[2414] = 0x07; /* blue */ 
+    p[2417] = 0xD9; /* blue */ 
+    p[2420] = 0xFF; /* blue */ 
+    p[2423] = 0x78; /* blue */ 
+    p[2435] = 0x79; /* blue */ 
+    p[2438] = 0xFF; /* blue */ 
+    p[2441] = 0xD8; /* blue */ 
+    p[2444] = 0x06; /* blue */ 
+    p[2453] = 0x07; /* blue */ 
+    p[2456] = 0xD9; /* blue */ 
+    p[2459] = 0xFF; /* blue */ 
+    p[2462] = 0x78; /* blue */ 
+    p[2474] = 0x79; /* blue */ 
+    p[2477] = 0xFF; /* blue */ 
+    p[2480] = 0xD8; /* blue */ 
+    p[2483] = 0x06; /* blue */ 
+    p[2492] = 0x07; /* blue */ 
+    p[2495] = 0xD9; /* blue */ 
+    p[2498] = 0xFF; /* blue */ 
+    p[2501] = 0x78; /* blue */ 
+    p[2534] = 0x1E; /* blue */ 
+    p[2537] = 0xF5; /* blue */ 
+    p[2540] = 0xFF; /* blue */ 
+    p[2543] = 0x45; /* blue */ 
+    p[2558] = 0x46; /* blue */ 
+    p[2561] = 0xFF; /* blue */ 
+    p[2564] = 0xF5; /* blue */ 
+    p[2567] = 0x1D; /* blue */ 
+    p[2573] = 0x1E; /* blue */ 
+    p[2576] = 0xF5; /* blue */ 
+    p[2579] = 0xFF; /* blue */ 
+    p[2582] = 0x45; /* blue */ 
+    p[2597] = 0x46; /* blue */ 
+    p[2600] = 0xFF; /* blue */ 
+    p[2603] = 0xF5; /* blue */ 
+    p[2606] = 0x1D; /* blue */ 
+    p[2612] = 0x1E; /* blue */ 
+    p[2615] = 0xF5; /* blue */ 
+    p[2618] = 0xFF; /* blue */ 
+    p[2621] = 0x45; /* blue */ 
+    p[2636] = 0x46; /* blue */ 
+    p[2639] = 0xFF; /* blue */ 
+    p[2642] = 0xF5; /* blue */ 
+    p[2645] = 0x1D; /* blue */ 
+    p[2651] = 0x1E; /* blue */ 
+    p[2654] = 0xF5; /* blue */ 
+    p[2657] = 0xFF; /* blue */ 
+    p[2660] = 0x45; /* blue */ 
+    p[2675] = 0x46; /* blue */ 
+    p[2678] = 0xFF; /* blue */ 
+    p[2681] = 0xF5; /* blue */ 
+    p[2684] = 0x1D; /* blue */ 
+    p[2714] = 0xAC; /* blue */ 
+    p[2717] = 0xFF; /* blue */ 
+    p[2720] = 0xAB; /* blue */ 
+    p[2741] = 0xAC; /* blue */ 
+    p[2744] = 0xFF; /* blue */ 
+    p[2747] = 0xAB; /* blue */ 
+    p[2753] = 0xAC; /* blue */ 
+    p[2756] = 0xFF; /* blue */ 
+    p[2759] = 0xAB; /* blue */ 
+    p[2780] = 0xAC; /* blue */ 
+    p[2783] = 0xFF; /* blue */ 
+    p[2786] = 0xAB; /* blue */ 
+    p[2792] = 0xAC; /* blue */ 
+    p[2795] = 0xFF; /* blue */ 
+    p[2798] = 0xAB; /* blue */ 
+    p[2819] = 0xAC; /* blue */ 
+    p[2822] = 0xFF; /* blue */ 
+    p[2825] = 0xAB; /* blue */ 
+    p[2831] = 0xAC; /* blue */ 
+    p[2834] = 0xFF; /* blue */ 
+    p[2837] = 0xAB; /* blue */ 
+    p[2858] = 0xAC; /* blue */ 
+    p[2861] = 0xFF; /* blue */ 
+    p[2864] = 0xAB; /* blue */ 
+    p[2891] = 0x46; /* blue */ 
+    p[2894] = 0xFF; /* blue */ 
+    p[2897] = 0xF5; /* blue */ 
+    p[2900] = 0x1D; /* blue */ 
+    p[2921] = 0x1E; /* blue */ 
+    p[2924] = 0xF5; /* blue */ 
+    p[2927] = 0xFF; /* blue */ 
+    p[2930] = 0x46; /* blue */ 
+    p[2933] = 0xFF; /* blue */ 
+    p[2936] = 0xF5; /* blue */ 
+    p[2939] = 0x1D; /* blue */ 
+    p[2960] = 0x1E; /* blue */ 
+    p[2963] = 0xF5; /* blue */ 
+    p[2966] = 0xFF; /* blue */ 
+    p[2969] = 0x46; /* blue */ 
+    p[2972] = 0xFF; /* blue */ 
+    p[2975] = 0xF5; /* blue */ 
+    p[2978] = 0x1D; /* blue */ 
+    p[2999] = 0x1E; /* blue */ 
+    p[3002] = 0xF5; /* blue */ 
+    p[3005] = 0xFF; /* blue */ 
+    p[3008] = 0x46; /* blue */ 
+    p[3011] = 0xFF; /* blue */ 
+    p[3014] = 0xF5; /* blue */ 
+    p[3017] = 0x1D; /* blue */ 
+    p[3038] = 0x1E; /* blue */ 
+    p[3041] = 0xF5; /* blue */ 
+    p[3044] = 0xFF; /* blue */ 
+    p[3047] = 0x45; /* blue */ 
+    p[3071] = 0xD6; /* blue */ 
+    p[3074] = 0xFF; /* blue */ 
+    p[3077] = 0x78; /* blue */ 
+    p[3104] = 0x79; /* blue */ 
+    p[3107] = 0xFF; /* blue */ 
+    p[3110] = 0xD6; /* blue */ 
+    p[3113] = 0xFF; /* blue */ 
+    p[3116] = 0x78; /* blue */ 
+    p[3143] = 0x79; /* blue */ 
+    p[3146] = 0xFF; /* blue */ 
+    p[3149] = 0xD6; /* blue */ 
+    p[3152] = 0xFF; /* blue */ 
+    p[3155] = 0x78; /* blue */ 
+    p[3182] = 0x79; /* blue */ 
+    p[3185] = 0xFF; /* blue */ 
+    p[3188] = 0xD6; /* blue */ 
+    p[3191] = 0xFF; /* blue */ 
+    p[3194] = 0x78; /* blue */ 
+    p[3221] = 0x79; /* blue */ 
+    p[3224] = 0xFF; /* blue */ 
+    p[3227] = 0xD6; /* blue */ 
+    p[3251] = 0xBF; /* blue */ 
+    p[3254] = 0xC2; /* blue */ 
+    p[3257] = 0x06; /* blue */ 
+    p[3284] = 0x07; /* blue */ 
+    p[3287] = 0xC2; /* blue */ 
+    p[3290] = 0xBF; /* blue */ 
+    p[3293] = 0xC2; /* blue */ 
+    p[3296] = 0x06; /* blue */ 
+    p[3323] = 0x07; /* blue */ 
+    p[3326] = 0xC2; /* blue */ 
+    p[3329] = 0xBF; /* blue */ 
+    p[3332] = 0xC2; /* blue */ 
+    p[3335] = 0x06; /* blue */ 
+    p[3362] = 0x07; /* blue */ 
+    p[3365] = 0xC2; /* blue */ 
+    p[3368] = 0xBF; /* blue */ 
+    p[3371] = 0xC2; /* blue */ 
+    p[3374] = 0x06; /* blue */ 
+    p[3401] = 0x07; /* blue */ 
+    p[3404] = 0xC2; /* blue */ 
+    p[3407] = 0xBF; /* blue */ 
+    p[4040] = 0x01; /* blue */ 
+    p[4043] = 0xBF; /* blue */ 
+    p[4046] = 0xBF; /* blue */ 
+    p[4052] = 0x01; /* blue */ 
+    p[4055] = 0xBF; /* blue */ 
+    p[4058] = 0xBF; /* blue */ 
+    p[4220] = 0x19; /* blue */ 
+    p[4223] = 0xFF; /* blue */ 
+    p[4226] = 0xEE; /* blue */ 
+    p[4232] = 0x19; /* blue */ 
+    p[4235] = 0xFF; /* blue */ 
+    p[4238] = 0xEE; /* blue */ 
+    p[4400] = 0x44; /* blue */ 
+    p[4403] = 0xFF; /* blue */ 
+    p[4406] = 0xC3; /* blue */ 
+    p[4412] = 0x44; /* blue */ 
+    p[4415] = 0xFF; /* blue */ 
+    p[4418] = 0xC3; /* blue */ 
+    p[4580] = 0x6F; /* blue */ 
+    p[4583] = 0xFF; /* blue */ 
+    p[4586] = 0x99; /* blue */ 
+    p[4592] = 0x6F; /* blue */ 
+    p[4595] = 0xFF; /* blue */ 
+    p[4598] = 0x99; /* blue */ 
+    p[4760] = 0x99; /* blue */ 
+    p[4763] = 0xFF; /* blue */ 
+    p[4766] = 0x6E; /* blue */ 
+    p[4772] = 0x99; /* blue */ 
+    p[4775] = 0xFF; /* blue */ 
+    p[4778] = 0x6E; /* blue */ 
+    p[4940] = 0xC4; /* blue */ 
+    p[4943] = 0xFF; /* blue */ 
+    p[4946] = 0x43; /* blue */ 
+    p[4952] = 0xC4; /* blue */ 
+    p[4955] = 0xFF; /* blue */ 
+    p[4958] = 0x43; /* blue */ 
+    p[5120] = 0xEE; /* blue */ 
+    p[5123] = 0xFF; /* blue */ 
+    p[5126] = 0x19; /* blue */ 
+    p[5132] = 0xEE; /* blue */ 
+    p[5135] = 0xFF; /* blue */ 
+    p[5138] = 0x19; /* blue */ 
+    p[5300] = 0xBF; /* blue */ 
+    p[5303] = 0xBF; /* blue */ 
+    p[5306] = 0x01; /* blue */ 
+    p[5312] = 0xBF; /* blue */ 
+    p[5315] = 0xBF; /* blue */ 
+    p[5318] = 0x01; /* blue */ 
+    
+    return img;
+}
+
 struct img *img_feed_arrow_up(void)
 {
     struct img *img = img_alloc("img", 31, 44);
@@ -20711,6 +23130,868 @@ struct img *img_big_circle(void)
     p[3422] = 0x58; /* blue */ 
     p[3425] = 0x3D; /* blue */ 
     p[3428] = 0x16; /* blue */ 
+    
+    return img;
+}
+
+struct img *img_thread_mm(void)
+{
+    struct img *img = img_alloc("img", 60, 35);
+    u8 *p = img->buf->d;
+    p[1106] = 0x07; /* blue */ 
+    p[1109] = 0xF0; /* blue */ 
+    p[1112] = 0xF0; /* blue */ 
+    p[1115] = 0x07; /* blue */ 
+    p[1145] = 0x07; /* blue */ 
+    p[1148] = 0xF0; /* blue */ 
+    p[1151] = 0xF0; /* blue */ 
+    p[1154] = 0x07; /* blue */ 
+    p[1184] = 0x07; /* blue */ 
+    p[1187] = 0xF0; /* blue */ 
+    p[1190] = 0xF0; /* blue */ 
+    p[1193] = 0x07; /* blue */ 
+    p[1223] = 0x07; /* blue */ 
+    p[1226] = 0xF0; /* blue */ 
+    p[1229] = 0xF0; /* blue */ 
+    p[1232] = 0x07; /* blue */ 
+    p[1286] = 0x79; /* blue */ 
+    p[1289] = 0xFF; /* blue */ 
+    p[1292] = 0xFF; /* blue */ 
+    p[1295] = 0x78; /* blue */ 
+    p[1325] = 0x79; /* blue */ 
+    p[1328] = 0xFF; /* blue */ 
+    p[1331] = 0xFF; /* blue */ 
+    p[1334] = 0x78; /* blue */ 
+    p[1364] = 0x79; /* blue */ 
+    p[1367] = 0xFF; /* blue */ 
+    p[1370] = 0xFF; /* blue */ 
+    p[1373] = 0x78; /* blue */ 
+    p[1403] = 0x79; /* blue */ 
+    p[1406] = 0xFF; /* blue */ 
+    p[1409] = 0xFF; /* blue */ 
+    p[1412] = 0x78; /* blue */ 
+    p[1463] = 0x1E; /* blue */ 
+    p[1466] = 0xF5; /* blue */ 
+    p[1469] = 0xFF; /* blue */ 
+    p[1472] = 0xFF; /* blue */ 
+    p[1475] = 0xF5; /* blue */ 
+    p[1478] = 0x1D; /* blue */ 
+    p[1502] = 0x1E; /* blue */ 
+    p[1505] = 0xF5; /* blue */ 
+    p[1508] = 0xFF; /* blue */ 
+    p[1511] = 0xFF; /* blue */ 
+    p[1514] = 0xF5; /* blue */ 
+    p[1517] = 0x1D; /* blue */ 
+    p[1541] = 0x1E; /* blue */ 
+    p[1544] = 0xF5; /* blue */ 
+    p[1547] = 0xFF; /* blue */ 
+    p[1550] = 0xFF; /* blue */ 
+    p[1553] = 0xF5; /* blue */ 
+    p[1556] = 0x1D; /* blue */ 
+    p[1580] = 0x1E; /* blue */ 
+    p[1583] = 0xF5; /* blue */ 
+    p[1586] = 0xFF; /* blue */ 
+    p[1589] = 0xFF; /* blue */ 
+    p[1592] = 0xF5; /* blue */ 
+    p[1595] = 0x1D; /* blue */ 
+    p[1643] = 0xAC; /* blue */ 
+    p[1646] = 0xFF; /* blue */ 
+    p[1649] = 0xAB; /* blue */ 
+    p[1652] = 0xAC; /* blue */ 
+    p[1655] = 0xFF; /* blue */ 
+    p[1658] = 0xAB; /* blue */ 
+    p[1682] = 0xAC; /* blue */ 
+    p[1685] = 0xFF; /* blue */ 
+    p[1688] = 0xAB; /* blue */ 
+    p[1691] = 0xAC; /* blue */ 
+    p[1694] = 0xFF; /* blue */ 
+    p[1697] = 0xAB; /* blue */ 
+    p[1721] = 0xAC; /* blue */ 
+    p[1724] = 0xFF; /* blue */ 
+    p[1727] = 0xAB; /* blue */ 
+    p[1730] = 0xAC; /* blue */ 
+    p[1733] = 0xFF; /* blue */ 
+    p[1736] = 0xAB; /* blue */ 
+    p[1760] = 0xAC; /* blue */ 
+    p[1763] = 0xFF; /* blue */ 
+    p[1766] = 0xAB; /* blue */ 
+    p[1769] = 0xAC; /* blue */ 
+    p[1772] = 0xFF; /* blue */ 
+    p[1775] = 0xAB; /* blue */ 
+    p[1820] = 0x46; /* blue */ 
+    p[1823] = 0xFF; /* blue */ 
+    p[1826] = 0xF5; /* blue */ 
+    p[1829] = 0x1D; /* blue */ 
+    p[1832] = 0x1E; /* blue */ 
+    p[1835] = 0xF5; /* blue */ 
+    p[1838] = 0xFF; /* blue */ 
+    p[1841] = 0x45; /* blue */ 
+    p[1859] = 0x46; /* blue */ 
+    p[1862] = 0xFF; /* blue */ 
+    p[1865] = 0xF5; /* blue */ 
+    p[1868] = 0x1D; /* blue */ 
+    p[1871] = 0x1E; /* blue */ 
+    p[1874] = 0xF5; /* blue */ 
+    p[1877] = 0xFF; /* blue */ 
+    p[1880] = 0x45; /* blue */ 
+    p[1898] = 0x46; /* blue */ 
+    p[1901] = 0xFF; /* blue */ 
+    p[1904] = 0xF5; /* blue */ 
+    p[1907] = 0x1D; /* blue */ 
+    p[1910] = 0x1E; /* blue */ 
+    p[1913] = 0xF5; /* blue */ 
+    p[1916] = 0xFF; /* blue */ 
+    p[1919] = 0x45; /* blue */ 
+    p[1937] = 0x46; /* blue */ 
+    p[1940] = 0xFF; /* blue */ 
+    p[1943] = 0xF5; /* blue */ 
+    p[1946] = 0x1D; /* blue */ 
+    p[1949] = 0x1E; /* blue */ 
+    p[1952] = 0xF5; /* blue */ 
+    p[1955] = 0xFF; /* blue */ 
+    p[1958] = 0x45; /* blue */ 
+    p[1997] = 0x07; /* blue */ 
+    p[2000] = 0xD9; /* blue */ 
+    p[2003] = 0xFF; /* blue */ 
+    p[2006] = 0x78; /* blue */ 
+    p[2015] = 0x79; /* blue */ 
+    p[2018] = 0xFF; /* blue */ 
+    p[2021] = 0xD9; /* blue */ 
+    p[2024] = 0x07; /* blue */ 
+    p[2036] = 0x07; /* blue */ 
+    p[2039] = 0xD9; /* blue */ 
+    p[2042] = 0xFF; /* blue */ 
+    p[2045] = 0x78; /* blue */ 
+    p[2054] = 0x79; /* blue */ 
+    p[2057] = 0xFF; /* blue */ 
+    p[2060] = 0xD9; /* blue */ 
+    p[2063] = 0x07; /* blue */ 
+    p[2075] = 0x07; /* blue */ 
+    p[2078] = 0xD9; /* blue */ 
+    p[2081] = 0xFF; /* blue */ 
+    p[2084] = 0x78; /* blue */ 
+    p[2093] = 0x79; /* blue */ 
+    p[2096] = 0xFF; /* blue */ 
+    p[2099] = 0xD9; /* blue */ 
+    p[2102] = 0x07; /* blue */ 
+    p[2114] = 0x07; /* blue */ 
+    p[2117] = 0xD9; /* blue */ 
+    p[2120] = 0xFF; /* blue */ 
+    p[2123] = 0x78; /* blue */ 
+    p[2132] = 0x79; /* blue */ 
+    p[2135] = 0xFF; /* blue */ 
+    p[2138] = 0xD9; /* blue */ 
+    p[2141] = 0x07; /* blue */ 
+    p[2177] = 0x79; /* blue */ 
+    p[2180] = 0xFF; /* blue */ 
+    p[2183] = 0xD8; /* blue */ 
+    p[2186] = 0x06; /* blue */ 
+    p[2195] = 0x07; /* blue */ 
+    p[2198] = 0xD9; /* blue */ 
+    p[2201] = 0xFF; /* blue */ 
+    p[2204] = 0x78; /* blue */ 
+    p[2216] = 0x79; /* blue */ 
+    p[2219] = 0xFF; /* blue */ 
+    p[2222] = 0xD8; /* blue */ 
+    p[2225] = 0x06; /* blue */ 
+    p[2234] = 0x07; /* blue */ 
+    p[2237] = 0xD9; /* blue */ 
+    p[2240] = 0xFF; /* blue */ 
+    p[2243] = 0x78; /* blue */ 
+    p[2255] = 0x79; /* blue */ 
+    p[2258] = 0xFF; /* blue */ 
+    p[2261] = 0xD8; /* blue */ 
+    p[2264] = 0x06; /* blue */ 
+    p[2273] = 0x07; /* blue */ 
+    p[2276] = 0xD9; /* blue */ 
+    p[2279] = 0xFF; /* blue */ 
+    p[2282] = 0x78; /* blue */ 
+    p[2294] = 0x79; /* blue */ 
+    p[2297] = 0xFF; /* blue */ 
+    p[2300] = 0xD8; /* blue */ 
+    p[2303] = 0x06; /* blue */ 
+    p[2312] = 0x07; /* blue */ 
+    p[2315] = 0xD9; /* blue */ 
+    p[2318] = 0xFF; /* blue */ 
+    p[2321] = 0x78; /* blue */ 
+    p[2354] = 0x1E; /* blue */ 
+    p[2357] = 0xF5; /* blue */ 
+    p[2360] = 0xFF; /* blue */ 
+    p[2363] = 0x45; /* blue */ 
+    p[2378] = 0x46; /* blue */ 
+    p[2381] = 0xFF; /* blue */ 
+    p[2384] = 0xF5; /* blue */ 
+    p[2387] = 0x1D; /* blue */ 
+    p[2393] = 0x1E; /* blue */ 
+    p[2396] = 0xF5; /* blue */ 
+    p[2399] = 0xFF; /* blue */ 
+    p[2402] = 0x45; /* blue */ 
+    p[2417] = 0x46; /* blue */ 
+    p[2420] = 0xFF; /* blue */ 
+    p[2423] = 0xF5; /* blue */ 
+    p[2426] = 0x1D; /* blue */ 
+    p[2432] = 0x1E; /* blue */ 
+    p[2435] = 0xF5; /* blue */ 
+    p[2438] = 0xFF; /* blue */ 
+    p[2441] = 0x45; /* blue */ 
+    p[2456] = 0x46; /* blue */ 
+    p[2459] = 0xFF; /* blue */ 
+    p[2462] = 0xF5; /* blue */ 
+    p[2465] = 0x1D; /* blue */ 
+    p[2471] = 0x1E; /* blue */ 
+    p[2474] = 0xF5; /* blue */ 
+    p[2477] = 0xFF; /* blue */ 
+    p[2480] = 0x45; /* blue */ 
+    p[2495] = 0x46; /* blue */ 
+    p[2498] = 0xFF; /* blue */ 
+    p[2501] = 0xF5; /* blue */ 
+    p[2504] = 0x1D; /* blue */ 
+    p[2534] = 0xAC; /* blue */ 
+    p[2537] = 0xFF; /* blue */ 
+    p[2540] = 0xAB; /* blue */ 
+    p[2561] = 0xAC; /* blue */ 
+    p[2564] = 0xFF; /* blue */ 
+    p[2567] = 0xAB; /* blue */ 
+    p[2573] = 0xAC; /* blue */ 
+    p[2576] = 0xFF; /* blue */ 
+    p[2579] = 0xAB; /* blue */ 
+    p[2600] = 0xAC; /* blue */ 
+    p[2603] = 0xFF; /* blue */ 
+    p[2606] = 0xAB; /* blue */ 
+    p[2612] = 0xAC; /* blue */ 
+    p[2615] = 0xFF; /* blue */ 
+    p[2618] = 0xAB; /* blue */ 
+    p[2639] = 0xAC; /* blue */ 
+    p[2642] = 0xFF; /* blue */ 
+    p[2645] = 0xAB; /* blue */ 
+    p[2651] = 0xAC; /* blue */ 
+    p[2654] = 0xFF; /* blue */ 
+    p[2657] = 0xAB; /* blue */ 
+    p[2678] = 0xAC; /* blue */ 
+    p[2681] = 0xFF; /* blue */ 
+    p[2684] = 0xAB; /* blue */ 
+    p[2711] = 0x46; /* blue */ 
+    p[2714] = 0xFF; /* blue */ 
+    p[2717] = 0xF5; /* blue */ 
+    p[2720] = 0x1D; /* blue */ 
+    p[2741] = 0x1E; /* blue */ 
+    p[2744] = 0xF5; /* blue */ 
+    p[2747] = 0xFF; /* blue */ 
+    p[2750] = 0x46; /* blue */ 
+    p[2753] = 0xFF; /* blue */ 
+    p[2756] = 0xF5; /* blue */ 
+    p[2759] = 0x1D; /* blue */ 
+    p[2780] = 0x1E; /* blue */ 
+    p[2783] = 0xF5; /* blue */ 
+    p[2786] = 0xFF; /* blue */ 
+    p[2789] = 0x46; /* blue */ 
+    p[2792] = 0xFF; /* blue */ 
+    p[2795] = 0xF5; /* blue */ 
+    p[2798] = 0x1D; /* blue */ 
+    p[2819] = 0x1E; /* blue */ 
+    p[2822] = 0xF5; /* blue */ 
+    p[2825] = 0xFF; /* blue */ 
+    p[2828] = 0x46; /* blue */ 
+    p[2831] = 0xFF; /* blue */ 
+    p[2834] = 0xF5; /* blue */ 
+    p[2837] = 0x1D; /* blue */ 
+    p[2858] = 0x1E; /* blue */ 
+    p[2861] = 0xF5; /* blue */ 
+    p[2864] = 0xFF; /* blue */ 
+    p[2867] = 0x45; /* blue */ 
+    p[2891] = 0xD6; /* blue */ 
+    p[2894] = 0xFF; /* blue */ 
+    p[2897] = 0x78; /* blue */ 
+    p[2924] = 0x79; /* blue */ 
+    p[2927] = 0xFF; /* blue */ 
+    p[2930] = 0xD6; /* blue */ 
+    p[2933] = 0xFF; /* blue */ 
+    p[2936] = 0x78; /* blue */ 
+    p[2963] = 0x79; /* blue */ 
+    p[2966] = 0xFF; /* blue */ 
+    p[2969] = 0xD6; /* blue */ 
+    p[2972] = 0xFF; /* blue */ 
+    p[2975] = 0x78; /* blue */ 
+    p[3002] = 0x79; /* blue */ 
+    p[3005] = 0xFF; /* blue */ 
+    p[3008] = 0xD6; /* blue */ 
+    p[3011] = 0xFF; /* blue */ 
+    p[3014] = 0x78; /* blue */ 
+    p[3041] = 0x79; /* blue */ 
+    p[3044] = 0xFF; /* blue */ 
+    p[3047] = 0xD6; /* blue */ 
+    p[3071] = 0xBF; /* blue */ 
+    p[3074] = 0xC2; /* blue */ 
+    p[3077] = 0x06; /* blue */ 
+    p[3104] = 0x07; /* blue */ 
+    p[3107] = 0xC2; /* blue */ 
+    p[3110] = 0xBF; /* blue */ 
+    p[3113] = 0xC2; /* blue */ 
+    p[3116] = 0x06; /* blue */ 
+    p[3143] = 0x07; /* blue */ 
+    p[3146] = 0xC2; /* blue */ 
+    p[3149] = 0xBF; /* blue */ 
+    p[3152] = 0xC2; /* blue */ 
+    p[3155] = 0x06; /* blue */ 
+    p[3182] = 0x07; /* blue */ 
+    p[3185] = 0xC2; /* blue */ 
+    p[3188] = 0xBF; /* blue */ 
+    p[3191] = 0xC2; /* blue */ 
+    p[3194] = 0x06; /* blue */ 
+    p[3221] = 0x07; /* blue */ 
+    p[3224] = 0xC2; /* blue */ 
+    p[3227] = 0xBF; /* blue */ 
+    p[4028] = 0x58; /* blue */ 
+    p[4031] = 0xCE; /* blue */ 
+    p[4034] = 0xE2; /* blue */ 
+    p[4037] = 0xA9; /* blue */ 
+    p[4040] = 0xA8; /* blue */ 
+    p[4043] = 0xE9; /* blue */ 
+    p[4046] = 0x35; /* blue */ 
+    p[4049] = 0x58; /* blue */ 
+    p[4052] = 0xCE; /* blue */ 
+    p[4055] = 0xE2; /* blue */ 
+    p[4058] = 0xA9; /* blue */ 
+    p[4061] = 0xA8; /* blue */ 
+    p[4064] = 0xE9; /* blue */ 
+    p[4067] = 0x35; /* blue */ 
+    p[4208] = 0x58; /* blue */ 
+    p[4211] = 0xC8; /* blue */ 
+    p[4214] = 0x0B; /* blue */ 
+    p[4217] = 0xF3; /* blue */ 
+    p[4220] = 0x4D; /* blue */ 
+    p[4223] = 0x73; /* blue */ 
+    p[4226] = 0x90; /* blue */ 
+    p[4229] = 0x58; /* blue */ 
+    p[4232] = 0xC8; /* blue */ 
+    p[4235] = 0x0B; /* blue */ 
+    p[4238] = 0xF3; /* blue */ 
+    p[4241] = 0x4D; /* blue */ 
+    p[4244] = 0x73; /* blue */ 
+    p[4247] = 0x90; /* blue */ 
+    p[4388] = 0x58; /* blue */ 
+    p[4391] = 0xA7; /* blue */ 
+    p[4397] = 0xDB; /* blue */ 
+    p[4400] = 0x27; /* blue */ 
+    p[4403] = 0x53; /* blue */ 
+    p[4406] = 0xA7; /* blue */ 
+    p[4409] = 0x58; /* blue */ 
+    p[4412] = 0xA7; /* blue */ 
+    p[4418] = 0xDB; /* blue */ 
+    p[4421] = 0x27; /* blue */ 
+    p[4424] = 0x53; /* blue */ 
+    p[4427] = 0xA7; /* blue */ 
+    p[4568] = 0x58; /* blue */ 
+    p[4571] = 0xA4; /* blue */ 
+    p[4577] = 0xD8; /* blue */ 
+    p[4580] = 0x24; /* blue */ 
+    p[4583] = 0x50; /* blue */ 
+    p[4586] = 0xAB; /* blue */ 
+    p[4589] = 0x58; /* blue */ 
+    p[4592] = 0xA4; /* blue */ 
+    p[4598] = 0xD8; /* blue */ 
+    p[4601] = 0x24; /* blue */ 
+    p[4604] = 0x50; /* blue */ 
+    p[4607] = 0xAB; /* blue */ 
+    p[4748] = 0x58; /* blue */ 
+    p[4751] = 0xA4; /* blue */ 
+    p[4757] = 0xD8; /* blue */ 
+    p[4760] = 0x24; /* blue */ 
+    p[4763] = 0x50; /* blue */ 
+    p[4766] = 0xAC; /* blue */ 
+    p[4769] = 0x58; /* blue */ 
+    p[4772] = 0xA4; /* blue */ 
+    p[4778] = 0xD8; /* blue */ 
+    p[4781] = 0x24; /* blue */ 
+    p[4784] = 0x50; /* blue */ 
+    p[4787] = 0xAC; /* blue */ 
+    p[4928] = 0x58; /* blue */ 
+    p[4931] = 0xA4; /* blue */ 
+    p[4937] = 0xD8; /* blue */ 
+    p[4940] = 0x24; /* blue */ 
+    p[4943] = 0x50; /* blue */ 
+    p[4946] = 0xAC; /* blue */ 
+    p[4949] = 0x58; /* blue */ 
+    p[4952] = 0xA4; /* blue */ 
+    p[4958] = 0xD8; /* blue */ 
+    p[4961] = 0x24; /* blue */ 
+    p[4964] = 0x50; /* blue */ 
+    p[4967] = 0xAC; /* blue */ 
+    p[5108] = 0x58; /* blue */ 
+    p[5111] = 0xA4; /* blue */ 
+    p[5117] = 0xD8; /* blue */ 
+    p[5120] = 0x24; /* blue */ 
+    p[5123] = 0x50; /* blue */ 
+    p[5126] = 0xAC; /* blue */ 
+    p[5129] = 0x58; /* blue */ 
+    p[5132] = 0xA4; /* blue */ 
+    p[5138] = 0xD8; /* blue */ 
+    p[5141] = 0x24; /* blue */ 
+    p[5144] = 0x50; /* blue */ 
+    p[5147] = 0xAC; /* blue */ 
+    
+    return img;
+}
+
+struct img *img_feed_arrow_left_up2(void)
+{
+    struct img *img = img_alloc("img", 60, 35);
+    u8 *p = img->buf->d;
+    p[656] = 0x02; /* blue */ 
+    p[659] = 0xFB; /* blue */ 
+    p[662] = 0xFB; /* blue */ 
+    p[665] = 0x02; /* blue */ 
+    p[734] = 0x02; /* blue */ 
+    p[737] = 0x4C; /* blue */ 
+    p[740] = 0x4C; /* blue */ 
+    p[743] = 0x02; /* blue */ 
+    p[836] = 0x41; /* blue */ 
+    p[839] = 0xFF; /* blue */ 
+    p[842] = 0xFF; /* blue */ 
+    p[845] = 0x41; /* blue */ 
+    p[914] = 0x4C; /* blue */ 
+    p[917] = 0xFF; /* blue */ 
+    p[920] = 0xFF; /* blue */ 
+    p[923] = 0x4B; /* blue */ 
+    p[1016] = 0xA1; /* blue */ 
+    p[1019] = 0xFF; /* blue */ 
+    p[1022] = 0xFF; /* blue */ 
+    p[1025] = 0xA1; /* blue */ 
+    p[1094] = 0x80; /* blue */ 
+    p[1097] = 0xFF; /* blue */ 
+    p[1100] = 0xFF; /* blue */ 
+    p[1103] = 0x80; /* blue */ 
+    p[1193] = 0x0D; /* blue */ 
+    p[1196] = 0xF5; /* blue */ 
+    p[1199] = 0xFF; /* blue */ 
+    p[1202] = 0xFF; /* blue */ 
+    p[1205] = 0xF5; /* blue */ 
+    p[1208] = 0x0D; /* blue */ 
+    p[1274] = 0x80; /* blue */ 
+    p[1277] = 0xFF; /* blue */ 
+    p[1280] = 0xFF; /* blue */ 
+    p[1283] = 0x80; /* blue */ 
+    p[1373] = 0x61; /* blue */ 
+    p[1376] = 0xFF; /* blue */ 
+    p[1379] = 0xFF; /* blue */ 
+    p[1382] = 0xFF; /* blue */ 
+    p[1385] = 0xFF; /* blue */ 
+    p[1388] = 0x61; /* blue */ 
+    p[1454] = 0x80; /* blue */ 
+    p[1457] = 0xFF; /* blue */ 
+    p[1460] = 0xFF; /* blue */ 
+    p[1463] = 0x80; /* blue */ 
+    p[1553] = 0xC1; /* blue */ 
+    p[1556] = 0xFF; /* blue */ 
+    p[1559] = 0xFF; /* blue */ 
+    p[1562] = 0xFF; /* blue */ 
+    p[1565] = 0xFF; /* blue */ 
+    p[1568] = 0xC1; /* blue */ 
+    p[1634] = 0x80; /* blue */ 
+    p[1637] = 0xFF; /* blue */ 
+    p[1640] = 0xFF; /* blue */ 
+    p[1643] = 0x80; /* blue */ 
+    p[1730] = 0x23; /* blue */ 
+    p[1733] = 0xFF; /* blue */ 
+    p[1736] = 0xF5; /* blue */ 
+    p[1739] = 0xFF; /* blue */ 
+    p[1742] = 0xFF; /* blue */ 
+    p[1745] = 0xF5; /* blue */ 
+    p[1748] = 0xFF; /* blue */ 
+    p[1751] = 0x23; /* blue */ 
+    p[1814] = 0x80; /* blue */ 
+    p[1817] = 0xFF; /* blue */ 
+    p[1820] = 0xFF; /* blue */ 
+    p[1823] = 0x80; /* blue */ 
+    p[1910] = 0x81; /* blue */ 
+    p[1913] = 0xFF; /* blue */ 
+    p[1916] = 0xA1; /* blue */ 
+    p[1919] = 0xFF; /* blue */ 
+    p[1922] = 0xFF; /* blue */ 
+    p[1925] = 0xA1; /* blue */ 
+    p[1928] = 0xFF; /* blue */ 
+    p[1931] = 0x81; /* blue */ 
+    p[1994] = 0x80; /* blue */ 
+    p[1997] = 0xFF; /* blue */ 
+    p[2000] = 0xFF; /* blue */ 
+    p[2003] = 0x80; /* blue */ 
+    p[2048] = 0x13; /* blue */ 
+    p[2051] = 0x65; /* blue */ 
+    p[2054] = 0x59; /* blue */ 
+    p[2090] = 0xDF; /* blue */ 
+    p[2093] = 0xFF; /* blue */ 
+    p[2096] = 0x41; /* blue */ 
+    p[2099] = 0xFF; /* blue */ 
+    p[2102] = 0xFF; /* blue */ 
+    p[2105] = 0x41; /* blue */ 
+    p[2108] = 0xFF; /* blue */ 
+    p[2111] = 0xDF; /* blue */ 
+    p[2174] = 0x80; /* blue */ 
+    p[2177] = 0xFF; /* blue */ 
+    p[2180] = 0xFF; /* blue */ 
+    p[2183] = 0x80; /* blue */ 
+    p[2219] = 0x09; /* blue */ 
+    p[2222] = 0x57; /* blue */ 
+    p[2225] = 0xB2; /* blue */ 
+    p[2228] = 0xFB; /* blue */ 
+    p[2231] = 0xFF; /* blue */ 
+    p[2234] = 0xFF; /* blue */ 
+    p[2237] = 0x54; /* blue */ 
+    p[2270] = 0xBE; /* blue */ 
+    p[2273] = 0xBF; /* blue */ 
+    p[2276] = 0x02; /* blue */ 
+    p[2279] = 0xFF; /* blue */ 
+    p[2282] = 0xFF; /* blue */ 
+    p[2285] = 0x02; /* blue */ 
+    p[2288] = 0xBE; /* blue */ 
+    p[2291] = 0xBD; /* blue */ 
+    p[2354] = 0x80; /* blue */ 
+    p[2357] = 0xFF; /* blue */ 
+    p[2360] = 0xFF; /* blue */ 
+    p[2363] = 0x80; /* blue */ 
+    p[2384] = 0x02; /* blue */ 
+    p[2390] = 0x03; /* blue */ 
+    p[2393] = 0x44; /* blue */ 
+    p[2396] = 0xA0; /* blue */ 
+    p[2399] = 0xF2; /* blue */ 
+    p[2402] = 0xFF; /* blue */ 
+    p[2405] = 0xFF; /* blue */ 
+    p[2408] = 0xFF; /* blue */ 
+    p[2411] = 0xFF; /* blue */ 
+    p[2414] = 0xFF; /* blue */ 
+    p[2417] = 0x59; /* blue */ 
+    p[2459] = 0xFF; /* blue */ 
+    p[2462] = 0xFF; /* blue */ 
+    p[2534] = 0x80; /* blue */ 
+    p[2537] = 0xFF; /* blue */ 
+    p[2540] = 0xFF; /* blue */ 
+    p[2543] = 0x80; /* blue */ 
+    p[2561] = 0x01; /* blue */ 
+    p[2564] = 0x32; /* blue */ 
+    p[2567] = 0x8D; /* blue */ 
+    p[2570] = 0xE6; /* blue */ 
+    p[2573] = 0xFF; /* blue */ 
+    p[2576] = 0xFF; /* blue */ 
+    p[2579] = 0xFF; /* blue */ 
+    p[2582] = 0xFF; /* blue */ 
+    p[2585] = 0xFF; /* blue */ 
+    p[2588] = 0xFF; /* blue */ 
+    p[2591] = 0xC3; /* blue */ 
+    p[2594] = 0x57; /* blue */ 
+    p[2639] = 0xFF; /* blue */ 
+    p[2642] = 0xFF; /* blue */ 
+    p[2714] = 0x80; /* blue */ 
+    p[2717] = 0xFF; /* blue */ 
+    p[2720] = 0xFF; /* blue */ 
+    p[2723] = 0x80; /* blue */ 
+    p[2735] = 0x21; /* blue */ 
+    p[2738] = 0x7B; /* blue */ 
+    p[2741] = 0xD7; /* blue */ 
+    p[2744] = 0xFF; /* blue */ 
+    p[2747] = 0xFF; /* blue */ 
+    p[2750] = 0xFF; /* blue */ 
+    p[2753] = 0xFF; /* blue */ 
+    p[2756] = 0xFF; /* blue */ 
+    p[2759] = 0xFF; /* blue */ 
+    p[2762] = 0xD6; /* blue */ 
+    p[2765] = 0x7A; /* blue */ 
+    p[2768] = 0x20; /* blue */ 
+    p[2819] = 0xFF; /* blue */ 
+    p[2822] = 0xFF; /* blue */ 
+    p[2894] = 0x80; /* blue */ 
+    p[2897] = 0xFF; /* blue */ 
+    p[2900] = 0xFF; /* blue */ 
+    p[2903] = 0x80; /* blue */ 
+    p[2909] = 0x94; /* blue */ 
+    p[2912] = 0xE6; /* blue */ 
+    p[2915] = 0xFF; /* blue */ 
+    p[2918] = 0xFF; /* blue */ 
+    p[2921] = 0xFF; /* blue */ 
+    p[2924] = 0xFF; /* blue */ 
+    p[2927] = 0xFF; /* blue */ 
+    p[2930] = 0xFF; /* blue */ 
+    p[2933] = 0xF3; /* blue */ 
+    p[2936] = 0xC6; /* blue */ 
+    p[2939] = 0x98; /* blue */ 
+    p[2942] = 0x80; /* blue */ 
+    p[2945] = 0x80; /* blue */ 
+    p[2948] = 0x80; /* blue */ 
+    p[2951] = 0x80; /* blue */ 
+    p[2954] = 0x80; /* blue */ 
+    p[2957] = 0x80; /* blue */ 
+    p[2960] = 0x80; /* blue */ 
+    p[2963] = 0x80; /* blue */ 
+    p[2966] = 0x80; /* blue */ 
+    p[2969] = 0x80; /* blue */ 
+    p[2972] = 0x80; /* blue */ 
+    p[2975] = 0x80; /* blue */ 
+    p[2978] = 0x80; /* blue */ 
+    p[2981] = 0x80; /* blue */ 
+    p[2984] = 0x80; /* blue */ 
+    p[2987] = 0x80; /* blue */ 
+    p[2990] = 0x80; /* blue */ 
+    p[2993] = 0x80; /* blue */ 
+    p[2996] = 0x80; /* blue */ 
+    p[2999] = 0xFF; /* blue */ 
+    p[3002] = 0xFF; /* blue */ 
+    p[3005] = 0x80; /* blue */ 
+    p[3008] = 0x80; /* blue */ 
+    p[3011] = 0x80; /* blue */ 
+    p[3014] = 0x80; /* blue */ 
+    p[3017] = 0x80; /* blue */ 
+    p[3020] = 0x80; /* blue */ 
+    p[3023] = 0x80; /* blue */ 
+    p[3026] = 0x80; /* blue */ 
+    p[3029] = 0x80; /* blue */ 
+    p[3032] = 0x80; /* blue */ 
+    p[3035] = 0x80; /* blue */ 
+    p[3038] = 0x80; /* blue */ 
+    p[3041] = 0x80; /* blue */ 
+    p[3044] = 0x4C; /* blue */ 
+    p[3047] = 0x02; /* blue */ 
+    p[3074] = 0x80; /* blue */ 
+    p[3077] = 0xFF; /* blue */ 
+    p[3080] = 0xFF; /* blue */ 
+    p[3083] = 0x80; /* blue */ 
+    p[3086] = 0x90; /* blue */ 
+    p[3089] = 0xFF; /* blue */ 
+    p[3092] = 0xFF; /* blue */ 
+    p[3095] = 0xFF; /* blue */ 
+    p[3098] = 0xFF; /* blue */ 
+    p[3101] = 0xFF; /* blue */ 
+    p[3104] = 0xFF; /* blue */ 
+    p[3107] = 0xFF; /* blue */ 
+    p[3110] = 0xFF; /* blue */ 
+    p[3113] = 0xFF; /* blue */ 
+    p[3116] = 0xFF; /* blue */ 
+    p[3119] = 0xFF; /* blue */ 
+    p[3122] = 0xFF; /* blue */ 
+    p[3125] = 0xFF; /* blue */ 
+    p[3128] = 0xFF; /* blue */ 
+    p[3131] = 0xFF; /* blue */ 
+    p[3134] = 0xFF; /* blue */ 
+    p[3137] = 0xFF; /* blue */ 
+    p[3140] = 0xFF; /* blue */ 
+    p[3143] = 0xFF; /* blue */ 
+    p[3146] = 0xFF; /* blue */ 
+    p[3149] = 0xFF; /* blue */ 
+    p[3152] = 0xFF; /* blue */ 
+    p[3155] = 0xFF; /* blue */ 
+    p[3158] = 0xFF; /* blue */ 
+    p[3161] = 0xFF; /* blue */ 
+    p[3164] = 0xFF; /* blue */ 
+    p[3167] = 0xFF; /* blue */ 
+    p[3170] = 0xFF; /* blue */ 
+    p[3173] = 0xFF; /* blue */ 
+    p[3176] = 0xFF; /* blue */ 
+    p[3179] = 0xFF; /* blue */ 
+    p[3182] = 0xFF; /* blue */ 
+    p[3185] = 0xFF; /* blue */ 
+    p[3188] = 0xFF; /* blue */ 
+    p[3191] = 0xFF; /* blue */ 
+    p[3194] = 0xFF; /* blue */ 
+    p[3197] = 0xFF; /* blue */ 
+    p[3200] = 0xFF; /* blue */ 
+    p[3203] = 0xFF; /* blue */ 
+    p[3206] = 0xFF; /* blue */ 
+    p[3209] = 0xFF; /* blue */ 
+    p[3212] = 0xFF; /* blue */ 
+    p[3215] = 0xFF; /* blue */ 
+    p[3218] = 0xFF; /* blue */ 
+    p[3221] = 0xFF; /* blue */ 
+    p[3224] = 0xFF; /* blue */ 
+    p[3227] = 0x4B; /* blue */ 
+    p[3254] = 0x80; /* blue */ 
+    p[3257] = 0xFF; /* blue */ 
+    p[3260] = 0xFF; /* blue */ 
+    p[3263] = 0x80; /* blue */ 
+    p[3266] = 0x90; /* blue */ 
+    p[3269] = 0xFF; /* blue */ 
+    p[3272] = 0xFF; /* blue */ 
+    p[3275] = 0xFF; /* blue */ 
+    p[3278] = 0xFF; /* blue */ 
+    p[3281] = 0xFF; /* blue */ 
+    p[3284] = 0xFF; /* blue */ 
+    p[3287] = 0xFF; /* blue */ 
+    p[3290] = 0xFF; /* blue */ 
+    p[3293] = 0xFF; /* blue */ 
+    p[3296] = 0xFF; /* blue */ 
+    p[3299] = 0xFF; /* blue */ 
+    p[3302] = 0xFF; /* blue */ 
+    p[3305] = 0xFF; /* blue */ 
+    p[3308] = 0xFF; /* blue */ 
+    p[3311] = 0xFF; /* blue */ 
+    p[3314] = 0xFF; /* blue */ 
+    p[3317] = 0xFF; /* blue */ 
+    p[3320] = 0xFF; /* blue */ 
+    p[3323] = 0xFF; /* blue */ 
+    p[3326] = 0xFF; /* blue */ 
+    p[3329] = 0xFF; /* blue */ 
+    p[3332] = 0xFF; /* blue */ 
+    p[3335] = 0xFF; /* blue */ 
+    p[3338] = 0xFF; /* blue */ 
+    p[3341] = 0xFF; /* blue */ 
+    p[3344] = 0xFF; /* blue */ 
+    p[3347] = 0xFF; /* blue */ 
+    p[3350] = 0xFF; /* blue */ 
+    p[3353] = 0xFF; /* blue */ 
+    p[3356] = 0xFF; /* blue */ 
+    p[3359] = 0xFF; /* blue */ 
+    p[3362] = 0xFF; /* blue */ 
+    p[3365] = 0xFF; /* blue */ 
+    p[3368] = 0xFF; /* blue */ 
+    p[3371] = 0xFF; /* blue */ 
+    p[3374] = 0xFF; /* blue */ 
+    p[3377] = 0xFF; /* blue */ 
+    p[3380] = 0xFF; /* blue */ 
+    p[3383] = 0xFF; /* blue */ 
+    p[3386] = 0xFF; /* blue */ 
+    p[3389] = 0xFF; /* blue */ 
+    p[3392] = 0xFF; /* blue */ 
+    p[3395] = 0xFF; /* blue */ 
+    p[3398] = 0xFF; /* blue */ 
+    p[3401] = 0xFF; /* blue */ 
+    p[3404] = 0xFF; /* blue */ 
+    p[3407] = 0x4B; /* blue */ 
+    p[3434] = 0x80; /* blue */ 
+    p[3437] = 0xFF; /* blue */ 
+    p[3440] = 0xFF; /* blue */ 
+    p[3443] = 0x80; /* blue */ 
+    p[3449] = 0x94; /* blue */ 
+    p[3452] = 0xE5; /* blue */ 
+    p[3455] = 0xFF; /* blue */ 
+    p[3458] = 0xFF; /* blue */ 
+    p[3461] = 0xFF; /* blue */ 
+    p[3464] = 0xFF; /* blue */ 
+    p[3467] = 0xFF; /* blue */ 
+    p[3470] = 0xFF; /* blue */ 
+    p[3473] = 0xF3; /* blue */ 
+    p[3476] = 0xC6; /* blue */ 
+    p[3479] = 0x99; /* blue */ 
+    p[3482] = 0x80; /* blue */ 
+    p[3485] = 0x80; /* blue */ 
+    p[3488] = 0x80; /* blue */ 
+    p[3491] = 0x80; /* blue */ 
+    p[3494] = 0x80; /* blue */ 
+    p[3497] = 0x80; /* blue */ 
+    p[3500] = 0x80; /* blue */ 
+    p[3503] = 0x80; /* blue */ 
+    p[3506] = 0x80; /* blue */ 
+    p[3509] = 0x80; /* blue */ 
+    p[3512] = 0x80; /* blue */ 
+    p[3515] = 0x80; /* blue */ 
+    p[3518] = 0x80; /* blue */ 
+    p[3521] = 0x80; /* blue */ 
+    p[3524] = 0x80; /* blue */ 
+    p[3527] = 0x80; /* blue */ 
+    p[3530] = 0x80; /* blue */ 
+    p[3533] = 0x80; /* blue */ 
+    p[3536] = 0x80; /* blue */ 
+    p[3539] = 0x80; /* blue */ 
+    p[3542] = 0x80; /* blue */ 
+    p[3545] = 0x80; /* blue */ 
+    p[3548] = 0x80; /* blue */ 
+    p[3551] = 0x80; /* blue */ 
+    p[3554] = 0x80; /* blue */ 
+    p[3557] = 0x80; /* blue */ 
+    p[3560] = 0x80; /* blue */ 
+    p[3563] = 0x80; /* blue */ 
+    p[3566] = 0x80; /* blue */ 
+    p[3569] = 0x80; /* blue */ 
+    p[3572] = 0x80; /* blue */ 
+    p[3575] = 0x80; /* blue */ 
+    p[3578] = 0x80; /* blue */ 
+    p[3581] = 0x80; /* blue */ 
+    p[3584] = 0x4B; /* blue */ 
+    p[3587] = 0x02; /* blue */ 
+    p[3614] = 0x80; /* blue */ 
+    p[3617] = 0xFF; /* blue */ 
+    p[3620] = 0xFF; /* blue */ 
+    p[3623] = 0x80; /* blue */ 
+    p[3635] = 0x20; /* blue */ 
+    p[3638] = 0x7A; /* blue */ 
+    p[3641] = 0xD6; /* blue */ 
+    p[3644] = 0xFF; /* blue */ 
+    p[3647] = 0xFF; /* blue */ 
+    p[3650] = 0xFF; /* blue */ 
+    p[3653] = 0xFF; /* blue */ 
+    p[3656] = 0xFF; /* blue */ 
+    p[3659] = 0xFF; /* blue */ 
+    p[3662] = 0xD6; /* blue */ 
+    p[3665] = 0x7B; /* blue */ 
+    p[3668] = 0x21; /* blue */ 
+    p[3794] = 0x80; /* blue */ 
+    p[3797] = 0xFF; /* blue */ 
+    p[3800] = 0xFF; /* blue */ 
+    p[3803] = 0x80; /* blue */ 
+    p[3821] = 0x01; /* blue */ 
+    p[3824] = 0x31; /* blue */ 
+    p[3827] = 0x8C; /* blue */ 
+    p[3830] = 0xE6; /* blue */ 
+    p[3833] = 0xFF; /* blue */ 
+    p[3836] = 0xFF; /* blue */ 
+    p[3839] = 0xFF; /* blue */ 
+    p[3842] = 0xFF; /* blue */ 
+    p[3845] = 0xFF; /* blue */ 
+    p[3848] = 0xFF; /* blue */ 
+    p[3851] = 0xC4; /* blue */ 
+    p[3854] = 0x58; /* blue */ 
+    p[3974] = 0x80; /* blue */ 
+    p[3977] = 0xFF; /* blue */ 
+    p[3980] = 0xFF; /* blue */ 
+    p[3983] = 0x80; /* blue */ 
+    p[4010] = 0x03; /* blue */ 
+    p[4013] = 0x43; /* blue */ 
+    p[4016] = 0x9F; /* blue */ 
+    p[4019] = 0xF2; /* blue */ 
+    p[4022] = 0xFF; /* blue */ 
+    p[4025] = 0xFF; /* blue */ 
+    p[4028] = 0xFF; /* blue */ 
+    p[4031] = 0xFF; /* blue */ 
+    p[4034] = 0xFF; /* blue */ 
+    p[4037] = 0x5A; /* blue */ 
+    p[4154] = 0x80; /* blue */ 
+    p[4157] = 0xFF; /* blue */ 
+    p[4160] = 0xFF; /* blue */ 
+    p[4163] = 0x80; /* blue */ 
+    p[4199] = 0x09; /* blue */ 
+    p[4202] = 0x56; /* blue */ 
+    p[4205] = 0xB1; /* blue */ 
+    p[4208] = 0xFB; /* blue */ 
+    p[4211] = 0xFF; /* blue */ 
+    p[4214] = 0xFF; /* blue */ 
+    p[4217] = 0x54; /* blue */ 
+    p[4334] = 0x80; /* blue */ 
+    p[4337] = 0xFF; /* blue */ 
+    p[4340] = 0xFF; /* blue */ 
+    p[4343] = 0x80; /* blue */ 
+    p[4388] = 0x13; /* blue */ 
+    p[4391] = 0x65; /* blue */ 
+    p[4394] = 0x59; /* blue */ 
+    p[4514] = 0x80; /* blue */ 
+    p[4517] = 0xFF; /* blue */ 
+    p[4520] = 0xFF; /* blue */ 
+    p[4523] = 0x80; /* blue */ 
+    p[4694] = 0x80; /* blue */ 
+    p[4697] = 0xFF; /* blue */ 
+    p[4700] = 0xFF; /* blue */ 
+    p[4703] = 0x80; /* blue */ 
+    p[4874] = 0x80; /* blue */ 
+    p[4877] = 0xFF; /* blue */ 
+    p[4880] = 0xFF; /* blue */ 
+    p[4883] = 0x80; /* blue */ 
+    p[5054] = 0x80; /* blue */ 
+    p[5057] = 0xFF; /* blue */ 
+    p[5060] = 0xFF; /* blue */ 
+    p[5063] = 0x80; /* blue */ 
+    p[5234] = 0x4C; /* blue */ 
+    p[5237] = 0xFF; /* blue */ 
+    p[5240] = 0xFF; /* blue */ 
+    p[5243] = 0x4B; /* blue */ 
+    p[5414] = 0x02; /* blue */ 
+    p[5417] = 0x4B; /* blue */ 
+    p[5420] = 0x4B; /* blue */ 
+    p[5423] = 0x02; /* blue */ 
     
     return img;
 }
@@ -22871,6 +26152,469 @@ struct img *img_longitudal_arrow_left_right(void)
     p[1895] = 0x54; /* blue */ 
     p[1898] = 0x64; /* blue */ 
     p[1901] = 0x09; /* blue */ 
+    
+    return img;
+}
+
+struct img *img_feed_arrow_right_down2(void)
+{
+    struct img *img = img_alloc("img", 60, 35);
+    u8 *p = img->buf->d;
+    p[878] = 0x02; /* blue */ 
+    p[881] = 0x4B; /* blue */ 
+    p[884] = 0x4B; /* blue */ 
+    p[887] = 0x02; /* blue */ 
+    p[1058] = 0x4B; /* blue */ 
+    p[1061] = 0xFF; /* blue */ 
+    p[1064] = 0xFF; /* blue */ 
+    p[1067] = 0x4C; /* blue */ 
+    p[1238] = 0x80; /* blue */ 
+    p[1241] = 0xFF; /* blue */ 
+    p[1244] = 0xFF; /* blue */ 
+    p[1247] = 0x80; /* blue */ 
+    p[1418] = 0x80; /* blue */ 
+    p[1421] = 0xFF; /* blue */ 
+    p[1424] = 0xFF; /* blue */ 
+    p[1427] = 0x80; /* blue */ 
+    p[1598] = 0x80; /* blue */ 
+    p[1601] = 0xFF; /* blue */ 
+    p[1604] = 0xFF; /* blue */ 
+    p[1607] = 0x80; /* blue */ 
+    p[1778] = 0x80; /* blue */ 
+    p[1781] = 0xFF; /* blue */ 
+    p[1784] = 0xFF; /* blue */ 
+    p[1787] = 0x80; /* blue */ 
+    p[1907] = 0x59; /* blue */ 
+    p[1910] = 0x65; /* blue */ 
+    p[1913] = 0x13; /* blue */ 
+    p[1958] = 0x80; /* blue */ 
+    p[1961] = 0xFF; /* blue */ 
+    p[1964] = 0xFF; /* blue */ 
+    p[1967] = 0x80; /* blue */ 
+    p[2084] = 0x54; /* blue */ 
+    p[2087] = 0xFF; /* blue */ 
+    p[2090] = 0xFF; /* blue */ 
+    p[2093] = 0xFB; /* blue */ 
+    p[2096] = 0xB1; /* blue */ 
+    p[2099] = 0x56; /* blue */ 
+    p[2102] = 0x09; /* blue */ 
+    p[2138] = 0x80; /* blue */ 
+    p[2141] = 0xFF; /* blue */ 
+    p[2144] = 0xFF; /* blue */ 
+    p[2147] = 0x80; /* blue */ 
+    p[2264] = 0x5A; /* blue */ 
+    p[2267] = 0xFF; /* blue */ 
+    p[2270] = 0xFF; /* blue */ 
+    p[2273] = 0xFF; /* blue */ 
+    p[2276] = 0xFF; /* blue */ 
+    p[2279] = 0xFF; /* blue */ 
+    p[2282] = 0xF2; /* blue */ 
+    p[2285] = 0x9F; /* blue */ 
+    p[2288] = 0x43; /* blue */ 
+    p[2291] = 0x03; /* blue */ 
+    p[2318] = 0x80; /* blue */ 
+    p[2321] = 0xFF; /* blue */ 
+    p[2324] = 0xFF; /* blue */ 
+    p[2327] = 0x80; /* blue */ 
+    p[2447] = 0x58; /* blue */ 
+    p[2450] = 0xC4; /* blue */ 
+    p[2453] = 0xFF; /* blue */ 
+    p[2456] = 0xFF; /* blue */ 
+    p[2459] = 0xFF; /* blue */ 
+    p[2462] = 0xFF; /* blue */ 
+    p[2465] = 0xFF; /* blue */ 
+    p[2468] = 0xFF; /* blue */ 
+    p[2471] = 0xE6; /* blue */ 
+    p[2474] = 0x8C; /* blue */ 
+    p[2477] = 0x31; /* blue */ 
+    p[2480] = 0x01; /* blue */ 
+    p[2498] = 0x80; /* blue */ 
+    p[2501] = 0xFF; /* blue */ 
+    p[2504] = 0xFF; /* blue */ 
+    p[2507] = 0x80; /* blue */ 
+    p[2633] = 0x21; /* blue */ 
+    p[2636] = 0x7B; /* blue */ 
+    p[2639] = 0xD6; /* blue */ 
+    p[2642] = 0xFF; /* blue */ 
+    p[2645] = 0xFF; /* blue */ 
+    p[2648] = 0xFF; /* blue */ 
+    p[2651] = 0xFF; /* blue */ 
+    p[2654] = 0xFF; /* blue */ 
+    p[2657] = 0xFF; /* blue */ 
+    p[2660] = 0xD6; /* blue */ 
+    p[2663] = 0x7A; /* blue */ 
+    p[2666] = 0x20; /* blue */ 
+    p[2678] = 0x80; /* blue */ 
+    p[2681] = 0xFF; /* blue */ 
+    p[2684] = 0xFF; /* blue */ 
+    p[2687] = 0x80; /* blue */ 
+    p[2714] = 0x02; /* blue */ 
+    p[2717] = 0x4B; /* blue */ 
+    p[2720] = 0x80; /* blue */ 
+    p[2723] = 0x80; /* blue */ 
+    p[2726] = 0x80; /* blue */ 
+    p[2729] = 0x80; /* blue */ 
+    p[2732] = 0x80; /* blue */ 
+    p[2735] = 0x80; /* blue */ 
+    p[2738] = 0x80; /* blue */ 
+    p[2741] = 0x80; /* blue */ 
+    p[2744] = 0x80; /* blue */ 
+    p[2747] = 0x80; /* blue */ 
+    p[2750] = 0x80; /* blue */ 
+    p[2753] = 0x80; /* blue */ 
+    p[2756] = 0x80; /* blue */ 
+    p[2759] = 0x80; /* blue */ 
+    p[2762] = 0x80; /* blue */ 
+    p[2765] = 0x80; /* blue */ 
+    p[2768] = 0x80; /* blue */ 
+    p[2771] = 0x80; /* blue */ 
+    p[2774] = 0x80; /* blue */ 
+    p[2777] = 0x80; /* blue */ 
+    p[2780] = 0x80; /* blue */ 
+    p[2783] = 0x80; /* blue */ 
+    p[2786] = 0x80; /* blue */ 
+    p[2789] = 0x80; /* blue */ 
+    p[2792] = 0x80; /* blue */ 
+    p[2795] = 0x80; /* blue */ 
+    p[2798] = 0x80; /* blue */ 
+    p[2801] = 0x80; /* blue */ 
+    p[2804] = 0x80; /* blue */ 
+    p[2807] = 0x80; /* blue */ 
+    p[2810] = 0x80; /* blue */ 
+    p[2813] = 0x80; /* blue */ 
+    p[2816] = 0x80; /* blue */ 
+    p[2819] = 0x80; /* blue */ 
+    p[2822] = 0x99; /* blue */ 
+    p[2825] = 0xC6; /* blue */ 
+    p[2828] = 0xF3; /* blue */ 
+    p[2831] = 0xFF; /* blue */ 
+    p[2834] = 0xFF; /* blue */ 
+    p[2837] = 0xFF; /* blue */ 
+    p[2840] = 0xFF; /* blue */ 
+    p[2843] = 0xFF; /* blue */ 
+    p[2846] = 0xFF; /* blue */ 
+    p[2849] = 0xE5; /* blue */ 
+    p[2852] = 0x94; /* blue */ 
+    p[2858] = 0x80; /* blue */ 
+    p[2861] = 0xFF; /* blue */ 
+    p[2864] = 0xFF; /* blue */ 
+    p[2867] = 0x80; /* blue */ 
+    p[2894] = 0x4B; /* blue */ 
+    p[2897] = 0xFF; /* blue */ 
+    p[2900] = 0xFF; /* blue */ 
+    p[2903] = 0xFF; /* blue */ 
+    p[2906] = 0xFF; /* blue */ 
+    p[2909] = 0xFF; /* blue */ 
+    p[2912] = 0xFF; /* blue */ 
+    p[2915] = 0xFF; /* blue */ 
+    p[2918] = 0xFF; /* blue */ 
+    p[2921] = 0xFF; /* blue */ 
+    p[2924] = 0xFF; /* blue */ 
+    p[2927] = 0xFF; /* blue */ 
+    p[2930] = 0xFF; /* blue */ 
+    p[2933] = 0xFF; /* blue */ 
+    p[2936] = 0xFF; /* blue */ 
+    p[2939] = 0xFF; /* blue */ 
+    p[2942] = 0xFF; /* blue */ 
+    p[2945] = 0xFF; /* blue */ 
+    p[2948] = 0xFF; /* blue */ 
+    p[2951] = 0xFF; /* blue */ 
+    p[2954] = 0xFF; /* blue */ 
+    p[2957] = 0xFF; /* blue */ 
+    p[2960] = 0xFF; /* blue */ 
+    p[2963] = 0xFF; /* blue */ 
+    p[2966] = 0xFF; /* blue */ 
+    p[2969] = 0xFF; /* blue */ 
+    p[2972] = 0xFF; /* blue */ 
+    p[2975] = 0xFF; /* blue */ 
+    p[2978] = 0xFF; /* blue */ 
+    p[2981] = 0xFF; /* blue */ 
+    p[2984] = 0xFF; /* blue */ 
+    p[2987] = 0xFF; /* blue */ 
+    p[2990] = 0xFF; /* blue */ 
+    p[2993] = 0xFF; /* blue */ 
+    p[2996] = 0xFF; /* blue */ 
+    p[2999] = 0xFF; /* blue */ 
+    p[3002] = 0xFF; /* blue */ 
+    p[3005] = 0xFF; /* blue */ 
+    p[3008] = 0xFF; /* blue */ 
+    p[3011] = 0xFF; /* blue */ 
+    p[3014] = 0xFF; /* blue */ 
+    p[3017] = 0xFF; /* blue */ 
+    p[3020] = 0xFF; /* blue */ 
+    p[3023] = 0xFF; /* blue */ 
+    p[3026] = 0xFF; /* blue */ 
+    p[3029] = 0xFF; /* blue */ 
+    p[3032] = 0xFF; /* blue */ 
+    p[3035] = 0x90; /* blue */ 
+    p[3038] = 0x80; /* blue */ 
+    p[3041] = 0xFF; /* blue */ 
+    p[3044] = 0xFF; /* blue */ 
+    p[3047] = 0x80; /* blue */ 
+    p[3074] = 0x4B; /* blue */ 
+    p[3077] = 0xFF; /* blue */ 
+    p[3080] = 0xFF; /* blue */ 
+    p[3083] = 0xFF; /* blue */ 
+    p[3086] = 0xFF; /* blue */ 
+    p[3089] = 0xFF; /* blue */ 
+    p[3092] = 0xFF; /* blue */ 
+    p[3095] = 0xFF; /* blue */ 
+    p[3098] = 0xFF; /* blue */ 
+    p[3101] = 0xFF; /* blue */ 
+    p[3104] = 0xFF; /* blue */ 
+    p[3107] = 0xFF; /* blue */ 
+    p[3110] = 0xFF; /* blue */ 
+    p[3113] = 0xFF; /* blue */ 
+    p[3116] = 0xFF; /* blue */ 
+    p[3119] = 0xFF; /* blue */ 
+    p[3122] = 0xFF; /* blue */ 
+    p[3125] = 0xFF; /* blue */ 
+    p[3128] = 0xFF; /* blue */ 
+    p[3131] = 0xFF; /* blue */ 
+    p[3134] = 0xFF; /* blue */ 
+    p[3137] = 0xFF; /* blue */ 
+    p[3140] = 0xFF; /* blue */ 
+    p[3143] = 0xFF; /* blue */ 
+    p[3146] = 0xFF; /* blue */ 
+    p[3149] = 0xFF; /* blue */ 
+    p[3152] = 0xFF; /* blue */ 
+    p[3155] = 0xFF; /* blue */ 
+    p[3158] = 0xFF; /* blue */ 
+    p[3161] = 0xFF; /* blue */ 
+    p[3164] = 0xFF; /* blue */ 
+    p[3167] = 0xFF; /* blue */ 
+    p[3170] = 0xFF; /* blue */ 
+    p[3173] = 0xFF; /* blue */ 
+    p[3176] = 0xFF; /* blue */ 
+    p[3179] = 0xFF; /* blue */ 
+    p[3182] = 0xFF; /* blue */ 
+    p[3185] = 0xFF; /* blue */ 
+    p[3188] = 0xFF; /* blue */ 
+    p[3191] = 0xFF; /* blue */ 
+    p[3194] = 0xFF; /* blue */ 
+    p[3197] = 0xFF; /* blue */ 
+    p[3200] = 0xFF; /* blue */ 
+    p[3203] = 0xFF; /* blue */ 
+    p[3206] = 0xFF; /* blue */ 
+    p[3209] = 0xFF; /* blue */ 
+    p[3212] = 0xFF; /* blue */ 
+    p[3215] = 0x90; /* blue */ 
+    p[3218] = 0x80; /* blue */ 
+    p[3221] = 0xFF; /* blue */ 
+    p[3224] = 0xFF; /* blue */ 
+    p[3227] = 0x80; /* blue */ 
+    p[3254] = 0x02; /* blue */ 
+    p[3257] = 0x4C; /* blue */ 
+    p[3260] = 0x80; /* blue */ 
+    p[3263] = 0x80; /* blue */ 
+    p[3266] = 0x80; /* blue */ 
+    p[3269] = 0x80; /* blue */ 
+    p[3272] = 0x80; /* blue */ 
+    p[3275] = 0x80; /* blue */ 
+    p[3278] = 0x80; /* blue */ 
+    p[3281] = 0x80; /* blue */ 
+    p[3284] = 0x80; /* blue */ 
+    p[3287] = 0x80; /* blue */ 
+    p[3290] = 0x80; /* blue */ 
+    p[3293] = 0x80; /* blue */ 
+    p[3296] = 0x80; /* blue */ 
+    p[3299] = 0xFF; /* blue */ 
+    p[3302] = 0xFF; /* blue */ 
+    p[3305] = 0x80; /* blue */ 
+    p[3308] = 0x80; /* blue */ 
+    p[3311] = 0x80; /* blue */ 
+    p[3314] = 0x80; /* blue */ 
+    p[3317] = 0x80; /* blue */ 
+    p[3320] = 0x80; /* blue */ 
+    p[3323] = 0x80; /* blue */ 
+    p[3326] = 0x80; /* blue */ 
+    p[3329] = 0x80; /* blue */ 
+    p[3332] = 0x80; /* blue */ 
+    p[3335] = 0x80; /* blue */ 
+    p[3338] = 0x80; /* blue */ 
+    p[3341] = 0x80; /* blue */ 
+    p[3344] = 0x80; /* blue */ 
+    p[3347] = 0x80; /* blue */ 
+    p[3350] = 0x80; /* blue */ 
+    p[3353] = 0x80; /* blue */ 
+    p[3356] = 0x80; /* blue */ 
+    p[3359] = 0x80; /* blue */ 
+    p[3362] = 0x98; /* blue */ 
+    p[3365] = 0xC6; /* blue */ 
+    p[3368] = 0xF3; /* blue */ 
+    p[3371] = 0xFF; /* blue */ 
+    p[3374] = 0xFF; /* blue */ 
+    p[3377] = 0xFF; /* blue */ 
+    p[3380] = 0xFF; /* blue */ 
+    p[3383] = 0xFF; /* blue */ 
+    p[3386] = 0xFF; /* blue */ 
+    p[3389] = 0xE6; /* blue */ 
+    p[3392] = 0x94; /* blue */ 
+    p[3398] = 0x80; /* blue */ 
+    p[3401] = 0xFF; /* blue */ 
+    p[3404] = 0xFF; /* blue */ 
+    p[3407] = 0x80; /* blue */ 
+    p[3479] = 0xFF; /* blue */ 
+    p[3482] = 0xFF; /* blue */ 
+    p[3533] = 0x20; /* blue */ 
+    p[3536] = 0x7A; /* blue */ 
+    p[3539] = 0xD6; /* blue */ 
+    p[3542] = 0xFF; /* blue */ 
+    p[3545] = 0xFF; /* blue */ 
+    p[3548] = 0xFF; /* blue */ 
+    p[3551] = 0xFF; /* blue */ 
+    p[3554] = 0xFF; /* blue */ 
+    p[3557] = 0xFF; /* blue */ 
+    p[3560] = 0xD7; /* blue */ 
+    p[3563] = 0x7B; /* blue */ 
+    p[3566] = 0x21; /* blue */ 
+    p[3578] = 0x80; /* blue */ 
+    p[3581] = 0xFF; /* blue */ 
+    p[3584] = 0xFF; /* blue */ 
+    p[3587] = 0x80; /* blue */ 
+    p[3659] = 0xFF; /* blue */ 
+    p[3662] = 0xFF; /* blue */ 
+    p[3707] = 0x57; /* blue */ 
+    p[3710] = 0xC3; /* blue */ 
+    p[3713] = 0xFF; /* blue */ 
+    p[3716] = 0xFF; /* blue */ 
+    p[3719] = 0xFF; /* blue */ 
+    p[3722] = 0xFF; /* blue */ 
+    p[3725] = 0xFF; /* blue */ 
+    p[3728] = 0xFF; /* blue */ 
+    p[3731] = 0xE6; /* blue */ 
+    p[3734] = 0x8D; /* blue */ 
+    p[3737] = 0x32; /* blue */ 
+    p[3740] = 0x01; /* blue */ 
+    p[3758] = 0x80; /* blue */ 
+    p[3761] = 0xFF; /* blue */ 
+    p[3764] = 0xFF; /* blue */ 
+    p[3767] = 0x80; /* blue */ 
+    p[3839] = 0xFF; /* blue */ 
+    p[3842] = 0xFF; /* blue */ 
+    p[3884] = 0x59; /* blue */ 
+    p[3887] = 0xFF; /* blue */ 
+    p[3890] = 0xFF; /* blue */ 
+    p[3893] = 0xFF; /* blue */ 
+    p[3896] = 0xFF; /* blue */ 
+    p[3899] = 0xFF; /* blue */ 
+    p[3902] = 0xF2; /* blue */ 
+    p[3905] = 0xA0; /* blue */ 
+    p[3908] = 0x44; /* blue */ 
+    p[3911] = 0x03; /* blue */ 
+    p[3917] = 0x02; /* blue */ 
+    p[3938] = 0x80; /* blue */ 
+    p[3941] = 0xFF; /* blue */ 
+    p[3944] = 0xFF; /* blue */ 
+    p[3947] = 0x80; /* blue */ 
+    p[4010] = 0xBD; /* blue */ 
+    p[4013] = 0xBE; /* blue */ 
+    p[4016] = 0x02; /* blue */ 
+    p[4019] = 0xFF; /* blue */ 
+    p[4022] = 0xFF; /* blue */ 
+    p[4025] = 0x02; /* blue */ 
+    p[4028] = 0xBF; /* blue */ 
+    p[4031] = 0xBE; /* blue */ 
+    p[4064] = 0x54; /* blue */ 
+    p[4067] = 0xFF; /* blue */ 
+    p[4070] = 0xFF; /* blue */ 
+    p[4073] = 0xFB; /* blue */ 
+    p[4076] = 0xB2; /* blue */ 
+    p[4079] = 0x57; /* blue */ 
+    p[4082] = 0x09; /* blue */ 
+    p[4118] = 0x80; /* blue */ 
+    p[4121] = 0xFF; /* blue */ 
+    p[4124] = 0xFF; /* blue */ 
+    p[4127] = 0x80; /* blue */ 
+    p[4190] = 0xDF; /* blue */ 
+    p[4193] = 0xFF; /* blue */ 
+    p[4196] = 0x41; /* blue */ 
+    p[4199] = 0xFF; /* blue */ 
+    p[4202] = 0xFF; /* blue */ 
+    p[4205] = 0x41; /* blue */ 
+    p[4208] = 0xFF; /* blue */ 
+    p[4211] = 0xDF; /* blue */ 
+    p[4247] = 0x59; /* blue */ 
+    p[4250] = 0x65; /* blue */ 
+    p[4253] = 0x13; /* blue */ 
+    p[4298] = 0x80; /* blue */ 
+    p[4301] = 0xFF; /* blue */ 
+    p[4304] = 0xFF; /* blue */ 
+    p[4307] = 0x80; /* blue */ 
+    p[4370] = 0x81; /* blue */ 
+    p[4373] = 0xFF; /* blue */ 
+    p[4376] = 0xA1; /* blue */ 
+    p[4379] = 0xFF; /* blue */ 
+    p[4382] = 0xFF; /* blue */ 
+    p[4385] = 0xA1; /* blue */ 
+    p[4388] = 0xFF; /* blue */ 
+    p[4391] = 0x81; /* blue */ 
+    p[4478] = 0x80; /* blue */ 
+    p[4481] = 0xFF; /* blue */ 
+    p[4484] = 0xFF; /* blue */ 
+    p[4487] = 0x80; /* blue */ 
+    p[4550] = 0x23; /* blue */ 
+    p[4553] = 0xFF; /* blue */ 
+    p[4556] = 0xF5; /* blue */ 
+    p[4559] = 0xFF; /* blue */ 
+    p[4562] = 0xFF; /* blue */ 
+    p[4565] = 0xF5; /* blue */ 
+    p[4568] = 0xFF; /* blue */ 
+    p[4571] = 0x23; /* blue */ 
+    p[4658] = 0x80; /* blue */ 
+    p[4661] = 0xFF; /* blue */ 
+    p[4664] = 0xFF; /* blue */ 
+    p[4667] = 0x80; /* blue */ 
+    p[4733] = 0xC1; /* blue */ 
+    p[4736] = 0xFF; /* blue */ 
+    p[4739] = 0xFF; /* blue */ 
+    p[4742] = 0xFF; /* blue */ 
+    p[4745] = 0xFF; /* blue */ 
+    p[4748] = 0xC1; /* blue */ 
+    p[4838] = 0x80; /* blue */ 
+    p[4841] = 0xFF; /* blue */ 
+    p[4844] = 0xFF; /* blue */ 
+    p[4847] = 0x80; /* blue */ 
+    p[4913] = 0x61; /* blue */ 
+    p[4916] = 0xFF; /* blue */ 
+    p[4919] = 0xFF; /* blue */ 
+    p[4922] = 0xFF; /* blue */ 
+    p[4925] = 0xFF; /* blue */ 
+    p[4928] = 0x61; /* blue */ 
+    p[5018] = 0x80; /* blue */ 
+    p[5021] = 0xFF; /* blue */ 
+    p[5024] = 0xFF; /* blue */ 
+    p[5027] = 0x80; /* blue */ 
+    p[5093] = 0x0D; /* blue */ 
+    p[5096] = 0xF5; /* blue */ 
+    p[5099] = 0xFF; /* blue */ 
+    p[5102] = 0xFF; /* blue */ 
+    p[5105] = 0xF5; /* blue */ 
+    p[5108] = 0x0D; /* blue */ 
+    p[5198] = 0x80; /* blue */ 
+    p[5201] = 0xFF; /* blue */ 
+    p[5204] = 0xFF; /* blue */ 
+    p[5207] = 0x80; /* blue */ 
+    p[5276] = 0xA1; /* blue */ 
+    p[5279] = 0xFF; /* blue */ 
+    p[5282] = 0xFF; /* blue */ 
+    p[5285] = 0xA1; /* blue */ 
+    p[5378] = 0x4B; /* blue */ 
+    p[5381] = 0xFF; /* blue */ 
+    p[5384] = 0xFF; /* blue */ 
+    p[5387] = 0x4C; /* blue */ 
+    p[5456] = 0x41; /* blue */ 
+    p[5459] = 0xFF; /* blue */ 
+    p[5462] = 0xFF; /* blue */ 
+    p[5465] = 0x41; /* blue */ 
+    p[5558] = 0x02; /* blue */ 
+    p[5561] = 0x4C; /* blue */ 
+    p[5564] = 0x4C; /* blue */ 
+    p[5567] = 0x02; /* blue */ 
+    p[5636] = 0x02; /* blue */ 
+    p[5639] = 0xFB; /* blue */ 
+    p[5642] = 0xFB; /* blue */ 
+    p[5645] = 0x02; /* blue */ 
     
     return img;
 }

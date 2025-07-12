@@ -36,6 +36,7 @@ struct stepper_motor {
     int prev_position;
     int ref_speed;
     int ref_freq;
+    bool is_allow_run_out;
 };
 
 struct stepper_motor *
@@ -64,6 +65,8 @@ bool is_stepper_motor_run(struct stepper_motor *sm);
 // IRQ context
 static inline void stepper_motor_stop_isr(struct stepper_motor *sm)
 {
+    if (sm->is_allow_run_out)
+        stepper_motor_disable(sm);
     stepper_motor_stop(sm);
 }
 
@@ -80,6 +83,13 @@ static inline void stepper_motor_timer_isr(struct stepper_motor *sm)
 static inline int speed_to_freq(struct stepper_motor *sm, int speed)
 {
     return (speed * sm->ref_freq) / sm->ref_speed;
+}
+
+static inline int
+feed_rate_to_freq(struct stepper_motor *sm, int spindle_speed, int feed_rate)
+{
+    int val = speed_to_freq(sm,((spindle_speed / 1000) * feed_rate) / 60);
+    return val;
 }
 
 

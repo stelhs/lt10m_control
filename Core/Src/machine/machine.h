@@ -9,7 +9,7 @@
 #include "timestamp.h"
 #include "ui_status.h"
 #include "mode_cut.h"
-
+#include "mode_thread.h"
 
 #define BUILD_VERSION "0.4"
 
@@ -22,8 +22,25 @@ extern struct machine machine;
     printf("%ld: " format, now() ? now() : uptime(), ##__VA_ARGS__); \
 } while (0)
 
+enum progs {
+    PROG_FEED_LEFT,
+    PROG_FEED_RIGHT,
+    PROG_FEED_LEFT_UP,
+    PROG_FEED_RIGHT_UP,
+    PROG_FEED_LEFT_DOWN,
+    PROG_FEED_RIGHT_DOWN,
+    PROG_FEED_UP_LEFT,
+    PROG_FEED_UP_RIGHT,
+    PROG_FEED_DOWN_LEFT,
+    PROG_FEED_DOWN_RIGHT,
+    PROG_FEED_UP,
+    PROG_FEED_DOWN,
+    PROG_THREAD_LEFT,
+    PROG_THREAD_RIGHT
+};
 
 struct machine {
+    enum progs prog;
     struct cmsis_thread *ui_tid;
     struct cmsis_thread *machine_tid;
     struct button *btn_left;
@@ -31,6 +48,7 @@ struct machine {
     struct button *btn_up;
     struct button *btn_down;
     struct button *btn_enc;
+    struct button *btn_ok;
     struct button *switch_run;
     struct button *switch_touch_lock;
     struct button *switch_high_speed;
@@ -47,17 +65,21 @@ struct machine {
     struct ui_status ui_stat;
     struct ui_main *ui_main;
     struct ui_move_to *ui_move_to;
+
     struct mode_cut mc;
+    struct mode_thread mt;
+
     bool is_busy;
     bool is_disp2_needs_redraw;
 };
+
 
 extern struct machine machine;
 
 void panic(char *reason);
 void machine_init(void);
 int cross_move_to(int pos, bool is_accurate);
-int longitudal_move_to(int pos, bool is_accurate);
+int longitudal_move_to(int pos, bool is_accurate, int max_freq);
 void buttons_reset(void);
 int cross_up_new_position(int distance);
 int cross_down_new_position(int distance);
@@ -71,5 +93,8 @@ void set_normal_acceleration(void);
 
 // IRQ context
 void sm_normal_acceleration_changer(struct stepper_motor *sm, bool is_init);
+// IRQ context
+void sm_longitudial_high_acceleration_changer(struct stepper_motor *sm,
+                                              bool is_init);
 
 #endif  // MACHINE_H_
