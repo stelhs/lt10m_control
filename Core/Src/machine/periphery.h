@@ -25,6 +25,7 @@ void panel_encoder_reset(void);
 
 u32 spindle_angle(void);
 u32 spindle_raw_angle(void);
+u32 spindle_raw_to_angle(u32 raw);
 u32 spindle_speed(void);
 
 #endif /* PERIPHERY_H_ */

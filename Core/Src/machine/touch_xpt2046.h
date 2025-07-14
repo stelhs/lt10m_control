@@ -16,12 +16,12 @@
 
 struct touch_xpt2046 {
     struct spi_dev *spi;
-    struct timeout t;
     enum disp_orientation orient;
     int width;
     int height;
     bool is_touched;
     bool is_enabled;
+    u32 touched_time;
 };
 
 struct touch_area {
@@ -31,6 +31,7 @@ struct touch_area {
     int x2;
     int y2;
     struct touch_xpt2046 *dev;
+    bool is_lock;
     bool is_touched;
 };
 
@@ -57,11 +58,9 @@ static inline void touch_isr(struct touch_xpt2046 *touch)
     HAL_NVIC_DisableIRQ(EXTI0_IRQn);
     __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_0);
 
-    if (touch->is_enabled) {
-        if (is_timeout_elapsed(&touch->t)) {
-            timeout_start(&touch->t, 100);
-            touch->is_touched = TRUE;
-        }
+    if (touch->is_enabled && (now() - touch->touched_time) > 100) {
+        touch->is_touched = TRUE;
+        touch->touched_time = now();
     }
 
     __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_0);

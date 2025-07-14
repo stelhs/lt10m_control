@@ -428,6 +428,7 @@ static void display_status_handler(void)
     ui_item_show(us->cross_speed);
     ui_item_show(us->longitudal_speed);
     ui_item_show(us->feed_rate);
+    ui_item_show(us->cut_speed);
 
     if (ap->is_cross_inc_down != (bool)us->cross_pos_dir->priv) {
         us->cross_pos_dir->priv = (void *)ap->is_cross_inc_down;
@@ -507,7 +508,7 @@ static void main_thread(void *priv)
     mc_settings->longitudal_distance = 50 * 1000;
     mc_settings->target_diameter = 42 * 1000;
     mc_settings->cross_distance = 21 * 1000;
-    mc_settings->cut_depth = 1500;
+    mc_settings->cut_depth_step = 1500;
 
     uart_debug_plug(&huart1);
     uart_dbg_key_register("os_status", 's', dbg_os_stat, m);

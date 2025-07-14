@@ -53,8 +53,8 @@ struct machine {
     struct button *switch_touch_lock;
     struct button *switch_high_speed;
     struct button *switch_move_to;
-    struct disp *disp1;
     struct disp *disp2;
+    struct disp *disp1;
 
     struct stepper_motor *sm_longitudial_feed;
     struct stepper_motor *sm_cross_feed;

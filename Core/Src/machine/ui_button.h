@@ -12,27 +12,15 @@
 #include "touch_xpt2046.h"
 #include "ui_item.h"
 
-struct ui_button {
-    char *name;
-    struct le le;
-    struct ui_item *ut;
-    struct disp *disp;
-    struct touch_area *ta;
-    void (*on_click)(void *);
-    void (*show)(struct ui_button *);
-    void *priv;
-};
-
-struct ui_button *
-ui_button_register(char *name,
-                   struct disp *disp,
+struct ui_item *
+ui_button_register(char *name, struct list *ui_scope,
                    int x, int y, int width, int height,
-                   void (*show)(struct ui_button *),
-                   void (*on_click)(void *), void *priv);
+                   void (*show)(struct ui_item *),
+                   void (*on_click)(struct ui_item *), void *priv,
+                   size_t data_size);
 
-bool is_ui_button_touched(struct ui_button *db);
-void ui_button_hide(struct ui_button *ub);
-void ui_button_show(struct ui_button *ub);
+bool is_ui_button_touched(struct ui_item *);
 void ui_button_handler(void);
+void *ui_button_data(struct ui_item *ut);
 
 #endif /* UI_BUTTON_H_ */

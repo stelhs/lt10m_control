@@ -9,6 +9,7 @@
 #define UI_MAIN_H_
 
 #include "stm32_lib/types.h"
+#include "stm32_lib/klist.h"
 
 enum msg_type {
     MSG_ERR,
@@ -18,9 +19,17 @@ enum msg_type {
 
 struct ui_main {
     struct disp *disp;
-    struct ui_main_items *ui_items;
     struct mode_cut *mc;
     struct mode_thread *mt;
+    struct list *ui_scope;
+    struct ui_item *thread_moveto;
+    struct ui_item *thread_size;
+    struct ui_item *thread_standard_m;
+    struct ui_item *feed_return_mode;
+    struct ui_item *feed_repeate;
+    struct ui_item *thread_arrow;
+    struct ui_item *thread_repeate;
+    struct ui_item *thread_type;
 };
 
 void ui_main_start(void);

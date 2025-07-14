@@ -14,7 +14,7 @@
 
 struct ui_sel_prog {
     struct disp *disp;
-    struct ui_button *progs[14];
+    struct ui_item *progs[14];
 };
 
 static struct ui_sel_prog *ui_sel_prog = NULL;
@@ -58,10 +58,9 @@ struct img *img_prog_by_num(enum progs prog)
     return img;
 }
 
-static void key_prog_show(struct ui_button *ub)
+static void key_prog_show(struct ui_item *ut)
 {
-    struct ui_item *ut = ub->ut;
-    enum progs prog = (enum progs)ub->priv;
+    enum progs prog = (enum progs)ut->priv;
     struct img *img;
     disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 1, GRAY);
     img = img_prog_by_num(prog);
@@ -115,18 +114,18 @@ static void show(struct ui_sel_prog *usp)
         }
 
         usp->progs[i * 2] =
-                ui_button_register(left, usp->disp,
+                ui_button_register(left, NULL,
                                      left_ident,
                                      top_ident + i * (key_height + key_ident),
                                      key_width, key_height,
-                                     key_prog_show, NULL, (void *)(i * 2));
+                                     key_prog_show, NULL, (void *)(i * 2), 0);
 
         usp->progs[i * 2 + 1] =
-                ui_button_register(right, usp->disp,
+                ui_button_register(right, NULL,
                                      right_butt_ident,
                                      top_ident + i * (key_height + key_ident),
                                      key_width, key_height,
-                                     key_prog_show, NULL, (void *)(i * 2 + 1));
+                                     key_prog_show, NULL, (void *)(i * 2 + 1), 0);
     }
 
 }
@@ -136,7 +135,6 @@ static void ui_sel_prog_destructor(void *mem)
     struct ui_sel_prog *usp = (struct ui_sel_prog *)mem;
     int i;
 
-    kmem_deref(&usp->disp);
     for (i = 0; i < ARRAY_SIZE(usp->progs); i++)
         kmem_deref(usp->progs + i);
 }
@@ -150,7 +148,7 @@ int ui_sel_prog_run(void)
     struct ui_sel_prog *usp = ui_sel_prog;
 
     usp = kzref_alloc("ui_sel_prog", sizeof *usp, ui_sel_prog_destructor);
-    usp->disp = kmem_ref(m->disp1);
+    usp->disp = m->disp1;
 
     show(usp);
 
@@ -159,8 +157,8 @@ int ui_sel_prog_run(void)
         yield();
 
         for (i = 0; i < ARRAY_SIZE(usp->progs); i++) {
-            struct ui_button *db = usp->progs[i];
-            if (is_ui_button_touched(db)) {
+            struct ui_item *ut = usp->progs[i];
+            if (is_ui_button_touched(ut)) {
                 if (i != PROG_FEED_LEFT && i != PROG_FEED_RIGHT)
                     mc_settings->longitudal_ret_mode = CUT_LONGITUDAL_NO_RETURN;
                 if (i != PROG_FEED_UP && i != PROG_FEED_DOWN)

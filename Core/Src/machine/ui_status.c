@@ -200,83 +200,89 @@ void ui_status_init(void)
             .font = font_rus,
             .fontsize = 3,
     };
+    struct text_style cut_speed_ts = {
+            .bg_color = BLACK,
+            .color = {255, 128, 128},
+            .font = font_rus,
+            .fontsize = 3,
+    };
 
     disp_fill(disp, 0,0, 480, 111, BLACK); // Clear status area
     disp_fill(disp, 2, 111, 480 - 4, 3, GREEN); // Green line
 
     us->cross_pos_dir =
-            ui_item_register("ui_cross_pos_dir", disp,
+            ui_item_register("ui_cross_pos_dir", NULL, disp,
                                  0, 2, 16, 28,
                                  ui_cross_pos_dir_show, NULL, NULL, 0);
 
     us->cross_pos =
-            ui_item_text_register("ui_cross_pos", disp,
+            ui_item_text_register("ui_cross_pos", NULL, disp,
                                   23, 5, 8, &cross_ts,
                                   ui_cross_pos_getter, NULL, NULL);
 
     us->longitudal_pos_dir =
-            ui_item_register("ui_longitudal_pos_dir", disp,
+            ui_item_register("ui_longitudal_pos_dir", NULL, disp,
                                  173, 7, 31, 18,
                                  ui_longitudal_pos_dir_show, NULL, NULL, 0);
 
     us->longitudal_pos =
-            ui_item_text_register("ui_longitudal_pos", disp,
+            ui_item_text_register("ui_longitudal_pos", NULL, disp,
                                   208, 5, 8, &longitudal_ts,
                                   ui_longitudal_pos_getter, NULL, NULL);
 
     us->spindle_icon =
-            ui_item_register("ui_spindle_icon", disp,
+            ui_item_register("ui_spindle_icon", NULL, disp,
                                  358, 4, 26, 29,
                                  ui_spindle_icon_show, NULL, NULL, 0);
 
     us->spindle_speed =
-            ui_item_text_register("ui_spindle_speed", disp,
+            ui_item_text_register("ui_spindle_speed", NULL, disp,
                                   390, 9, 5, &spindle_ts,
                                   ui_spindle_speed_getter, NULL, NULL);
 
     us->tool_num =
-            ui_item_register("ui_tool_num", disp,
+            ui_item_register("ui_tool_num", NULL, disp,
                                  1, 39, 32, 32,
                                  ui_tool_num_show, NULL, NULL, 0);
 
     us->cross_speed_icon =
-            ui_item_register("ui_cross_speed_icon", disp,
+            ui_item_register("ui_cross_speed_icon", NULL, disp,
                                  39, 36, 33, 36,
                                  ui_cross_speed_icon_show, NULL, NULL, 0);
 
     us->cross_speed =
-            ui_item_text_register("ui_cross_speed", disp,
+            ui_item_text_register("ui_cross_speed", NULL, disp,
                                   77, 48, 6, &cross_ts,
                                   ui_cross_speed_getter, NULL, NULL);
 
     us->longitudal_speed_icon =
-            ui_item_register("ui_longitudal_speed_icon", disp,
+            ui_item_register("ui_longitudal_speed_icon", NULL, disp,
                                  186, 36, 33, 36,
                                  ui_longitudal_speed_icon_show, NULL, NULL, 0);
 
     us->longitudal_speed =
-            ui_item_text_register("ui_longitudal_speed", disp,
+            ui_item_text_register("ui_longitudal_speed", NULL, disp,
                                   223, 48, 6, &longitudal_ts,
                                   ui_longitudal_speed_getter, NULL, NULL);
 
     us->feed_rate_icon =
-            ui_item_register("ui_feed_rate_icon", disp,
+            ui_item_register("ui_feed_rate_icon", NULL, disp,
                                  334, 36, 33, 36,
                                  ui_feed_rate_icon_show, NULL, NULL, 0);
 
     us->feed_rate =
-            ui_item_text_register("ui_feed_rate", disp,
+            ui_item_text_register("ui_feed_rate", NULL, disp,
                                   372, 48, 6, &feed_rate_ts,
                                   ui_feed_rate_getter, NULL, NULL);
 
     us->cut_speed_icon =
-            ui_item_register("ui_cut_speed_icon", disp,
+            ui_item_register("ui_cut_speed_icon", NULL, disp,
                                  300, 74, 33, 36,
                                  ui_cut_speed_icon_show, NULL, NULL, 0);
 
     us->cut_speed =
-            ui_item_text_register("ui_cut_speed", disp,
-                                  338, 74, 7, &feed_rate_ts,
+            ui_item_text_register("ui_cut_speed", NULL, disp,
+                                  338, 86, 7, &cut_speed_ts,
                                   ui_cut_speed_getter, NULL, NULL);
 }
 

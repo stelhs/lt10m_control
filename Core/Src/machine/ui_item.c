@@ -9,7 +9,7 @@
 #include "stm32_lib/kref_alloc.h"
 #include "machine.h"
 
-static void hide_default(struct ui_item *ut)
+void ui_item_hide_default_cb(struct ui_item *ut)
 {
     disp_fill(ut->disp, ut->x, ut->y, ut->width, ut->height, BLACK);
 }
@@ -17,11 +17,17 @@ static void hide_default(struct ui_item *ut)
 static void ui_item_destructor(void *mem)
 {
     struct ui_item *ut = (struct ui_item *)mem;
+
+    if (ut->data_destructor) {
+        ut->data_destructor(ut);
+        ut->data_destructor = NULL;
+    }
+    list_unlink(&ut->scope_le);
     kmem_deref(&ut->tw);
 }
 
 struct ui_item *
-ui_item_register(char *name, struct disp *disp,
+ui_item_register(char *name, struct list *ui_scope, struct disp *disp,
                  int x, int y, int width, int height,
                  void (*show)(struct ui_item *),
                  void (*hide)(struct ui_item *), void *priv, size_t data_size)
@@ -29,6 +35,7 @@ ui_item_register(char *name, struct disp *disp,
     struct ui_item *ut;
 
     ut = kzref_alloc(name, (sizeof *ut) + data_size, ui_item_destructor);
+    ut->name = name;
     ut->disp = disp;
     ut->x = x;
     ut->y = y;
@@ -37,12 +44,21 @@ ui_item_register(char *name, struct disp *disp,
     ut->show = show;
     ut->hide = hide;
     if (!hide)
-        ut->hide = hide_default;
+        ut->hide = ui_item_hide_default_cb;
     ut->priv = priv;
     ut->data = (void *)(ut + 1);
     ut->is_redraw_needed = TRUE;
-    ut->show(ut);
+    if (ui_scope)
+        list_append(ui_scope, &ut->scope_le, ut);
+    if (!data_size)
+        ut->show(ut);
     return ut;
+}
+
+void ui_item_set_data_destructor(struct ui_item *ut,
+                                 void (*data_destructor)(void *))
+{
+    ut->data_destructor = data_destructor;
 }
 
 struct ui_item_text {
@@ -72,14 +88,14 @@ static void text_show(struct ui_item *ut)
 }
 
 struct ui_item *
-ui_item_text_register(char *name, struct disp *disp,
+ui_item_text_register(char *name, struct list *ui_scope, struct disp *disp,
                       int x, int y, int text_len, struct text_style *ts,
                       void (*getter)(struct ui_item *, char *, size_t size),
                       void (*hide)(struct ui_item *), void *priv)
 {
     struct ui_item *ut;
     struct ui_item_text uit;
-    ut = ui_item_register(name, disp, x, y,
+    ut = ui_item_register(name, ui_scope, disp, x, y,
                           disp_text_width(ts, text_len),
                           disp_text_height(ts),
                           text_show, hide,
@@ -132,8 +148,8 @@ void ui_item_hide(struct ui_item *ut)
 
 void ui_item_show(struct ui_item *ut)
 {
-    ut->is_show = TRUE;
     ut->show(ut);
+    ut->is_show = TRUE;
 }
 
 void ui_item_update(struct ui_item *ut)
@@ -147,3 +163,41 @@ bool ui_item_is_show(struct ui_item *ut)
     return ut->is_show;
 }
 
+void ui_scope_show(struct list *ui_scope)
+{
+    struct le *le;
+    LIST_FOREACH(ui_scope, le) {
+        struct ui_item *ut = (struct ui_item *)list_ledata(le);
+        ui_item_show(ut);
+    }
+}
+
+void ui_scope_hide(struct list *ui_scope)
+{
+    struct le *le;
+    LIST_FOREACH(ui_scope, le) {
+        struct ui_item *ut = (struct ui_item *)list_ledata(le);
+        ui_item_hide(ut);
+    }
+}
+
+void ui_scope_update(struct list *ui_scope)
+{
+    struct le *le;
+    LIST_FOREACH(ui_scope, le) {
+        struct ui_item *ut = (struct ui_item *)list_ledata(le);
+        ui_item_update(ut);
+    }
+}
+
+struct ui_item *ui_item_by_name(struct list *ui_scope, char *name)
+{
+    struct le *le;
+    LIST_FOREACH(ui_scope, le) {
+        struct ui_item *ut = (struct ui_item *)list_ledata(le);
+        if (strcmp(ut->name, name) == 0)
+            return ut;
+    }
+    panic("ui_item_by_name(): item not found");
+    return NULL;
+}

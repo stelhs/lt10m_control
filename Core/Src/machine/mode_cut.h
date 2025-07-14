@@ -45,14 +45,15 @@ struct mode_cut_settings {
     int longitudal_distance;
     int cross_distance;
     int target_diameter;
-    int cut_depth;
+    int cut_depth_step;
     enum cut_longitudal_return_modes longitudal_ret_mode;
     enum cut_cross_return_modes cross_ret_mode;
     int last_repeate_number;
 };
 
 struct mode_cut {
-    struct mode_cut_ui_items *ui_items;
+    struct list *ui_status_scope;
+    struct ui_item *status_text;
     struct mode_cut_settings settings;
     struct mode_cut_stat stat;
     int start_longitudal_pos;

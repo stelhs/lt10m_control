@@ -100,10 +100,13 @@ u32 spindle_raw_angle(void)
 // In millidegrees
 u32 spindle_angle(void)
 {
-    return ((__HAL_TIM_GET_COUNTER(&htim8) % SPINDLE_ENC_RESOLUTION) * 1000) *
-                    360 / SPINDLE_ENC_RESOLUTION;
+    return spindle_raw_to_angle(spindle_raw_angle());
 }
 
+u32 spindle_raw_to_angle(u32 raw)
+{
+    return (raw * 1000) * 360 / SPINDLE_ENC_RESOLUTION;
+}
 
 // IRQ Context
 static volatile u32 spindle_speed_raw = 0;
@@ -116,7 +119,7 @@ static void spindle_speed_irq(void)
     bool dir;
 
     prescaller++;
-    if (prescaller < 500)
+    if (prescaller < 1000)
         return;
     prescaller = 0;
 
@@ -145,7 +148,7 @@ u32 spindle_speed(void)
     irq_disable();
     val = spindle_speed_raw;
     irq_enable();
-    ret_val = ((val * 2 * 60 * 1000) / SPINDLE_ENC_RESOLUTION);
+    ret_val = ((val * 60 * 1000) / SPINDLE_ENC_RESOLUTION);
     return ret_val;
 }
 

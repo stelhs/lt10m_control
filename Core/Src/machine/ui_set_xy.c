@@ -15,19 +15,9 @@
 #include "ui_keyboard.h"
 
 
-struct set_xy_ui_items {
-    struct ui_button *key_esc;
-    struct ui_button *key_tools[4];
-    struct ui_button *key_up_down;
-    struct ui_button *key_left_right;
-    struct ui_button *key_cross_pos;
-    struct ui_button *key_longitudal_pos;
-    struct ui_button *key_reset_cross;
-    struct ui_button *key_reset_longitudal;
-};
-
 struct ui_set_xy {
-    struct set_xy_ui_items *ui_items;
+    struct list *ui_scope;
+    struct ui_item *key_esc;
     struct disp *disp_info;
     struct disp *disp_touch;
     int tool_num;
@@ -40,86 +30,80 @@ struct ui_set_xy {
 
 static struct ui_set_xy *ui_set_xy = NULL;
 
-static void show(void);
-static void hide(void)
-{
-    struct ui_set_xy *usx = ui_set_xy;
-    kmem_deref(&usx->ui_items);
-}
+static void ui_scope_init(void);
 
-void onclick_tool_num(void *priv)
+void onclick_tool_num(struct ui_item *ut)
 {
-    int tool_num = (int)priv;
+    int tool_num = (int)ut->priv;
     struct ui_set_xy *usx = ui_set_xy;
     if (usx->tool_num == tool_num)
         return;
-    hide();
+    kmem_deref(&usx->ui_scope);
     usx->tool_num = tool_num;
-    show();
+    ui_scope_init();
 }
 
-void onclick_up_down(void *priv)
+void onclick_up_down(struct ui_item *ut)
 {
-    struct ui_set_xy *usx = (struct ui_set_xy *)priv;
-    hide();
+    struct ui_set_xy *usx = (struct ui_set_xy *)ut->priv;
+    kmem_deref(&usx->ui_scope);
     usx->is_cross_inc_down = !usx->is_cross_inc_down;
-    show();
+    ui_scope_init();
 }
 
-void onclick_left_right(void *priv)
+void onclick_left_right(struct ui_item *ut)
 {
-    struct ui_set_xy *usx = (struct ui_set_xy *)priv;
-    hide();
+    struct ui_set_xy *usx = (struct ui_set_xy *)ut->priv;
+    kmem_deref(&usx->ui_scope);
     usx->is_longitudal_inc_left = !usx->is_longitudal_inc_left;
-    show();
+    ui_scope_init();
 }
 
-void onclick_cross_pos(void *priv)
+void onclick_cross_pos(struct ui_item *ut)
 {
-    struct ui_set_xy *usx = (struct ui_set_xy *)priv;
+    struct ui_set_xy *usx = (struct ui_set_xy *)ut->priv;
     int pos = usx->cross_pos[usx->tool_num];
-    hide();
+    kmem_deref(&usx->ui_scope);
     if (!ui_keyboard_run("diameter: ", &pos,
                          -1000 * 1000, 1000 * 1000,
-                         LINEAR_CROSS_RESOLUTION * 2)) {
+                         LINEAR_CROSS_RESOLUTION * 2, FALSE)) {
         usx->cross_pos[usx->tool_num] = pos / 2;
     }
     usx->is_finished = TRUE;
 }
 
-void onclick_longitudal_pos(void *priv)
+void onclick_longitudal_pos(struct ui_item *ut)
 {
-    struct ui_set_xy *usx = (struct ui_set_xy *)priv;
+    struct ui_set_xy *usx = (struct ui_set_xy *)ut->priv;
     int pos = usx->longitudal_pos[usx->tool_num];
-    hide();
+    kmem_deref(&usx->ui_scope);
     if (!ui_keyboard_run("Longitudal: ", &pos,
                          -1500 * 1000, 1500 * 1000,
-                         LINEAR_LONGITUDAL_RESOLUTION)) {
+                         LINEAR_LONGITUDAL_RESOLUTION, FALSE)) {
         usx->longitudal_pos[usx->tool_num] = pos;
     }
     usx->is_finished = TRUE;
 }
 
-void onclick_reset_cross(void *priv)
+void onclick_reset_cross(struct ui_item *ut)
 {
-    struct ui_set_xy *usx = (struct ui_set_xy *)priv;
-    hide();
+    struct ui_set_xy *usx = (struct ui_set_xy *)ut->priv;
+    kmem_deref(&usx->ui_scope);
     usx->cross_pos[usx->tool_num] = 0;
     usx->is_finished = TRUE;
 }
 
-void onclick_reset_longitudal(void *priv)
+void onclick_reset_longitudal(struct ui_item *ut)
 {
-    struct ui_set_xy *usx = (struct ui_set_xy *)priv;
-    hide();
+    struct ui_set_xy *usx = (struct ui_set_xy *)ut->priv;
+    kmem_deref(&usx->ui_scope);
     usx->longitudal_pos[usx->tool_num] = 0;
     usx->is_finished = TRUE;
 }
 
 
-static void key_esc_show(struct ui_button *ub)
+static void key_esc_show(struct ui_item *ut)
 {
-    struct ui_item *ut = ub->ut;
     static struct text_style ts = {
             .bg_color = BLACK,
             .color = RED,
@@ -134,9 +118,8 @@ static void key_esc_show(struct ui_button *ub)
             &ts);
 }
 
-static void key_tool_num_show(struct ui_button *ub)
+static void key_tool_num_show(struct ui_item *ut)
 {
-    struct ui_item *ut = ub->ut;
     struct ui_set_xy *usx = ui_set_xy;
     static struct text_style non_selected_ts = {
             .bg_color = BLACK,
@@ -152,7 +135,7 @@ static void key_tool_num_show(struct ui_button *ub)
     };
     struct text_style *ts = &non_selected_ts;
 
-    int tool_num = (int)ub->priv;
+    int tool_num = (int)ut->priv;
     char str[3];
 
     sprintf(str, "%d", tool_num + 1);
@@ -168,10 +151,9 @@ static void key_tool_num_show(struct ui_button *ub)
               ut->y + ut->height / 2 - 10, ts);
 }
 
-static void key_up_down_show(struct ui_button *ub)
+static void key_up_down_show(struct ui_item *ut)
 {
-    struct ui_item *ut = ub->ut;
-    struct ui_set_xy *usx = (struct ui_set_xy *)ub->priv;
+    struct ui_set_xy *usx = (struct ui_set_xy *)ut->priv;
     struct img *img;
     if (usx->is_cross_inc_down)
         img = img_cross_arrow_down1();
@@ -181,10 +163,9 @@ static void key_up_down_show(struct ui_button *ub)
     kmem_deref(&img);
 }
 
-static void key_left_right_show(struct ui_button *ub)
+static void key_left_right_show(struct ui_item *ut)
 {
-    struct ui_set_xy *usx = (struct ui_set_xy *)ub->priv;
-    struct ui_item *ut = ub->ut;
+    struct ui_set_xy *usx = (struct ui_set_xy *)ut->priv;
     struct img *img;
     if (usx->is_longitudal_inc_left)
         img = img_longitudal_arrow_left1();
@@ -194,10 +175,9 @@ static void key_left_right_show(struct ui_button *ub)
     kmem_deref(&img);
 }
 
-static void key_cross_pos_show(struct ui_button *ub)
+static void key_cross_pos_show(struct ui_item *ut)
 {
-    struct ui_item *ut = ub->ut;
-    struct ui_set_xy *usx = (struct ui_set_xy *)ub->priv;
+    struct ui_set_xy *usx = (struct ui_set_xy *)ut->priv;
     char *string;
     int x, width;
     static struct text_style ts = {
@@ -214,10 +194,9 @@ static void key_cross_pos_show(struct ui_button *ub)
     kmem_deref(&string);
 }
 
-static void key_longitudal_pos_show(struct ui_button *ub)
+static void key_longitudal_pos_show(struct ui_item *ut)
 {
-    struct ui_item *ut = ub->ut;
-    struct ui_set_xy *usx = (struct ui_set_xy *)ub->priv;
+    struct ui_set_xy *usx = (struct ui_set_xy *)ut->priv;
     char *string;
     int x, width;
     static struct text_style ts = {
@@ -235,9 +214,8 @@ static void key_longitudal_pos_show(struct ui_button *ub)
     kmem_deref(&string);
 }
 
-static void key_reset_show(struct ui_button *ub)
+static void key_reset_show(struct ui_item *ut)
 {
-    struct ui_item *ut = ub->ut;
     static struct text_style ts = {
             .bg_color = BLACK,
             .color = EMERALD,
@@ -252,93 +230,66 @@ static void key_reset_show(struct ui_button *ub)
 }
 
 
-static void ui_set_xy_ui_items_destructor(void *mem)
-{
-    struct set_xy_ui_items *ui_items = (struct set_xy_ui_items *)mem;
-    int i;
-    kmem_deref(&ui_items->key_esc);
-    for (i = 0; i < ARRAY_SIZE(ui_items->key_tools); i++)
-        kmem_deref(ui_items->key_tools + i);
-    kmem_deref(&ui_items->key_up_down);
-    kmem_deref(&ui_items->key_left_right);
-    kmem_deref(&ui_items->key_cross_pos);
-    kmem_deref(&ui_items->key_longitudal_pos);
-    kmem_deref(&ui_items->key_reset_cross);
-    kmem_deref(&ui_items->key_reset_longitudal);
-}
-
-static void show(void)
+static void ui_scope_init(void)
 {
     struct ui_set_xy *usx = ui_set_xy;
     int i;
 
-    struct set_xy_ui_items *ui_items;
-    ui_items = kzref_alloc("ui_set_xy_ui_items", sizeof *ui_items,
-                          ui_set_xy_ui_items_destructor);
-    usx->ui_items = ui_items;
+    usx->ui_scope = list_create("ui_set_xy_scope");
 
     disp_clear(usx->disp_touch);
 
-    ui_items->key_esc =
-            ui_button_register("ui_set_xy_key_esc", usx->disp_touch,
+    usx->key_esc =
+            ui_button_register("ui_set_xy_key_esc", usx->ui_scope,
                                  16, 16, 90, 90,
-                                 key_esc_show, NULL, NULL);
+                                 key_esc_show, NULL, NULL, 0);
 
     for (i = 0; i < 4; i++) {
-        ui_items->key_tools[i] =
-                ui_button_register("key_tool_num", usx->disp_touch,
-                                     12 + (65 + 11) * i, 138, 65, 65,
-                                     key_tool_num_show, onclick_tool_num,
-                                     (void *)i);
+        ui_button_register("key_tool_num", usx->ui_scope,
+                             12 + (65 + 11) * i, 138, 65, 65,
+                             key_tool_num_show, onclick_tool_num,
+                             (void *)i, 0);
     }
 
-    ui_items->key_up_down =
-            ui_button_register("key_up_down", usx->disp_touch,
-                                 0, 234, 160, 50,
-                                 key_up_down_show, onclick_up_down, usx);
+    ui_button_register("key_up_down", usx->ui_scope,
+                         0, 234, 160, 50,
+                         key_up_down_show, onclick_up_down, usx, 0);
 
-    ui_items->key_left_right =
-            ui_button_register("key_left_right", usx->disp_touch,
-                                 160, 234, 160, 50,
-                                 key_left_right_show,
-                                 onclick_left_right, usx);
+    ui_button_register("key_left_right", usx->ui_scope,
+                         160, 234, 160, 50,
+                         key_left_right_show,
+                         onclick_left_right, usx, 0);
 
-    ui_items->key_cross_pos =
-            ui_button_register("key_cross_pos", usx->disp_touch,
-                                 0, 285, 160, 50,
-                                 key_cross_pos_show,
-                                 onclick_cross_pos, usx);
+    ui_button_register("key_cross_pos", usx->ui_scope,
+                         0, 285, 160, 50,
+                         key_cross_pos_show,
+                         onclick_cross_pos, usx, 0);
 
-    ui_items->key_longitudal_pos =
-            ui_button_register("key_longitudal_pos", usx->disp_touch,
-                                 160, 285, 160, 50,
-                                 key_longitudal_pos_show,
-                                 onclick_longitudal_pos, usx);
+    ui_button_register("key_longitudal_pos", usx->ui_scope,
+                         160, 285, 160, 50,
+                         key_longitudal_pos_show,
+                         onclick_longitudal_pos, usx, 0);
 
     disp_fill(usx->disp_touch, 159, 234, 2, 100, GREEN); // vertical line
     disp_fill(usx->disp_touch, 0, 234 + 50 - 1, 320, 2, GREEN); // horizontal line
 
-    ui_items->key_reset_cross =
-            ui_button_register("key_reset_cross", usx->disp_touch,
-                                 43, 366, 65, 65,
-                                 key_reset_show,
-                                 onclick_reset_cross, usx);
+    ui_button_register("key_reset_cross", usx->ui_scope,
+                         43, 366, 65, 65,
+                         key_reset_show,
+                         onclick_reset_cross, usx, 0);
 
-    ui_items->key_reset_longitudal =
-            ui_button_register("key_reset_longitudal", usx->disp_touch,
-                                 208, 366, 65, 65,
-                                 key_reset_show,
-                                 onclick_reset_longitudal, usx);
+    ui_button_register("key_reset_longitudal", usx->ui_scope,
+                         208, 366, 65, 65,
+                         key_reset_show,
+                         onclick_reset_longitudal, usx, 0);
 
 }
 
 static void ui_set_xy_destructor(void *mem)
 {
     struct ui_set_xy *usx = (struct ui_set_xy *)mem;
-    kmem_deref(&usx->disp_info);
-    kmem_deref(&usx->disp_touch);
-    if (usx->ui_items)
-        kmem_deref(&usx->ui_items);
+    if (usx->ui_scope)
+        kmem_deref(&usx->ui_scope);
 }
 
 int ui_set_xy_run(void)
@@ -349,8 +300,8 @@ int ui_set_xy_run(void)
 
     usx = kzref_alloc("ui_set_xy", sizeof *usx, ui_set_xy_destructor);
     ui_set_xy = usx;
-    usx->disp_touch = kmem_ref(m->disp1);
-    usx->disp_info = kmem_ref(m->disp2);
+    usx->disp_touch = m->disp1;
+    usx->disp_info = m->disp2;
     usx->tool_num = abs_pos_tool(m->ap);
     for (i = 0; i < 4; i++) {
         usx->longitudal_pos[i] = abs_longitudal(m->ap, i);
@@ -359,7 +310,7 @@ int ui_set_xy_run(void)
     usx->is_cross_inc_down = m->ap->is_cross_inc_down;
     usx->is_longitudal_inc_left = m->ap->is_longitudal_inc_left;
 
-    show();
+    ui_scope_init();
 
     while (1) {
         ui_button_handler();
@@ -385,7 +336,7 @@ int ui_set_xy_run(void)
             return 0;
         }
 
-        if (is_ui_button_touched(usx->ui_items->key_esc)) {
+        if (is_ui_button_touched(usx->key_esc)) {
             usx->is_finished = TRUE;
         }
     }

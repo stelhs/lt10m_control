@@ -18,15 +18,16 @@
 struct ui_keyboard {
     struct disp *disp_info;
     struct disp *disp_touch;
-    struct ui_button *keys_num[10];
-    struct ui_button *key_point;
-    struct ui_button *key_del;
-    struct ui_button *key_minus;
-    struct ui_button *key_ok;
-    struct ui_button *key_cancel;
+    struct ui_item *keys_num[10];
+    struct ui_item *key_point;
+    struct ui_item *key_del;
+    struct ui_item *key_minus;
+    struct ui_item *key_ok;
+    struct ui_item *key_cancel;
     int min;
     int max;
     int step;
+    bool is_integer;
     int max_len;
 };
 
@@ -39,10 +40,9 @@ static struct text_style key_text_style = {
         .fontsize = 3
 };
 
-static void key_num_show(struct ui_button *ub)
+static void key_num_show(struct ui_item *ut)
 {
-    struct ui_item *ut = ub->ut;
-    int key_num = (int)ub->priv;
+    int key_num = (int)ut->priv;
     char str[3];
 
     sprintf(str, "%d", key_num);
@@ -53,9 +53,8 @@ static void key_num_show(struct ui_button *ub)
             &key_text_style);
 }
 
-static void key_point_show(struct ui_button *ub)
+static void key_point_show(struct ui_item *ut)
 {
-    struct ui_item *ut = ub->ut;
     disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 1, GRAY);
     disp_text(ut->disp, ".",
             ut->x + ut->width / 2 - 10,
@@ -63,9 +62,8 @@ static void key_point_show(struct ui_button *ub)
             &key_text_style);
 }
 
-static void key_del_show(struct ui_button *ub)
+static void key_del_show(struct ui_item *ut)
 {
-    struct ui_item *ut = ub->ut;
     disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 1, GRAY);
     disp_text(ut->disp, "<-",
             ut->x + ut->width / 2 - 15,
@@ -73,9 +71,8 @@ static void key_del_show(struct ui_button *ub)
             &key_text_style);
 }
 
-static void key_ok_show(struct ui_button *ub)
+static void key_ok_show(struct ui_item *ut)
 {
-    struct ui_item *ut = ub->ut;
     static struct text_style ts = {
             .bg_color = BLACK,
             .color = GREEN,
@@ -90,9 +87,8 @@ static void key_ok_show(struct ui_button *ub)
             &ts);
 }
 
-static void key_esc_show(struct ui_button *ub)
+static void key_esc_show(struct ui_item *ut)
 {
-    struct ui_item *ut = ub->ut;
     static struct text_style ts = {
             .bg_color = BLACK,
             .color = RED,
@@ -107,9 +103,8 @@ static void key_esc_show(struct ui_button *ub)
             &ts);
 }
 
-static void key_minus_show(struct ui_button *ub)
+static void key_minus_show(struct ui_item *ut)
 {
-    struct ui_item *ut = ub->ut;
     disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 1, GRAY);
     disp_text(ut->disp, "-",
             ut->x + ut->width / 2 - 7,
@@ -132,58 +127,59 @@ static void show(struct ui_keyboard *uk)
     disp_clear(uk->disp_touch);
 
     uk->key_cancel =
-            ui_button_register("key_esc", uk->disp_touch,
+            ui_button_register("key_esc", NULL,
                                  left_indent,
                                  top_indent + (key_height + key_indent) * 0,
                                  key_width, key_height,
-                                 key_esc_show, NULL, NULL);
+                                 key_esc_show, NULL, NULL, 0);
 
     uk->key_minus =
-            ui_button_register("key_minus", uk->disp_touch,
+            ui_button_register("key_minus", NULL,
                                  left_indent + (key_width + key_indent) * 1,
                                  top_indent + (key_height + key_indent) * 0,
                                  key_width, key_height,
-                                 key_minus_show, NULL, NULL);
+                                 key_minus_show, NULL, NULL, 0);
 
     uk->key_del =
-            ui_button_register("key_del", uk->disp_touch,
+            ui_button_register("key_del", NULL,
                                  left_indent + (key_width + key_indent) * 2,
                                  top_indent + (key_height + key_indent) * 0,
                                  key_width, key_height,
-                                 key_del_show, NULL, NULL);
+                                 key_del_show, NULL, NULL, 0);
 
     key_num = 0;
     for (i = 3; i >= 1; i--)
         for (j = 0; j < 3; j++, key_num++) {
 
             uk->keys_num[key_num + 1] =
-                    ui_button_register("key_num", uk->disp_touch,
-                                       left_indent + (key_width + key_indent) * j,
-                                       top_indent + (key_height + key_indent) * i,
-                                       key_width, key_height,
-                                       key_num_show, NULL, (void *)(1 + key_num));
+                    ui_button_register("key_num", NULL,
+                               left_indent + (key_width + key_indent) * j,
+                               top_indent + (key_height + key_indent) * i,
+                               key_width, key_height,
+                               key_num_show, NULL, (void *)(1 + key_num), 0);
         }
 
     uk->keys_num[0] =
-            ui_button_register("key_0", uk->disp_touch,
+            ui_button_register("key_0", NULL,
                                  left_indent,
                                  top_indent + (key_height + key_indent) * 4,
                                  key_width, key_height,
-                                 key_num_show, NULL, (void *)0);
-
-    uk->key_point =
-            ui_button_register("key_point", uk->disp_touch,
-                                 left_indent + (key_width + key_indent) * 1,
-                                 top_indent + (key_height + key_indent) * 4,
-                                 key_width, key_height,
-                                 key_point_show, NULL, NULL);
+                                 key_num_show, NULL, NULL, 0);
+    if (!uk->is_integer) {
+        uk->key_point =
+                ui_button_register("key_point", NULL,
+                                     left_indent + (key_width + key_indent) * 1,
+                                     top_indent + (key_height + key_indent) * 4,
+                                     key_width, key_height,
+                                     key_point_show, NULL, NULL, 0);
+    }
 
     uk->key_ok =
-            ui_button_register("key_ok", uk->disp_touch,
+            ui_button_register("key_ok", NULL,
                                  left_indent + (key_width + key_indent) * 2,
                                  top_indent + (key_height + key_indent) * 4,
                                  key_width, key_height,
-                                 key_ok_show, NULL, NULL);
+                                 key_ok_show, NULL, NULL, 0);
 
 }
 
@@ -224,20 +220,19 @@ static void ui_keyboard_destructor(void *mem)
 {
     struct ui_keyboard *uk = (struct ui_keyboard *)mem;
     int i;
-    kmem_deref(&uk->disp_info);
-    kmem_deref(&uk->disp_touch);
 
     for (i = 0; i < ARRAY_SIZE(uk->keys_num); i++)
         kmem_deref(uk->keys_num + i);
     kmem_deref(&uk->key_minus);
     kmem_deref(&uk->key_cancel);
     kmem_deref(&uk->key_ok);
-    kmem_deref(&uk->key_point);
+    if (uk->key_point)
+        kmem_deref(&uk->key_point);
     kmem_deref(&uk->key_del);
 }
 
 int ui_keyboard_run(char *field_name, int *val,
-                    int min, int max, int step)
+                    int min, int max, int step, bool is_integer)
 {
     struct ui_keyboard *uk = ui_keyboard;
     struct machine *m = &machine;
@@ -246,11 +241,12 @@ int ui_keyboard_run(char *field_name, int *val,
     memset(input, 0, sizeof input);
 
     uk = kzref_alloc("ui_keyboard", sizeof *uk, ui_keyboard_destructor);
-    uk->disp_touch = kmem_ref(m->disp1);
-    uk->disp_info = kmem_ref(m->disp2);
+    uk->disp_touch = m->disp1;
+    uk->disp_info = m->disp2;
     uk->min = min;
     uk->max = max;
     uk->step = step;
+    uk->is_integer = is_integer;
     uk->max_len = 10;
 
     if (*val < min)
@@ -263,7 +259,10 @@ int ui_keyboard_run(char *field_name, int *val,
     {
         char *buf;
         draw_input_win(uk, field_name);
-        buf = kref_sprintf("%.3f", (float)*val / 1000);
+        if (is_integer)
+            buf = kref_sprintf("%d", *val);
+        else
+            buf = kref_sprintf("%.3f", (float)*val / 1000);
         draw_input_win_value(uk, buf, DARK_GREEN);
         kmem_deref(&buf);
     }
@@ -276,9 +275,9 @@ int ui_keyboard_run(char *field_name, int *val,
         yield();
         for (i = 0; i < ARRAY_SIZE(uk->keys_num); i++) {
             char str[3];
-            struct ui_button *db = uk->keys_num[i];
-            int key_num = (int)db->priv;
-            if (!is_ui_button_touched(db))
+            struct ui_item *ut = uk->keys_num[i];
+            int key_num = (int)ut->priv;
+            if (!is_ui_button_touched(ut))
                 continue;
 
             if (input_index >= uk->max_len)
@@ -292,7 +291,7 @@ int ui_keyboard_run(char *field_name, int *val,
             draw_input_win_value(uk, input, YELLOW);
         }
 
-        if (is_ui_button_touched(uk->key_point)) {
+        if (!uk->is_integer && is_ui_button_touched(uk->key_point)) {
             if (strchr(input, '.'))
                 continue;
 
@@ -327,15 +326,21 @@ int ui_keyboard_run(char *field_name, int *val,
         }
 
         if (is_ui_button_touched(uk->key_ok) && input_index) {
-            float f_val;
-            sscanf(input, "%f", &f_val);
-            *val = (int)(f_val * 1000);
+            if (uk->is_integer) {
+                sscanf(input, "%d", val);
+            } else {
+                float f_val;
+                sscanf(input, "%f", &f_val);
+                *val = (int)(f_val * 1000);
+            }
+
             if (*val < min)
                 *val = min;
             if (*val > max)
                 *val = max;
             if (*val % step)
                 *val = (*val / step) * step;
+            disp_clear(uk->disp_touch);
             kmem_deref(&uk);
             ui_message_hide();
             m->is_disp2_needs_redraw = TRUE;
@@ -344,6 +349,7 @@ int ui_keyboard_run(char *field_name, int *val,
         }
 
         if (is_ui_button_touched(uk->key_cancel)) {
+            disp_clear(uk->disp_touch);
             kmem_deref(&uk);
             ui_message_hide();
             m->is_disp2_needs_redraw = TRUE;

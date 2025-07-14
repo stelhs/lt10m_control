@@ -151,8 +151,11 @@ void touch_handler(struct touch_xpt2046 *dev)
         if (ta->dev != dev)
             continue;
         if (x >= ta->x1 && x <= ta->x2 &&
-                y >= ta->y1 && y <= ta->y2)
+                y >= ta->y1 && y <= ta->y2 &&
+                (!ta->is_lock)) {
             ta->is_touched = TRUE;
+            return;
+        }
     }
 }
 
@@ -192,8 +195,6 @@ touch_xpt2046_register(char *name, struct gpio *cs,
         dev->height = 320;
         break;
     }
-
-    timeout_start(&dev->t, 300);
 
     return dev;
 }

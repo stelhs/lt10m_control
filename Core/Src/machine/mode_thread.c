@@ -16,6 +16,7 @@
 #include "msg_rus.h"
 #include "periphery.h"
 #include "images.h"
+#include "thread_table.h"
 
 static int target_longitudal_freq(struct mode_thread *mt)
 {
@@ -44,7 +45,6 @@ static int thread_cut_run(struct mode_thread *mt, int distance, int freq)
 {
     struct machine *m = &machine;
     struct stepper_motor *sm = m->sm_longitudial_feed;
-//    int prev_freq = target_longitudal_freq(mt);
 
     stepper_motor_set_freq_changer_handler(m->sm_longitudial_feed,
                                             sm_longitudial_high_acceleration_changer);
@@ -137,10 +137,10 @@ static int triag_height(int side) {
 static bool calculate_thread(struct mode_thread *mt)
 {
     if ((mt->max_depth - mt->curr_depth) <= 300) {
-        mt->curr_depth += mt->cut_depth / 4;
+        mt->curr_depth += mt->cut_depth_step / 4;
     } else {
-        mt->cut_offset -= mt->cut_depth / 4;
-        mt->curr_depth += mt->cut_depth / 2;
+        mt->cut_offset -= mt->cut_depth_step / 4;
+        mt->curr_depth += mt->cut_depth_step / 2;
     }
 
     if (mt->curr_depth >= mt->max_depth)
@@ -156,35 +156,9 @@ static bool calculate_thread(struct mode_thread *mt)
     }
 
     return TRUE;
-/*
-    if (mt->cut_offset <= (mt->max_offset * -1)) {
-        if (mt->curr_depth >= (triag_height(mt->step_size)))
-            return FALSE;
-
-        mt->curr_depth += mt->cut_depth / 2;
-        if (mt->curr_depth >= triag_height(mt->step_size))
-            mt->curr_depth = triag_height(mt->step_size);
-        mt->cut_offset = 0;
-        mt->max_offset -= mt->cutter_triag_side / 4;
-        if (mt->max_offset < 0)
-            mt->max_offset = 0;
-        return TRUE;
-    }
-
-    if (mt->cut_offset > 0) {
-        mt->cut_offset *= -1;
-        return TRUE;
-    }
-
-    if (mt->cut_offset <= 0) {
-        mt->cut_offset *= -1;
-        mt->cut_offset += mt->cutter_triag_side / 2;
-        if (mt->cut_offset > mt->max_offset)
-            mt->cut_offset = mt->max_offset;
-        return TRUE;
-    }
-    return FALSE;*/
 }
+
+
 
 
 int mode_thread_run(void)
@@ -214,7 +188,7 @@ int mode_thread_run(void)
     else
         mt->cross_dir = MOVE_UP;
 
-    mt->cut_depth = mt_settings->cut_depth;
+    mt->cut_depth_step = mt_settings->cut_depth_step;
     mt->curr_depth = 0;
     mt->cut_offset = 0;
 
@@ -228,7 +202,6 @@ int mode_thread_run(void)
 
     mt->krpm_min = 5000;
     mt->krpm_max = (1000 / ((mt->step_size * 1000) / max_sm_feq)) * 60 * 1000;
-
 
     mt->start_longitudal_pos = abs_longitudal_curr_tool(m->ap);
     mt->end_longitudal_pos = calc_longitudal_position(mt->start_longitudal_pos,
@@ -244,7 +217,7 @@ int mode_thread_run(void)
     for (i = 0; calculate_thread(mt); i++);
     printf("Pass number: %d\r\n", i);
 
-    mt->cut_depth = mt_settings->cut_depth;
+    mt->cut_depth_step = mt_settings->cut_depth_step;
     mt->curr_depth = 0;
     mt->cut_offset = 0;
     mt->repeate_number = 0;
@@ -273,7 +246,7 @@ int mode_thread_run(void)
         }
     }
 
-    mt->curr_depth = mt->cut_depth;
+    mt->curr_depth = mt->cut_depth_step;
     if (mt->curr_depth >= mt->max_depth)
         mt->curr_depth = mt->max_depth;
 
@@ -370,4 +343,47 @@ int mode_thread_run(void)
     return 0;
 }
 
+/*
+static void ui_text(struct ui_item *ut)
+{
+    struct machine *m = &machine;
+    struct disp *disp = m->disp2;
 
+    struct text_style ts = {
+            .bg_color = BLACK,
+            .color = LIGHT_GRAY,
+            .font = font_rus,
+            .fontsize = 2,
+    };
+
+    int text_height = disp_text_height(ts);
+    int row_height = text_height + 2;
+    const int row_start = 120;
+
+    // draw text lines
+    disp_text(disp, msg_thread_calc_time, 0, row_start + row_height * 0, ts);
+    disp_text(disp, msg_thread_feed_number, 0, row_start + row_height * 1, ts);
+    disp_text(disp, msg_thread_spindle_max, 0, row_start + row_height * 1, ts);
+    disp_text(disp, msg_thread_cut_speed_max, 0, row_start + row_height * 1, ts);
+
+    disp_text(disp, msg_thread_m_standard, 0, row_start + row_height * 1, ts);
+    disp_text(disp, msg_thread_major_diameter, 0, row_start + row_height * 1, ts);
+    disp_text(disp, msg_thread_minor_diameter, 0, row_start + row_height * 1, ts);
+    disp_text(disp, msg_thread_steps, 0, row_start + row_height * 1, ts);
+
+}
+
+
+void display_thread_settings(void)
+{
+    struct machine *m = &machine;
+    struct mode_thread *mt = &m->mt;
+    struct mode_thread_settings *mt_settings = &mt->settings;
+    struct disp *disp = m->disp2;
+
+    mc->status_text = ui_item_register("ui_text", NULL, disp,
+                                       0, 90, 480, 230,
+                                       ui_text, NULL, mc, 0);
+
+}
+*/

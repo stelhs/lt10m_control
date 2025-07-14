@@ -5,8 +5,8 @@
  *      Author: stelhs
  */
 
-#ifndef SRC_MACHINE_STEPPER_MOTOR_H_
-#define SRC_MACHINE_STEPPER_MOTOR_H_
+#ifndef STEPPER_MOTOR_H_
+#define STEPPER_MOTOR_H_
 #include "tim.h"
 #include "stm32_lib/gpio.h"
 
@@ -93,4 +93,4 @@ feed_rate_to_freq(struct stepper_motor *sm, int spindle_speed, int feed_rate)
 }
 
 
-#endif /* SRC_MACHINE_STEPPER_MOTOR_H_ */
+#endif /* STEPPER_MOTOR_H_ */

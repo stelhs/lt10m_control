@@ -23,4 +23,13 @@ extern char *msg_cuting_miss;
 extern char *msg_prog_finished;
 extern char *msg_set_rpm;
 
+extern char *msg_thread_calc_time;
+extern char *msg_thread_feed_number;
+extern char *msg_thread_spindle_max;
+extern char *msg_thread_cut_speed_max;
+extern char *msg_thread_m_standard;
+extern char *msg_thread_major_diameter;
+extern char *msg_thread_minor_diameter;
+extern char *msg_thread_steps;
+
 #endif /* MSG_RUS_H_ */
