@@ -18,35 +18,36 @@
 static void move_buttons_move_to_handler(void)
 {
     struct machine *m = &machine;
+    struct ui_move_to *umt = m->ui_move_to;
     int pos;
     int move_step = ui_move_to_step();
 
     if (is_button_clicked(m->btn_up)) {
         pos = cross_up_new_position(move_step / 2);
-        ui_moveto_blink_up_arrow();
+        ui_item_blink(umt->up_arrow, 300);
         cross_move_to(pos, TRUE);
-        ui_moveto_blink_stop();
+        ui_item_blink_stop(umt->up_arrow);
     }
 
     if (is_button_clicked(m->btn_down)) {
         pos = cross_down_new_position(move_step / 2);
-        ui_moveto_blink_down_arrow();
+        ui_item_blink(umt->down_arrow, 300);
         cross_move_to(pos, TRUE);
-        ui_moveto_blink_stop();
+        ui_item_blink_stop(umt->down_arrow);
     }
 
     if (is_button_clicked(m->btn_left)) {
         pos = longitudal_left_new_position(move_step);
-        ui_moveto_blink_left_arrow();
+        ui_item_blink(umt->left_arrow, 300);
         longitudal_move_to(pos, TRUE, 0);
-        ui_moveto_blink_stop();
+        ui_item_blink_stop(umt->left_arrow);
     }
 
     if (is_button_clicked(m->btn_right)) {
         pos = longitudal_right_new_position(move_step);
-        ui_moveto_blink_right_arrow();
+        ui_item_blink(umt->right_arrow, 300);
         longitudal_move_to(pos, TRUE, 0);
-        ui_moveto_blink_stop();
+        ui_item_blink_stop(umt->right_arrow);
     }
 }
 
@@ -250,8 +251,6 @@ static void move_button_low_speed_handler(void)
 void mode_idle_run(void)
 {
     struct machine *m = &machine;
-    void *msg;
-    int position;
 
     if (is_switch_on(m->switch_high_speed))
         set_high_acceleration();
@@ -260,6 +259,8 @@ void mode_idle_run(void)
 
     for(;;) {
         yield();
+        if(m->is_busy)
+            continue;
 
         if (is_button_changed(m->switch_high_speed)) {
             if (is_switch_on(m->switch_high_speed))
@@ -278,25 +279,6 @@ void mode_idle_run(void)
         if (is_switch_on(m->switch_run)) {
             // TODO: stop all
             return;
-        }
-
-        switch (thread_recv_msg(&msg)) {
-        case MACHINE_MSG_MOVETO_CROSS:
-            position = (int)msg;
-            ui_moveto_blink_up_down_arrow();
-            cross_move_to(position, TRUE);
-            buttons_reset();
-            ui_moveto_blink_stop();
-            ui_move_to_unlock_moveto();
-            break;
-        case MACHINE_MSG_MOVETO_LONGITUDAL:
-            position = (int)msg;
-            ui_moveto_blink_left_right_arrow();
-            longitudal_move_to(position, TRUE, 0);
-            buttons_reset();
-            ui_moveto_blink_stop();
-            ui_move_to_unlock_moveto();
-            break;
         }
     }
 }

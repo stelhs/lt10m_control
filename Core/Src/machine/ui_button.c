@@ -7,6 +7,7 @@
 #include "ui_button.h"
 
 #include "stm32_lib/kref_alloc.h"
+#include "stm32_lib/buttons.h"
 #include "ui_item.h"
 #include "machine.h"
 
@@ -21,11 +22,62 @@ struct ui_button {
     void (*show)(struct ui_item *);
     char *name;
 };
+/*
+struct ui_scope_updater {
+    struct le le;
+    struct list ui_scope;
+    void (*update)(void *);
+    void *priv;
+};
 
-static void disp_button_destructor(void *mem)
+struct list ui_scope_updater_list = LIST_INIT;
+*/
+static struct ui_item *action_confirmation_ut = NULL;
+struct ui_button_confirmation_args {
+    void (*onclick)(struct ui_item *);
+};
+
+
+void ui_button_confirmation_handler(void)
+{
+    struct machine *m = &machine;
+    struct ui_button_confirmation_args *args;
+    if (!action_confirmation_ut)
+        return;
+
+    if (!is_button_clicked(m->btn_ok))
+        return;
+
+    args = (struct ui_button_confirmation_args *)action_confirmation_ut->data;
+    args->onclick(action_confirmation_ut->priv);
+    action_confirmation_ut = NULL;
+}
+
+static void onclick_action_confirmation(struct ui_item *ut)
+{
+    struct machine *m = &machine;
+    if (ut == action_confirmation_ut) {
+        ui_item_blink_stop(ut);
+        action_confirmation_ut = NULL;
+        return;
+    }
+
+    if (action_confirmation_ut)
+        ui_item_blink_stop(action_confirmation_ut);
+
+    button_reset(m->btn_ok);
+    action_confirmation_ut = ut;
+    ui_item_blink(ut, 300);
+}
+
+
+static void ui_button_destructor(void *mem)
 {
     struct ui_item *ut = (struct ui_item *)mem;
     struct ui_button *ub = (struct ui_button *)ut->data;
+    if (ut == action_confirmation_ut)
+        action_confirmation_ut = NULL;
+
     kmem_deref(&ub->ta);
     list_unlink(&ub->le);
 }
@@ -69,10 +121,28 @@ ui_button_register(char *name, struct list *ui_scope,
     ub->ut = ut;
     ub->show = show;
     ub->name = name;
-    ui_item_set_data_destructor(ut, disp_button_destructor);
+    ui_item_set_data_destructor(ut, ui_button_destructor);
     list_append(&disp_buttons_list, &ub->le, ub);
     if (!data_size)
         ui_item_show(ut);
+    return ut;
+}
+
+struct ui_item *
+ui_button_confirmation_register(char *name, struct list *ui_scope,
+                                int x, int y, int width, int height,
+                                void (*show)(struct ui_item *),
+                                void (*onclick)(struct ui_item *),
+                                void *priv)
+{
+    struct ui_item *ut;
+    struct ui_button_confirmation_args *args;
+    ut = ui_button_register(name, ui_scope,
+                            x, y, width, height, show,
+                            onclick_action_confirmation, priv, sizeof *args);
+    args = (struct ui_button_confirmation_args *)ut->data;
+    args->onclick = onclick;
+    ui_item_show(ut);
     return ut;
 }
 

@@ -164,10 +164,8 @@ static void ui_cut_speed_getter(struct ui_item *ut,
                                 char *str, size_t size)
 {
     struct machine *m = &machine;
-    int diameter = abs_cross_curr_tool(m->ap) * 2;
-    int circumference = (3141 * diameter) / 1000; // 3141 это Pi 3.141*1000
-    int rpm = spindle_speed() / 1000;
-    int val = (circumference * rpm) / 1000;
+    int val = cut_speed_calculate(abs_cross_curr_tool(m->ap) * 2,
+                                  spindle_speed() / 1000);
     snprintf(str, size, "%.1f", (float)val / 1000);
 }
 

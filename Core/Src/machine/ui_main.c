@@ -25,6 +25,7 @@
 #include "abs_position.h"
 #include "mode_thread.h"
 #include "thread_table.h"
+#include "msg_rus.h"
 
 
 static void ui_scope_init(struct ui_main *um);
@@ -49,6 +50,12 @@ char *interval_to_str(int time_sec)
     return kref_sprintf("%dh,%dm,%ds", hour, min, sec);
 }
 
+// mm per minute
+int cut_speed_calculate(int diameter, int rpm)
+{
+    int circumference = (3141 * diameter) / 1000; // 3141 это Pi 3.141*1000
+    return (circumference * rpm) / 1000;
+}
 
 static void key_prog_sel_show(struct ui_item *ut)
 {
@@ -308,9 +315,9 @@ static void onclick_key_thread_moveto(struct ui_item *ut)
     struct ui_main *um = (struct ui_main *)ut->priv;
     struct mode_thread *mt = um->mt;
     struct mode_thread_settings *mt_settings = &mt->settings;
+    UNUSED(mt_settings); // TODO
 
-    UNUSED(mt_settings);
-    // TODO
+    printf("onclick_key_thread_moveto\r\n");
 }
 
 
@@ -781,8 +788,123 @@ static void thread_standard_onchanged(void *priv)
     }
 }
 
+static void ui_thread_info(struct ui_item *ut)
+{
+    struct machine *m = &machine;
+    struct mode_thread *mt = &m->mt;
+    struct mode_thread_settings *mt_settings = &mt->settings;
+    struct disp *disp = m->disp2;
+    int cut_speed;
+    char str[40];
+
+    struct text_style ts = {
+            .bg_color = BLACK,
+            .color = LIGHT_GRAY,
+            .font = font_rus,
+            .fontsize = 2,
+    };
+
+    int text_height = disp_text_height(&ts);
+    int row_height = text_height + 2;
+    const int row_start = 120;
+    int row = 0;
+
+    char *calc_time_str = interval_to_str(mt->calc_time);
+    snprintf(str, sizeof str, msg_thread_calc_time, calc_time_str);
+    kmem_deref(&calc_time_str);
+    disp_text(disp, str, 0, row_start + row_height * row, &ts);
+    row ++;
+
+    snprintf(str, sizeof str, msg_thread_feed_number, mt->calc_passes);
+    disp_text(disp, str, 0, row_start + row_height * row, &ts);
+    row ++;
+
+    snprintf(str, sizeof str, msg_thread_spindle_max, mt->krpm_max);
+    disp_text(disp, str, 0, row_start + row_height * row, &ts);
+    row ++;
+
+    cut_speed = cut_speed_calculate(abs_cross_curr_tool(m->ap) * 2, mt->krpm_max);
+    snprintf(str, sizeof str, msg_thread_cut_speed_max, (float)cut_speed / 1000);
+    disp_text(disp, str, 0, row_start + row_height * row, &ts);
+    row ++;
+
+    if (mt_settings->tm) {
+        const struct thread_metric *tm = mt_settings->tm;
+        char name[32];
+        int diameter, diameter_max, diameter_min;
+        int depth, depth_max, depth_min;
+
+        if (mt_settings->is_internal) {
+            diameter_max = tm->internal_minor.max;
+            diameter_min = tm->internal_minor.min;
+            diameter = diameter_min + (diameter_max - diameter_min) / 2;
+
+            depth_max = (tm->internal_major.max - tm->internal_minor.max) / 2;
+            depth_min = (tm->internal_major.min - tm->internal_minor.min) / 2;
+            depth = depth_min + (depth_max - depth_min) / 2;
+        } else {
+            depth_max = (tm->bolt_major.max - tm->bolt_minor.max) / 2;
+            depth_min = (tm->bolt_major.min - tm->bolt_minor.min) / 2;
+            depth = depth_min + (depth_max - depth_min) / 2;
+
+            diameter_max = tm->bolt_major.max;
+            diameter_min = tm->bolt_major.min;
+            diameter = diameter_min + (diameter_max - diameter_min) / 2;
+        }
+
+        if (tm->is_default) {
+            snprintf(name, sizeof name, "М%d (%dx%.2f) d%.2f",
+                     tm->diameter, tm->diameter, (float)tm->step / 1000,
+                     (float)tm->drill_size / 1000);
+        } else {
+            snprintf(name, sizeof name, "М%dx%.2f d%.2f",
+                     tm->diameter, (float)tm->step / 1000,
+                     (float)tm->drill_size / 1000);
+        }
+
+        snprintf(str, sizeof str, msg_thread_m_standard, name);
+        disp_text(disp, str, 0, row_start + row_height * row, &ts);
+        row ++;
+
+        snprintf(str, sizeof str, msg_thread_diameter,
+                 (float)diameter / 1000, (float)diameter_min / 1000,
+                 (float)diameter_max / 1000);
+        disp_text(disp, str, 0, row_start + row_height * row, &ts);
+        row ++;
+
+        snprintf(str, sizeof str, msg_thread_max_depth,
+                 (float)depth / 1000, (float)depth_min / 1000,
+                 (float)depth_max / 1000);
+        disp_text(disp, str, 0, row_start + row_height * row, &ts);
+        row ++;
+    }
+
+    if (mt_settings->standart_diameter) {
+        char list_str[36];
+        u32 list[7];
+        int count;
+
+        count = standart_steps_list(mt_settings->standart_diameter, list);
+        if (count) {
+            int i;
+            int pos = 0;
+            for (i = 0; i < count; i++) {
+                u32 step = list[i];
+                pos += sprintf(list_str + pos, "%.2f,", (float)step / 1000);
+            }
+            list_str[pos - 1] = 0;
+            snprintf(str, sizeof str, msg_thread_steps, list_str);
+            disp_text(disp, str, 0, row_start + row_height * row, &ts);
+            row ++;
+        }
+    }
+
+}
+
+
 void show_thread(struct ui_main *um)
 {
+    struct machine *m = &machine;
     struct mode_thread *mt = um->mt;
     struct mode_thread_settings *mt_settings = &mt->settings;
 
@@ -836,17 +958,17 @@ void show_thread(struct ui_main *um)
     if (mt_settings->is_type_inch)
         ui_item_hide(um->thread_standard_m);
 
-    ui_input_register("input_step_size", um->ui_scope,
-                      "feed step:",
+    ui_input_register("input_cut_depth_step", um->ui_scope,
+                      "cut depth step:",
                       0, 90 + (55 + 15) * 2,
-                      &mt_settings->thread_size,
+                      &mt_settings->cut_depth_step,
                       10, 10 * 1000, 10, FALSE,
                       6, "%.3f", NULL, img_step);
 
-    ui_input_register("input_cut_depth", um->ui_scope,
-                      "cut depth:",
+    ui_input_register("input_max_cut_depth", um->ui_scope,
+                      "max cut depth:",
                       0, 90 + (55 + 15) * 3,
-                      &mt_settings->cut_depth_step,
+                      &mt_settings->max_cut_depth,
                       10, 10 * 1000, 10, FALSE,
                       6, "%.3f", NULL, img_thread_depth);
 
@@ -863,10 +985,9 @@ void show_thread(struct ui_main *um)
                        onclick_key_thread_set_point, um, 0);
 
     um->thread_moveto =
-            ui_button_register("key_thread_moveto", um->ui_scope,
-                               0, 90 + (55 + 15) * 5, 70, 55,
-                               key_thread_moveto_show,
-                               onclick_key_thread_moveto, um, 0);
+            ui_button_confirmation_register("key_thread_moveto", um->ui_scope,
+                    0, 90 + (55 + 15) * 5, 70, 55,
+                    key_thread_moveto_show, onclick_key_thread_moveto, um);
 
     ui_input_register("input_thread_number", um->ui_scope,
                       "thread number:",
@@ -874,6 +995,11 @@ void show_thread(struct ui_main *um)
                       &mt->moveto_thread_num,
                       -100, 100, 1, TRUE,
                       3, "%d", NULL, NULL);
+
+    um->thread_info =
+            ui_item_register("ui_thread_info", um->ui_scope, m->disp2,
+                             0, 120, 480, 200,
+                             ui_thread_info, NULL, NULL, 0);
 
 }
 
@@ -1006,7 +1132,7 @@ void ui_message_show(char *msg, enum msg_type mt)
     kmem_deref(&msg_buf);
 }
 
-static void disp_main_win_destructor(void *mem)
+static void ui_main_destructor(void *mem)
 {
     struct ui_main *um = (struct ui_main *)mem;
     kmem_deref(&um->ui_scope);
@@ -1017,7 +1143,7 @@ static void ui_main_thread(void *priv)
 {
     struct machine *m = &machine;
     struct ui_main *um;
-    um = kzref_alloc("ui_main", sizeof *um, disp_main_win_destructor);
+    um = kzref_alloc("ui_main", sizeof *um, ui_main_destructor);
     m->ui_main = um;
     um->disp = m->disp1;
     um->mc = &m->mc;

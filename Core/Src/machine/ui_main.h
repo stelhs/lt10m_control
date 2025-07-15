@@ -30,11 +30,13 @@ struct ui_main {
     struct ui_item *thread_arrow;
     struct ui_item *thread_repeate;
     struct ui_item *thread_type;
+    struct ui_item *thread_info;
 };
 
 void ui_main_start(void);
 void ui_message_show(char *msg, enum msg_type mt);
 void ui_message_hide(void);
 char *interval_to_str(int time_sec);
+int cut_speed_calculate(int diameter, int rpm);
 
 #endif /* UI_MAIN_H_ */

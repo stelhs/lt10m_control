@@ -16,26 +16,6 @@
 #include "ui_keyboard.h"
 #include "abs_position.h"
 
-#define BLINK_INTERVAL 300
-
-
-struct ui_move_to {
-    struct list *ui_scope;
-    struct ui_item *left_arrow;
-    struct ui_item *right_arrow;
-    struct ui_item *up_arrow;
-    struct ui_item *down_arrow;
-    struct ui_item *up_down_arrow;
-    struct ui_item *left_right_arrow;
-    struct ui_item *move_to_cross;
-    struct ui_item *move_to_longitudal;
-    struct disp *disp_info;
-    struct disp *disp_touch;
-    int move_to_cross_pos;
-    int move_to_longitudal_pos;
-    int move_step;
-};
-
 static void ui_scope_init(void);
 
 int ui_move_to_step(void)
@@ -151,23 +131,6 @@ void onclick_set_longitudal_pos(struct ui_item *ut)
     ui_scope_init();
 }
 
-void ui_move_to_lock_moveto(void)
-{
-    struct machine *m = &machine;
-    struct ui_move_to *umt = m->ui_move_to;
-    ui_item_hide(umt->move_to_cross);
-    ui_item_hide(umt->move_to_longitudal);
-}
-
-void ui_move_to_unlock_moveto(void)
-{
-    struct machine *m = &machine;
-    struct ui_move_to *umt = m->ui_move_to;
-    if (!umt)
-        return;
-    ui_item_show(umt->move_to_cross);
-    ui_item_show(umt->move_to_longitudal);
-}
 
 static void onclick_move_to_cross(struct ui_item *ut)
 {
@@ -176,10 +139,19 @@ static void onclick_move_to_cross(struct ui_item *ut)
 
     if (m->is_busy)
         return; // TODO
-    ui_move_to_lock_moveto();
-    thread_send_msg(m->machine_tid, MACHINE_MSG_MOVETO_CROSS,
-                    (void *)(umt->move_to_cross_pos / 2));
+
+    ui_item_hide(umt->move_to_cross);
+    ui_item_hide(umt->move_to_longitudal);
+
+    ui_item_blink(umt->up_down_arrow, 300);
+    cross_move_to(umt->move_to_cross_pos / 2, TRUE);
+    buttons_reset();
+    ui_item_blink_stop(umt->up_down_arrow);
+
+    ui_item_show(umt->move_to_cross);
+    ui_item_show(umt->move_to_longitudal);
 }
+
 
 static void onclick_move_to_longitudal(struct ui_item *ut)
 {
@@ -188,9 +160,17 @@ static void onclick_move_to_longitudal(struct ui_item *ut)
 
     if (m->is_busy)
         return; // TODO
-    ui_move_to_lock_moveto();
-    thread_send_msg(m->machine_tid, MACHINE_MSG_MOVETO_LONGITUDAL,
-                    (void *)umt->move_to_longitudal_pos);
+
+    ui_item_hide(umt->move_to_cross);
+    ui_item_hide(umt->move_to_longitudal);
+
+    ui_item_blink(umt->left_right_arrow, 300);
+    longitudal_move_to(umt->move_to_longitudal_pos, TRUE, 0);
+    buttons_reset();
+    ui_item_blink_stop(umt->left_right_arrow);
+
+    ui_item_show(umt->move_to_cross);
+    ui_item_show(umt->move_to_longitudal);
 }
 
 static void up_arrow_show(struct ui_item *ut)
@@ -265,16 +245,20 @@ static void ui_scope_init(void)
                          onclick_set_longitudal_pos, umt, 0);
 
     umt->move_to_cross =
-            ui_button_register("key_move_to_cross", umt->ui_scope,
-                               5, 260, 90, 90,
-                               key_move_to_show,
-                               onclick_move_to_cross, umt, 0);
+            ui_button_confirmation_register("key_move_to_cross",
+                                            umt->ui_scope,
+                                            5, 260, 90, 90,
+                                            key_move_to_show,
+                                            onclick_move_to_cross,
+                                            (void *)(umt->move_to_cross_pos));
 
     umt->move_to_longitudal =
-            ui_button_register("key_move_to_longitudal", umt->ui_scope,
-                               5, 370, 90, 90,
-                               key_move_to_show,
-                               onclick_move_to_longitudal, umt, 0);
+            ui_button_confirmation_register("key_move_to_longitudal",
+                                            umt->ui_scope,
+                                            5, 370, 90, 90,
+                                            key_move_to_show,
+                                            onclick_move_to_longitudal,
+                                            (void *)umt->move_to_longitudal_pos);
 
     umt->up_arrow =
             ui_item_register("ui_item_arrow_up", umt->ui_scope,
@@ -308,71 +292,6 @@ static void ui_scope_init(void)
                              left_right_arrow_show, NULL, NULL, 0);
 }
 
-void ui_moveto_blink_left_arrow(void)
-{
-    struct machine *m = &machine;
-    struct ui_move_to *umt = m->ui_move_to;
-    ui_item_blink(umt->left_arrow, BLINK_INTERVAL);
-}
-
-void ui_moveto_blink_right_arrow(void)
-{
-    struct machine *m = &machine;
-    struct ui_move_to *umt = m->ui_move_to;
-    ui_item_blink(umt->right_arrow, BLINK_INTERVAL);
-}
-
-void ui_moveto_blink_up_arrow(void)
-{
-    struct machine *m = &machine;
-    struct ui_move_to *umt = m->ui_move_to;
-    if(!umt)
-        return;
-    ui_item_blink(umt->up_arrow, BLINK_INTERVAL);
-}
-
-void ui_moveto_blink_down_arrow(void)
-{
-    struct machine *m = &machine;
-    struct ui_move_to *umt = m->ui_move_to;
-    if(!umt)
-        return;
-    ui_item_blink(umt->down_arrow, BLINK_INTERVAL);
-}
-
-void ui_moveto_blink_up_down_arrow(void)
-{
-    struct machine *m = &machine;
-    struct ui_move_to *umt = m->ui_move_to;
-    if(!umt)
-        return;
-    ui_item_blink(umt->up_down_arrow, BLINK_INTERVAL);
-}
-
-void ui_moveto_blink_left_right_arrow(void)
-{
-    struct machine *m = &machine;
-    struct ui_move_to *umt = m->ui_move_to;
-    if(!umt)
-        return;
-    ui_item_blink(umt->left_right_arrow, BLINK_INTERVAL);
-}
-
-void ui_moveto_blink_stop(void)
-{
-    struct machine *m = &machine;
-    struct ui_move_to *umt = m->ui_move_to;
-    if (!umt)
-        return;
-    ui_item_blink_stop(umt->up_arrow);
-    ui_item_blink_stop(umt->down_arrow);
-    ui_item_blink_stop(umt->left_arrow);
-    ui_item_blink_stop(umt->right_arrow);
-    ui_item_blink_stop(umt->up_down_arrow);
-    ui_item_blink_stop(umt->left_right_arrow);
-}
-
-
 static void ui_move_to_destructor(void *mem)
 {
     struct ui_move_to *umt = (struct ui_move_to *)mem;
@@ -396,8 +315,6 @@ void ui_move_to_run(void)
 
     while (1) {
         yield();
-        if(m->is_busy)
-            continue;
 
         ui_button_handler();
         if (!is_switch_on(m->switch_move_to)) {

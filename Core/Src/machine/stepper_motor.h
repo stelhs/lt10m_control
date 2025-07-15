@@ -80,15 +80,21 @@ static inline void stepper_motor_timer_isr(struct stepper_motor *sm)
         sm->freq_changer_handler(sm, FALSE);
 }
 
-static inline int speed_to_freq(struct stepper_motor *sm, int speed)
+static inline int freq_by_speed(struct stepper_motor *sm, int speed)
 {
     return (speed * sm->ref_freq) / sm->ref_speed;
 }
 
+static inline int speed_by_freq(struct stepper_motor *sm, int freq)
+{
+    return (freq * sm->ref_speed) / sm->ref_freq;
+}
+
+
 static inline int
 feed_rate_to_freq(struct stepper_motor *sm, int spindle_speed, int feed_rate)
 {
-    int val = speed_to_freq(sm,((spindle_speed / 1000) * feed_rate) / 60);
+    int val = freq_by_speed(sm,((spindle_speed / 1000) * feed_rate) / 60);
     return val;
 }
 

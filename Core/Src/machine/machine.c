@@ -10,6 +10,7 @@
 #include "touch_xpt2046.h"
 #include "periphery.h"
 #include "ui_main.h"
+#include "ui_button.h"
 #include "ui_move_to.h"
 #include "msg_rus.h"
 #include "mode_idle.h"
@@ -458,6 +459,7 @@ static void monitoring_thread(void *priv)
     struct machine *m = &machine;
     struct mode_cut *mc = &m->mc;
     struct mode_cut_settings *mc_settings = &mc->settings;
+
     for(;;) {
         int val;
         yield();
@@ -481,6 +483,8 @@ static void monitoring_thread(void *priv)
             if (mc_settings->feed_rate > 10000)
                 mc_settings->feed_rate = 10000;
         }
+
+        ui_button_confirmation_handler();
     }
 }
 
@@ -543,12 +547,6 @@ static void main_thread(void *priv)
 
     for(;;) {
         yield();
-
-        /*            u32 val = __HAL_TIM_GET_COUNTER(&htim12);
-                    if (prev_val != val) {
-                        printf("enc: %lu\r\n", val * 5);
-                    }
-                    prev_val = val;*/
 
         if (is_switch_on(m->switch_run))
             program_run();

@@ -8,6 +8,23 @@
 #ifndef UI_MOVE_TO_H_
 #define UI_MOVE_TO_H_
 
+struct ui_move_to {
+    struct list *ui_scope;
+    struct ui_item *left_arrow;
+    struct ui_item *right_arrow;
+    struct ui_item *up_arrow;
+    struct ui_item *down_arrow;
+    struct ui_item *up_down_arrow;
+    struct ui_item *left_right_arrow;
+    struct ui_item *move_to_cross;
+    struct ui_item *move_to_longitudal;
+    struct disp *disp_info;
+    struct disp *disp_touch;
+    int move_to_cross_pos;
+    int move_to_longitudal_pos;
+    int move_step;
+};
+
 void ui_move_to_run(void);
 
 int ui_move_to_step(void);

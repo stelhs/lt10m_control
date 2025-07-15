@@ -12,6 +12,7 @@ struct mode_thread_settings {
     int thread_offset;
     int thread_size;
     int cut_depth_step;
+    int max_cut_depth;
     bool is_internal;
     int length;
     bool is_type_inch;
@@ -40,8 +41,11 @@ struct mode_thread {
     int end_cross_pos;
     int repeate_number;
     int moveto_thread_num;
+    int calc_time;
+    int calc_passes;
 };
 
 int mode_thread_run(void);
+int standart_steps_list(int diameter, u32 *list);
 
 #endif /* MODE_THREAD_H_ */

@@ -22,12 +22,12 @@ char *msg_set_rpm = "Установите обороты\n"
                     "шпинделя в интервале\n"
                     "от %.1f до %.1f";
 
-char *msg_thread_calc_time = "Расчётное время:";
-char *msg_thread_feed_number = "Количество проходов:";
-char *msg_thread_spindle_max = "Максимальная скорость шпинделя:";
-char *msg_thread_cut_speed_max = "Максимальная скорость резания:";
-char *msg_thread_m_standard = "Стандарт:";
-char *msg_thread_major_diameter = "Диаметер больш.:";
-char *msg_thread_minor_diameter = "Диаметер меньш.:";
-char *msg_thread_steps = "Шаги:";
+char *msg_thread_calc_time = "Расчётное время: %s";
+char *msg_thread_feed_number = "Количество проходов: %d";
+char *msg_thread_spindle_max = "Максимальная скорость шпинделя: %d";
+char *msg_thread_cut_speed_max = "Максимальная скорость резания: %.2f";
+char *msg_thread_m_standard = "Стандарт: %s";
+char *msg_thread_diameter = "Диаметер: %.3f (%.3f-%.3f)";
+char *msg_thread_max_depth = "Глубина: %.3f (%.3f-%.3f)";
+char *msg_thread_steps = "Шаги: %s";
 
