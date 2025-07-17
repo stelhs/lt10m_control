@@ -16,7 +16,7 @@
 
 
 struct ui_set_xy {
-    struct list *ui_scope;
+    struct ui_scope *ui_scope;
     struct ui_item *key_esc;
     struct disp *disp_info;
     struct disp *disp_touch;
@@ -32,34 +32,37 @@ static struct ui_set_xy *ui_set_xy = NULL;
 
 static void ui_scope_init(void);
 
-void onclick_tool_num(struct ui_item *ut)
+static int onclick_tool_num(struct ui_item *ut)
 {
     int tool_num = (int)ut->priv;
     struct ui_set_xy *usx = ui_set_xy;
     if (usx->tool_num == tool_num)
-        return;
+        return FALSE;
     kmem_deref(&usx->ui_scope);
     usx->tool_num = tool_num;
     ui_scope_init();
+    return TRUE;
 }
 
-void onclick_up_down(struct ui_item *ut)
+static int onclick_up_down(struct ui_item *ut)
 {
     struct ui_set_xy *usx = (struct ui_set_xy *)ut->priv;
     kmem_deref(&usx->ui_scope);
     usx->is_cross_inc_down = !usx->is_cross_inc_down;
     ui_scope_init();
+    return TRUE;
 }
 
-void onclick_left_right(struct ui_item *ut)
+static int onclick_left_right(struct ui_item *ut)
 {
     struct ui_set_xy *usx = (struct ui_set_xy *)ut->priv;
     kmem_deref(&usx->ui_scope);
     usx->is_longitudal_inc_left = !usx->is_longitudal_inc_left;
     ui_scope_init();
+    return TRUE;
 }
 
-void onclick_cross_pos(struct ui_item *ut)
+static int onclick_cross_pos(struct ui_item *ut)
 {
     struct ui_set_xy *usx = (struct ui_set_xy *)ut->priv;
     int pos = usx->cross_pos[usx->tool_num];
@@ -70,9 +73,10 @@ void onclick_cross_pos(struct ui_item *ut)
         usx->cross_pos[usx->tool_num] = pos / 2;
     }
     usx->is_finished = TRUE;
+    return TRUE;
 }
 
-void onclick_longitudal_pos(struct ui_item *ut)
+static int onclick_longitudal_pos(struct ui_item *ut)
 {
     struct ui_set_xy *usx = (struct ui_set_xy *)ut->priv;
     int pos = usx->longitudal_pos[usx->tool_num];
@@ -83,22 +87,25 @@ void onclick_longitudal_pos(struct ui_item *ut)
         usx->longitudal_pos[usx->tool_num] = pos;
     }
     usx->is_finished = TRUE;
+    return TRUE;
 }
 
-void onclick_reset_cross(struct ui_item *ut)
+static int onclick_reset_cross(struct ui_item *ut)
 {
     struct ui_set_xy *usx = (struct ui_set_xy *)ut->priv;
     kmem_deref(&usx->ui_scope);
     usx->cross_pos[usx->tool_num] = 0;
     usx->is_finished = TRUE;
+    return TRUE;
 }
 
-void onclick_reset_longitudal(struct ui_item *ut)
+static int onclick_reset_longitudal(struct ui_item *ut)
 {
     struct ui_set_xy *usx = (struct ui_set_xy *)ut->priv;
     kmem_deref(&usx->ui_scope);
     usx->longitudal_pos[usx->tool_num] = 0;
     usx->is_finished = TRUE;
+    return TRUE;
 }
 
 
@@ -235,7 +242,7 @@ static void ui_scope_init(void)
     struct ui_set_xy *usx = ui_set_xy;
     int i;
 
-    usx->ui_scope = list_create("ui_set_xy_scope");
+    usx->ui_scope = ui_scope_create("ui_set_xy_scope");
 
     disp_clear(usx->disp_touch);
 

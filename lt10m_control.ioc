@@ -1,7 +1,7 @@
 #MicroXplorer Configuration settings - do not modify
 ADC1.Channel-3\#ChannelRegularConversion=ADC_CHANNEL_2
 ADC1.ClockPrescaler=ADC_CLOCK_SYNC_PCLK_DIV8
-ADC1.ContinuousConvMode=ENABLE
+ADC1.ContinuousConvMode=DISABLE
 ADC1.EOCSelection=ADC_EOC_SEQ_CONV
 ADC1.IPParameters=Rank-3\#ChannelRegularConversion,master,Channel-3\#ChannelRegularConversion,SamplingTime-3\#ChannelRegularConversion,NbrOfConversionFlag,ContinuousConvMode,ClockPrescaler,NbrOfConversion,EOCSelection
 ADC1.NbrOfConversion=1
@@ -115,7 +115,6 @@ Mcu.UserConstants=
 Mcu.UserName=STM32F407VETx
 MxCube.Version=6.9.2
 MxDb.Version=DB.6.0.92
-NVIC.ADC_IRQn=true\:5\:0\:false\:false\:true\:true\:true\:true\:true
 NVIC.BusFault_IRQn=true\:0\:0\:false\:false\:true\:false\:false\:false\:false
 NVIC.DMA2_Stream3_IRQn=true\:5\:0\:false\:false\:true\:true\:false\:true\:true
 NVIC.DebugMonitor_IRQn=true\:0\:0\:false\:false\:true\:false\:false\:false\:false
@@ -483,7 +482,7 @@ TIM5.EncoderMode=TIM_ENCODERMODE_TI12
 TIM5.IC1Filter=15
 TIM5.IC1Polarity=TIM_ICPOLARITY_FALLING
 TIM5.IC2Filter=15
-TIM5.IC2Polarity=TIM_ICPOLARITY_FALLING
+TIM5.IC2Polarity=TIM_ICPOLARITY_RISING
 TIM5.IPParameters=Period,TIM_MasterSlaveMode,TIM_MasterOutputTrigger,IC1Polarity,IC2Polarity,ClockDivision,EncoderMode,IC2Filter,IC1Filter
 TIM5.Period=5000
 TIM5.TIM_MasterOutputTrigger=TIM_TRGO_ENABLE

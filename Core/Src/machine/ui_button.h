@@ -13,14 +13,14 @@
 #include "ui_item.h"
 
 struct ui_item *
-ui_button_register(char *name, struct list *ui_scope,
+ui_button_register(char *name, struct ui_scope *ui_scope,
                    int x, int y, int width, int height,
                    void (*show)(struct ui_item *),
-                   void (*on_click)(struct ui_item *), void *priv,
+                   int (*on_click)(struct ui_item *), void *priv,
                    size_t data_size);
 
 struct ui_item *
-ui_button_confirmation_register(char *name, struct list *ui_scope,
+ui_button_confirmation_register(char *name, struct ui_scope *ui_scope,
                                 int x, int y, int width, int height,
                                 void (*show)(struct ui_item *),
                                 void (*onclick)(struct ui_item *),
@@ -29,6 +29,10 @@ ui_button_confirmation_register(char *name, struct list *ui_scope,
 bool is_ui_button_touched(struct ui_item *);
 void ui_button_handler(void);
 void *ui_button_data(struct ui_item *ut);
-void ui_button_confirmation_handler(void);
+void ui_button_lock(struct ui_item *ut);
+void ui_button_unlock(struct ui_item *ut);
+void ui_buttons_lock(struct ui_scope *ui_scope);
+void ui_buttons_unlock(struct ui_scope *ui_scope);
+
 
 #endif /* UI_BUTTON_H_ */

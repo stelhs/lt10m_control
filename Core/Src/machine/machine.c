@@ -31,8 +31,8 @@ void halt(char *reason)
 void panic(char *cause)
 {
     struct machine *m = &machine;
-    stepper_motor_stop(m->sm_cross_feed);
-    stepper_motor_stop(m->sm_longitudial_feed);
+    stepper_motor_stop(m->sm_cross);
+    stepper_motor_stop(m->sm_longitudial);
     printlog("PANIC: %s\r\n", cause);
     for (;;) {
         printlog("PANIC: %s\r\n", cause);
@@ -56,7 +56,7 @@ void key_d(void *priv)
     printf("key_d\r\n");
 
     printf("run 1 turn cross\r\n");
-    stepper_motor_run(m->sm_cross_feed, 0, 10000, MOVE_UP, 75000);
+    stepper_motor_run(m->sm_cross, 0, 10000, MOVE_UP, 75000);
 }
 
 void key_f(void *priv)
@@ -72,7 +72,7 @@ void key_f(void *priv)
     __HAL_TIM_SET_AUTORELOAD(f&htim5, 1000);
     HAL_TIM_Base_Start_IT(&htim5);*/
 
-    stepper_motor_run(m->sm_cross_feed, 18, 10000, MOVE_DOWN, 75000);
+    stepper_motor_run(m->sm_cross, 18, 10000, MOVE_DOWN, 75000);
 }
 
 void key_g(void *priv)
@@ -80,8 +80,8 @@ void key_g(void *priv)
     struct machine *m = (struct machine *)priv;
     printf("key_g\r\n");
     printf("stop");
-    stepper_motor_stop(m->sm_cross_feed);
-    stepper_motor_stop(m->sm_longitudial_feed);
+    stepper_motor_stop(m->sm_cross);
+    stepper_motor_stop(m->sm_longitudial);
 }
 
 void key_j(void *priv)
@@ -89,17 +89,15 @@ void key_j(void *priv)
     struct machine *m = (struct machine *)priv;
     printf("key_j\r\n");
 
-//    m->ap->raw.cross ++;
-    m->ap->raw.longitudal ++;
-//    printf("m->ap->raw.longitudal = %lu\r\n", m->ap->raw.longitudal);
+    stepper_motor_run(m->sm_cross, 18, 18, MOVE_UP, 1);
 }
 
 void key_k(void *priv)
 {
     struct machine *m = (struct machine *)priv;
-    printf("key_j\r\n");
-    m->ap->raw.cross ++;
-  //  m->ap->raw.longitudal --;
+    printf("key_kj\r\n");
+
+    stepper_motor_run(m->sm_cross, 18, 18, MOVE_DOWN, 1);
 }
 
 void key_l(void *priv)
@@ -115,10 +113,18 @@ void key_l(void *priv)
 
 }
 
+// mm per minute
+int cut_speed_calculate(int diameter, int rpm)
+{
+    int circumference = (3141 * diameter) / 1000; // 3141 это Pi 3.141*1000
+    return (circumference * rpm) / 1000;
+}
+
+
 int calc_cross_to_target(int curr_pos, int target_pos, bool *dir)
 {
     struct machine *m = &machine;
-    struct stepper_motor *sm = m->sm_cross_feed;
+    struct stepper_motor *sm = m->sm_cross;
 
     int offset;
     int distance;
@@ -174,7 +180,7 @@ int calc_longitudal_position(int position, int distance, bool dir)
 int calc_longitudal_to_target(int curr_pos, int target_pos, bool *dir)
 {
     struct machine *m = &machine;
-    struct stepper_motor *sm = m->sm_longitudial_feed;
+    struct stepper_motor *sm = m->sm_longitudial;
 
     int offset;
     int distance;
@@ -199,10 +205,11 @@ int calc_longitudal_to_target(int curr_pos, int target_pos, bool *dir)
 
 
 
-int cross_move_to(int target_pos, bool is_accurate)
+int cross_move_to(int target_pos, bool is_accurate,
+                  void (*periodic_cb)(void *), void *priv)
 {
     struct machine *m = &machine;
-    struct stepper_motor *sm = m->sm_cross_feed;
+    struct stepper_motor *sm = m->sm_cross;
     int curr_pos;
 
     int distance;
@@ -220,6 +227,9 @@ int cross_move_to(int target_pos, bool is_accurate)
         stepper_motor_run(sm, 0, 0, dir, distance);
         while (is_stepper_motor_run(sm)) {
             yield();
+            if (periodic_cb)
+                periodic_cb(priv);
+
             if (is_button_clicked(m->btn_enc)) {
                 stepper_motor_stop(sm);
                 m->is_busy = FALSE;
@@ -236,14 +246,17 @@ int cross_move_to(int target_pos, bool is_accurate)
     return -1;
 }
 
-int longitudal_move_to(int target_pos, bool is_accurate, int max_freq)
+int longitudal_move_to(int target_pos, bool is_accurate, int max_freq,
+                       void (*periodic_cb)(void *), void *priv)
 {
     struct machine *m = &machine;
-    struct stepper_motor *sm = m->sm_longitudial_feed;
+    struct stepper_motor *sm = m->sm_longitudial;
 
     int distance;
     bool dir;
-    int freq = max_freq ? max_freq : sm->max_freq;
+    if (!max_freq)
+        max_freq = sm->max_freq;
+    int freq = max_freq;
     int attempts = 0;
     m->is_busy = TRUE;
 
@@ -265,14 +278,24 @@ int longitudal_move_to(int target_pos, bool is_accurate, int max_freq)
         if (attempts == 4)
             freq /= 2;
 
-        if (attempts >= 5) {
+        if (attempts == 5)
+            freq /= 2;
+
+        if (attempts >= 6) {
             attempts = 0;
             freq = max_freq;
         }
+        attempts ++;
+
+        if (freq < sm->min_freq)
+            freq = sm->min_freq;
 
         stepper_motor_run(sm, 500, freq, dir, distance);
         while (is_stepper_motor_run(sm)) {
             yield();
+            if (periodic_cb)
+                periodic_cb(priv);
+
             if (is_button_clicked(m->btn_enc)) {
                 stepper_motor_stop(sm);
                 m->is_busy = FALSE;
@@ -284,7 +307,6 @@ int longitudal_move_to(int target_pos, bool is_accurate, int max_freq)
             return 0;
         }
         sleep(300);
-        attempts ++;
     }
     m->is_busy = FALSE;
     return -1;
@@ -297,13 +319,15 @@ void sm_normal_acceleration_changer(struct stepper_motor *sm, bool is_init)
 {
     int freq = sm->freq;
     int pos;
+    static int cnt = 0;
 
     if (is_init) {
+        cnt = 0;
         // Length of acceleration section
-        sm->start_acceleration = 10;
+        sm->start_acceleration = 1;
         u32 accel_distance = (((sm->target_freq - sm->start_freq) *
                                (sm->target_freq - sm->start_freq))) /
-                                      (sm->start_acceleration * 1000);
+                                      (sm->start_acceleration * 50 * 1000);
         sm->acceleration = sm->start_acceleration;
 
         if (accel_distance > sm->distance_um / 2)
@@ -316,6 +340,14 @@ void sm_normal_acceleration_changer(struct stepper_motor *sm, bool is_init)
 
     pos = stepper_motor_pos(sm);
 
+    if (cnt == 500) {
+        if (pos < sm->start_braking_point) {
+            sm->start_acceleration = 10;
+            sm->acceleration = 10;
+        }
+    }
+    cnt++;
+
     if (pos >= sm->start_braking_point) { // braking
         sm->accel_prescaller_cnt++;
         if (sm->accel_prescaller_cnt >= 1) {
@@ -324,12 +356,12 @@ void sm_normal_acceleration_changer(struct stepper_motor *sm, bool is_init)
                 sm->acceleration = ((freq * freq) /
                                         (sm->distance_um - pos)) / 1000;
             else
-                sm->acceleration = sm->start_acceleration;
-            if (sm->acceleration > sm->start_acceleration)
-                sm->acceleration = sm->start_acceleration;
+                sm->acceleration = sm->start_acceleration * 5;
+            if (sm->acceleration > sm->start_acceleration * 5)
+                sm->acceleration = sm->start_acceleration * 5;
         }
 
-        freq -= sm->acceleration;
+        freq -= sm->acceleration * 5;
         if (freq <= sm->start_freq)
             freq = sm->start_freq;
         if (freq != sm->freq) {
@@ -356,6 +388,9 @@ void sm_normal_acceleration_changer(struct stepper_motor *sm, bool is_init)
         }
     }
 
+    if (freq > sm->target_freq)
+        freq = sm->target_freq;
+
     if (freq != sm->freq)
         stepper_motor_set_freq(sm, freq);
 }
@@ -364,11 +399,11 @@ void sm_normal_acceleration_changer(struct stepper_motor *sm, bool is_init)
 void set_normal_acceleration(void)
 {
     struct machine *m = &machine;
-    stepper_motor_enable(m->sm_cross_feed);
-    stepper_motor_enable(m->sm_longitudial_feed);
-    stepper_motor_set_freq_changer_handler(m->sm_cross_feed,
+    stepper_motor_enable(m->sm_cross);
+    stepper_motor_enable(m->sm_longitudial);
+    stepper_motor_set_freq_changer_handler(m->sm_cross,
                                       sm_normal_acceleration_changer);
-    stepper_motor_set_freq_changer_handler(m->sm_longitudial_feed,
+    stepper_motor_set_freq_changer_handler(m->sm_longitudial,
                                       sm_normal_acceleration_changer);
 }
 
@@ -463,8 +498,7 @@ static void monitoring_thread(void *priv)
     for(;;) {
         int val;
         yield();
-        if (!m->is_busy)
-            touch_handler(m->disp1->touch); // TODO
+        touch_handler(m->disp1->touch);
         abs_position_update(m->ap);
         display_status_handler();
 
@@ -484,7 +518,7 @@ static void monitoring_thread(void *priv)
                 mc_settings->feed_rate = 10000;
         }
 
-        ui_button_confirmation_handler();
+        potentiometer_handler(m->pm_move_speed);
     }
 }
 
@@ -548,10 +582,13 @@ static void main_thread(void *priv)
     for(;;) {
         yield();
 
-        if (is_switch_on(m->switch_run))
+        if (is_switch_on(m->switch_run)) {
+            ui_main_lock();
             program_run();
-        else
+        } else {
+            ui_main_unlock();
             mode_idle_run();
+        }
     }
 }
 

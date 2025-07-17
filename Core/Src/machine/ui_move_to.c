@@ -21,7 +21,7 @@ static void ui_scope_init(void);
 int ui_move_to_step(void)
 {
     struct machine *m = &machine;
-    struct ui_move_to *umt = m->ui_move_to;
+    struct ui_move_to *umt = &m->ui_move_to;
     return umt->move_step;
 }
 
@@ -35,12 +35,13 @@ static void key_set_xy_show(struct ui_item *ut)
     kmem_deref(&img);
 }
 
-static void onclick_set_xy(struct ui_item *ut)
+static int onclick_set_xy(struct ui_item *ut)
 {
     struct ui_move_to *umt = (struct ui_move_to *)ut->priv;
     kmem_deref(&umt->ui_scope);
     ui_set_xy_run();
     ui_scope_init();
+    return TRUE;
 }
 
 static void key_set_step_show(struct ui_item *ut)
@@ -91,20 +92,21 @@ static void key_move_to_show(struct ui_item *ut)
 
 
 
-void onclick_set_step(struct ui_item *ut)
+static int onclick_set_step(struct ui_item *ut)
 {
     struct ui_move_to *umt = (struct ui_move_to *)ut->priv;
     int pos = umt->move_step;
 
     kmem_deref(&umt->ui_scope);
     if (!ui_keyboard_run("move step: ", &pos,
-                         5, 1000 * 1000, 5, FALSE)) {
+                         4, 1000 * 1000, 4, FALSE)) {
         umt->move_step = pos;
     }
     ui_scope_init();
+    return TRUE;
 }
 
-void onclick_set_cross_pos(struct ui_item *ut)
+static int onclick_set_cross_pos(struct ui_item *ut)
 {
     struct ui_move_to *umt = (struct ui_move_to *)ut->priv;
     int pos = umt->move_to_cross_pos;
@@ -115,9 +117,10 @@ void onclick_set_cross_pos(struct ui_item *ut)
         umt->move_to_cross_pos = pos;
     }
     ui_scope_init();
+    return TRUE;
 }
 
-void onclick_set_longitudal_pos(struct ui_item *ut)
+static int onclick_set_longitudal_pos(struct ui_item *ut)
 {
     struct ui_move_to *umt = (struct ui_move_to *)ut->priv;
     int pos = umt->move_to_longitudal_pos;
@@ -129,6 +132,7 @@ void onclick_set_longitudal_pos(struct ui_item *ut)
         umt->move_to_longitudal_pos = pos;
     }
     ui_scope_init();
+    return TRUE;
 }
 
 
@@ -144,7 +148,7 @@ static void onclick_move_to_cross(struct ui_item *ut)
     ui_item_hide(umt->move_to_longitudal);
 
     ui_item_blink(umt->up_down_arrow, 300);
-    cross_move_to(umt->move_to_cross_pos / 2, TRUE);
+    cross_move_to(umt->move_to_cross_pos / 2, TRUE, NULL, NULL);
     buttons_reset();
     ui_item_blink_stop(umt->up_down_arrow);
 
@@ -165,7 +169,7 @@ static void onclick_move_to_longitudal(struct ui_item *ut)
     ui_item_hide(umt->move_to_longitudal);
 
     ui_item_blink(umt->left_right_arrow, 300);
-    longitudal_move_to(umt->move_to_longitudal_pos, TRUE, 0);
+    longitudal_move_to(umt->move_to_longitudal_pos, TRUE, 0, NULL, NULL);
     buttons_reset();
     ui_item_blink_stop(umt->left_right_arrow);
 
@@ -218,9 +222,9 @@ static void left_right_arrow_show(struct ui_item *ut)
 static void ui_scope_init(void)
 {
     struct machine *m = &machine;
-    struct ui_move_to *umt = m->ui_move_to;
+    struct ui_move_to *umt = &m->ui_move_to;
 
-    umt->ui_scope = list_create("ui_scope_moveto");
+    umt->ui_scope = ui_scope_create("ui_scope_moveto");
 
     disp_clear(umt->disp_touch);
 
@@ -249,16 +253,14 @@ static void ui_scope_init(void)
                                             umt->ui_scope,
                                             5, 260, 90, 90,
                                             key_move_to_show,
-                                            onclick_move_to_cross,
-                                            (void *)(umt->move_to_cross_pos));
+                                            onclick_move_to_cross, umt);
 
     umt->move_to_longitudal =
             ui_button_confirmation_register("key_move_to_longitudal",
                                             umt->ui_scope,
                                             5, 370, 90, 90,
                                             key_move_to_show,
-                                            onclick_move_to_longitudal,
-                                            (void *)umt->move_to_longitudal_pos);
+                                            onclick_move_to_longitudal, umt);
 
     umt->up_arrow =
             ui_item_register("ui_item_arrow_up", umt->ui_scope,
@@ -292,24 +294,13 @@ static void ui_scope_init(void)
                              left_right_arrow_show, NULL, NULL, 0);
 }
 
-static void ui_move_to_destructor(void *mem)
-{
-    struct ui_move_to *umt = (struct ui_move_to *)mem;
-    if (umt->ui_scope)
-        kmem_deref(&umt->ui_scope);
-}
-
-
 void ui_move_to_run(void)
 {
     struct machine *m = &machine;
-    struct ui_move_to *umt;
+    struct ui_move_to *umt = &m->ui_move_to;
 
-    umt = kzref_alloc("ui_move_to", sizeof *umt, ui_move_to_destructor);
     umt->disp_touch = m->disp1;
     umt->disp_info = m->disp2;
-    umt->move_step = 10;
-    m->ui_move_to = umt;
 
     ui_scope_init();
 
@@ -318,12 +309,12 @@ void ui_move_to_run(void)
 
         ui_button_handler();
         if (!is_switch_on(m->switch_move_to)) {
-            kmem_deref(&m->ui_move_to);
+            kmem_deref(&umt->ui_scope);
             return;
         }
 
         if (is_switch_on(m->switch_run)) {
-            kmem_deref(&m->ui_move_to);
+            kmem_deref(&umt->ui_scope);
             return;
         }
     }

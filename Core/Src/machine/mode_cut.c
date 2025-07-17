@@ -19,21 +19,21 @@
 #include "images.h"
 
 
-struct text_style normal_text_style = {
+static struct text_style normal_text_style = {
         .bg_color = BLACK,
         .color = LIGHT_GRAY,
         .font = font_rus,
         .fontsize = 2,
 };
 
-struct text_style cross_text_style = {
+static struct text_style cross_text_style = {
         .bg_color = BLACK,
         .color = GREEN,
         .font = font_rus,
         .fontsize = 2,
 };
 
-struct text_style longitudal_text_style = {
+static struct text_style longitudal_text_style = {
         .bg_color = BLACK,
         .color = BLUE,
         .font = font_rus,
@@ -74,7 +74,7 @@ static void ui_relative_cross_getter(struct ui_item *ut, char *str, size_t size)
 {
     struct machine *m = &machine;
     struct mode_cut *mc = (struct mode_cut *)ut->priv;
-    struct stepper_motor *sm = m->sm_cross_feed;
+    struct stepper_motor *sm = m->sm_cross;
     int pos = stepper_motor_pos(sm);
     int percent;
 
@@ -127,7 +127,7 @@ static void ui_relative_longitudal_getter(struct ui_item *ut,
 {
     struct machine *m = &machine;
     struct mode_cut *mc = (struct mode_cut *)ut->priv;
-    struct stepper_motor *sm = m->sm_longitudial_feed;
+    struct stepper_motor *sm = m->sm_longitudial;
     int pos = stepper_motor_pos(sm);
     int percent;
 
@@ -196,114 +196,129 @@ static void ui_text(struct ui_item *ut)
     struct text_style *ts = &normal_text_style;
     int text_height = disp_text_height(ts);
     int row_height = text_height + 2;
-    const int row_start = 90;
+    const int row_start = 120;
+    int row = 0;
 
     // draw text lines
-    disp_text(disp, msg_uptime, 0, row_start + row_height * 0, ts);
-    disp_text(disp, msg_feed_number, 0, row_start + row_height * 1, ts);
+    disp_text(disp, msg_uptime, 0, row_start + row_height * row, ts);
+    row++;
 
-    disp_text(disp, msg_coordinates, 0, row_start + row_height * 4, ts);
-    disp_text(disp, msg_start, 132, row_start + row_height * 4, ts);
-    disp_text(disp, msg_end, 240, row_start + row_height * 4, ts);
-    disp_text(disp, msg_readiness, 350, row_start + row_height * 4, ts);
+    disp_text(disp, msg_feed_number, 0, row_start + row_height * row, ts);
+    row++;
 
-    disp_text(disp, msg_cross_position, 0, row_start + row_height * 5, ts);
-    disp_text(disp, msg_longitudal_position, 0, row_start + row_height * 6, ts);
+    disp_text(disp, msg_coordinates, 0, row_start + row_height * row, ts);
+    disp_text(disp, msg_start, 132, row_start + row_height * row, ts);
+    disp_text(disp, msg_end, 240, row_start + row_height * row, ts);
+    disp_text(disp, msg_readiness, 350, row_start + row_height * row, ts);
+    row++;
+
+    disp_text(disp, msg_cross_position, 0, row_start + row_height * row, ts);
+    row++;
+
+    disp_text(disp, msg_longitudal_position, 0,
+              row_start + row_height * row, ts);
+    row++;
 
     // draw 'miss' table
-    disp_rect(disp, 90, row_start + row_height * 7,  90, 37, 1, GRAY);
-    disp_rect(disp, 90 + 90, row_start + row_height * 7,  90, 37, 1, GRAY);
-    disp_rect(disp, 90 + 90 + 90, row_start + row_height * 7,
+    disp_rect(disp, 90, row_start + row_height * row,  90, 37, 1, GRAY);
+    disp_rect(disp, 90 + 90, row_start + row_height * row,  90, 37, 1, GRAY);
+    disp_rect(disp, 90 + 90 + 90, row_start + row_height * row,
               100, 37, 1, GRAY);
-    disp_rect(disp, 90 + 90 + 90 + 100, row_start + row_height * 7,
+    disp_rect(disp, 90 + 90 + 90 + 100, row_start + row_height * row,
               100, 37, 1, GRAY);
 
     img = img_cross_arrow_up1();
-    disp_fill_img(disp, 95, row_start + row_height * 7 + 2, img);
+    disp_fill_img(disp, 95, row_start + row_height * row + 2, img);
     kmem_deref(&img);
 
     img = img_cross_arrow_down1();
-    disp_fill_img(disp, 90 + 95, row_start + row_height * 7 + 2, img);
+    disp_fill_img(disp, 90 + 95, row_start + row_height * row + 2, img);
     kmem_deref(&img);
 
     img = img_longitudal_arrow_left1();
-    disp_fill_img(disp, 90 + 90 + 95, row_start + row_height * 7 + 6, img);
+    disp_fill_img(disp, 90 + 90 + 95, row_start + row_height * row + 6, img);
     kmem_deref(&img);
 
     img = img_longitudal_arrow_right1();
     disp_fill_img(disp, 90 + 90 + 90 + 105,
-                  row_start + row_height * 7 + 6, img);
+                  row_start + row_height * row + 6, img);
     kmem_deref(&img);
 }
 
 
-static void display_status_init(struct mode_cut *mc)
+static void cut_status_init(struct mode_cut *mc)
 {
     struct machine *m = &machine;
     struct disp *disp = m->disp2;
     struct text_style *ts = &normal_text_style;
     int text_height = disp_text_height(ts);
     int row_height = text_height + 2;
-    const int row_start = 90;
+    const int row_start = 120;
+    int row = 0;
 
-    mc->ui_status_scope = list_create("mode_cut_ui_stat_scope");
+    mc->ui_status_scope = ui_scope_create("mode_cut_ui_stat_scope");
 
     mc->status_text = ui_item_register("ui_text", NULL, disp,
-                                       0, 90, 480, 230,
+                                       0, 115, 480, 205,
                                        ui_text, NULL, mc, 0);
 
     ui_item_text_register("ui_uptime", mc->ui_status_scope, disp,
-                          220, row_start + row_height * 0, 25, ts,
+                          220, row_start + row_height * row, 25, ts,
                           ui_uptime_getter, NULL, mc);
+    row++;
 
     ui_item_text_register("ui_number_passes", mc->ui_status_scope, disp,
-                         220, row_start + row_height * 1,
+                         220, row_start + row_height * row,
                          5, ts, ui_number_passes_getter, NULL, mc);
+    row++;
+    row++;
 
     ui_item_text_register("ui_start_point", mc->ui_status_scope, disp,
-                         132, row_start + row_height * 5, 8,
+                         132, row_start + row_height * row, 8,
                          &cross_text_style,
                          ui_start_cross_getter, NULL, mc);
 
     ui_item_text_register("ui_finish_cross", mc->ui_status_scope, disp,
-                         240, row_start + row_height * 5, 8,
+                         240, row_start + row_height * row, 8,
                          &cross_text_style,
                          ui_finish_cross_getter, NULL, mc);
 
     ui_item_text_register("ui_relative_cross", mc->ui_status_scope, disp,
-                         360, row_start + row_height * 5, 8,
+                         360, row_start + row_height * row, 8,
                          &cross_text_style,
                          ui_relative_cross_getter, NULL, mc);
+    row++;
 
     ui_item_text_register("ui_start_longitudal", mc->ui_status_scope, disp,
-                         132, row_start + row_height * 6, 8,
+                         132, row_start + row_height * row, 8,
                          &longitudal_text_style,
                          ui_start_longitudal_getter, NULL, mc);
 
     ui_item_text_register("ui_finish_longitudal", mc->ui_status_scope, disp,
-                         240, row_start + row_height * 6, 8,
+                         240, row_start + row_height * row, 8,
                          &longitudal_text_style,
                          ui_finish_longitudal_getter, NULL, mc);
 
     ui_item_text_register("ui_relative_longitudal", mc->ui_status_scope, disp,
-                         360, row_start + row_height * 6, 8,
+                         360, row_start + row_height * row, 8,
                          &longitudal_text_style,
                          ui_relative_longitudal_getter, NULL, mc);
+    row++;
 
     ui_item_text_register("ui_cross_miss_up", mc->ui_status_scope, disp,
-                         117, row_start + row_height * 7 + 10, 5, ts,
+                         117, row_start + row_height * row + 10, 5, ts,
                          ui_cross_miss_up_getter, NULL, mc);
 
     ui_item_text_register("ui_cross_miss_down", mc->ui_status_scope, disp,
-                         203, row_start + row_height * 7 + 10, 5, ts,
+                         203, row_start + row_height * row + 10, 5, ts,
                          ui_cross_miss_down_getter, NULL, mc);
 
     ui_item_text_register("ui_longitudal_miss_left", mc->ui_status_scope, disp,
-                         304, row_start + row_height * 7 + 10, 5, ts,
+                         304, row_start + row_height * row + 10, 5, ts,
                          ui_longitudal_miss_left_getter, NULL, mc);
 
     ui_item_text_register("ui_longitudal_miss_right", mc->ui_status_scope, disp,
-                         405, row_start + row_height * 7 + 10, 5, ts,
+                         405, row_start + row_height * row + 10, 5, ts,
                          ui_longitudal_miss_right_getter, NULL, mc);
 }
 
@@ -320,24 +335,6 @@ static void display_status_handler(struct mode_cut *mc)
     ui_scope_show(mc->ui_status_scope);
 }
 
-static void display_finished_show(struct mode_cut *mc)
-{
-    struct machine *m = &machine;
-    struct text_style ts = {
-            .bg_color = BLACK,
-            .color = GREEN,
-            .font = font_rus,
-            .fontsize = 3,
-    };
-    disp_text(m->disp2, msg_prog_finished, 184, 270, &ts);
-}
-
-
-static void display_status_hide(void)
-{
-    ui_message_hide();
-}
-
 static int cross_distance(struct mode_cut *mc)
 {
     struct mode_cut_settings *mc_settings = &mc->settings;
@@ -351,9 +348,13 @@ static void calc_estimate_cut_longitudal_time(struct mode_cut *mc)
 {
     struct mode_cut_settings *mc_settings = &mc->settings;
     int feed_per_turn = ((spindle_speed() / 60) * mc_settings->feed_rate) / 1000;
-    int one_pass = mc->longitudal_distance / feed_per_turn +
-            7 + // cross return time sec
-            + mc->longitudal_distance / 1000 / 8; // longitudal return time sec
+    if (!feed_per_turn)
+        return;
+    int distance = mc->longitudal_distance ? mc->longitudal_distance :
+                            mc_settings->longitudal_distance;
+    int one_pass = distance / feed_per_turn +
+                    7 + // cross return time sec
+                    + distance / 1000 / 8; // longitudal return time sec
 
     mc->stat.calc_time = one_pass * (mc->cut_pass_rest + 1) -
             (now() - mc->stat.start_time) / 1000;
@@ -369,6 +370,21 @@ static void calc_estimate_cut_cross_time(struct mode_cut *mc)
     mc->stat.calc_time = one_pass * (mc->cut_pass_rest + 1) -
             (now() - mc->stat.start_time) / 1000;
 }
+
+static void longitudal_process_handler(void *priv)
+{
+    struct mode_cut *mc = (struct mode_cut *)priv;
+    calc_estimate_cut_longitudal_time(mc);
+    display_status_handler(mc);
+}
+
+static void cross_process_handler(void *priv)
+{
+    struct mode_cut *mc = (struct mode_cut *)priv;
+    calc_estimate_cut_cross_time(mc);
+    display_status_handler(mc);
+}
+
 
 static void calc_longitudal_cut_passes(struct mode_cut *mc)
 {
@@ -542,7 +558,7 @@ stabilization_cross_handler(struct mode_cut *mc)
 {
     struct machine *m = &machine;
     int target_pos = mc->cross_pos;
-    struct stepper_motor *sm = m->sm_cross_feed;
+    struct stepper_motor *sm = m->sm_cross;
     int cur_pos;
     int distance;
     static u32 stop_time = 0;
@@ -579,7 +595,7 @@ int longitudal_cut_run(struct mode_cut *mc, bool dir)
     struct machine *m = &machine;
     struct mode_cut_settings *mc_settings = &mc->settings;
     int prev_feed_rate;
-    struct stepper_motor *sm = m->sm_longitudial_feed;
+    struct stepper_motor *sm = m->sm_longitudial;
     int cur_pos = abs_longitudal_curr_tool(m->ap);
 
     do {
@@ -625,7 +641,7 @@ int cross_cut_run(struct mode_cut *mc, bool dir)
 {
     struct machine *m = &machine;
     struct mode_cut_settings *mc_settings = &mc->settings;
-    struct stepper_motor *sm = m->sm_cross_feed;
+    struct stepper_motor *sm = m->sm_cross;
     int prev_feed_rate;
 
     do {
@@ -723,18 +739,21 @@ int longitudal_return_run(struct mode_cut *mc)
     }
 
     if (parking_cross_pos != mc->cross_pos) {
-        rc = cross_move_to(parking_cross_pos, TRUE);
+        rc = cross_move_to(parking_cross_pos, TRUE,
+                                longitudal_process_handler, mc);
         if(rc)
             return rc;
     }
 
     if (longitudal_pos != start_longitudal_pos) {
-        rc = longitudal_move_to(start_longitudal_pos, FALSE, 0);
+        rc = longitudal_move_to(start_longitudal_pos, FALSE, 0,
+                                longitudal_process_handler, mc);
         if(rc)
             return rc;
 
         if (parking_cross_pos != mc->cross_pos) {
-            rc = cross_move_to(mc->cross_pos, TRUE);
+            rc = cross_move_to(mc->cross_pos, TRUE,
+                                longitudal_process_handler, mc);
             if(rc)
                 return rc;
         }
@@ -799,17 +818,20 @@ static int cross_return_run(struct mode_cut *mc)
     }
 
     if (parking_longitudal_pos != mc->longitudal_pos) {
-        rc = longitudal_move_to(parking_longitudal_pos, FALSE, 0);
+        rc = longitudal_move_to(parking_longitudal_pos, FALSE, 0,
+                                cross_process_handler, mc);
         if(rc)
             return rc;
     }
 
     if (cross_pos != start_cross_pos) {
-        rc = cross_move_to(start_cross_pos, TRUE);
+        rc = cross_move_to(start_cross_pos, TRUE,
+                           cross_process_handler, mc);
         if(rc)
             return rc;
         if (parking_longitudal_pos != mc->longitudal_pos) {
-            rc = longitudal_move_to(mc->longitudal_pos, FALSE, 0);
+            rc = longitudal_move_to(mc->longitudal_pos, FALSE, 0,
+                                    cross_process_handler, mc);
             if(rc)
                 return rc;
         }
@@ -851,8 +873,8 @@ void longitudal_cut_auto_run(void)
         mc->cross_pass_dir = MOVE_UP;
     }
 
-    stepper_motor_enable(m->sm_cross_feed);
-    stepper_motor_enable(m->sm_longitudial_feed);
+    stepper_motor_enable(m->sm_cross);
+    stepper_motor_enable(m->sm_longitudial);
     mc->cross_pos = mc->start_cross_pos;
     mc->cut_pass_last_cnt = 0;
 
@@ -875,7 +897,7 @@ void longitudal_cut_auto_run(void)
         new_pos = calc_cross_position(mc->cross_pos,
                                       mc->cut_depth,
                                       mc->cross_pass_dir);
-        rc = cross_move_to(new_pos, TRUE);
+        rc = cross_move_to(new_pos, TRUE, longitudal_process_handler, mc);
         if(rc)
             return;
         mc->cross_pos = new_pos;
@@ -893,6 +915,8 @@ void longitudal_cut_auto_run(void)
     }
 
     for (i = 0; i < mc_settings->last_repeate_number; i++) {
+        if (mc_settings->feed_rate > 50)
+            mc_settings->feed_rate = 50;
         mc->cut_pass_last_cnt++;
         calc_longitudal_cut_passes(mc);
         display_status_handler(mc);
@@ -905,7 +929,8 @@ void longitudal_cut_auto_run(void)
     }
     if (m->prog != PROG_FEED_LEFT &&
             m->prog != PROG_FEED_RIGHT) {
-        longitudal_move_to(mc->start_longitudal_pos, TRUE, 0);
+        longitudal_move_to(mc->start_longitudal_pos, TRUE, 0,
+                           longitudal_process_handler, mc);
     }
 }
 
@@ -943,8 +968,8 @@ void cross_cut_auto_run(void)
         mc->cross_pass_dir = MOVE_UP;
     }
 
-    stepper_motor_enable(m->sm_cross_feed);
-    stepper_motor_enable(m->sm_longitudial_feed);
+    stepper_motor_enable(m->sm_cross);
+    stepper_motor_enable(m->sm_longitudial);
     mc->cross_pos = mc->start_cross_pos;
     mc->cut_pass_last_cnt = 0;
 
@@ -966,7 +991,8 @@ void cross_cut_auto_run(void)
         new_pos = calc_longitudal_position(mc->longitudal_pos,
                                            mc->cut_depth,
                                            mc->longitudal_pass_dir);
-        rc = longitudal_move_to(new_pos, TRUE, 0);
+        rc = longitudal_move_to(new_pos, TRUE, 0,
+                                cross_process_handler, mc);
         if(rc)
             return;
         mc->longitudal_pos = new_pos;
@@ -982,7 +1008,8 @@ void cross_cut_auto_run(void)
 
 
             m->prog != PROG_FEED_DOWN) {
-        longitudal_move_to(mc->start_longitudal_pos, TRUE, 0);
+        longitudal_move_to(mc->start_longitudal_pos, TRUE, 0,
+                           cross_process_handler, mc);
     }
 }
 
@@ -998,7 +1025,7 @@ void mode_cut_run(void)
     mc->stat.cross_miss_down = 0;
     mc->cut_pass_cnt = 0;
 
-    display_status_init(mc);
+    cut_status_init(mc);
 
     set_normal_acceleration();
 
@@ -1025,13 +1052,13 @@ void mode_cut_run(void)
         break;
     }
 
-    display_finished_show(mc);
+    program_finished_show();
     beep_blink_start(500, 1000, 0);
     while(is_switch_on(m->switch_run)) {
         yield();
     }
     beep_blink_stop();
-    display_status_hide();
+    ui_message_hide();
     kmem_deref(&mc->status_text);
     kmem_deref(&mc->ui_status_scope);
 }

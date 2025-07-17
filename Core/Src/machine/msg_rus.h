@@ -21,15 +21,18 @@ extern char *msg_end;
 extern char *msg_readiness;
 extern char *msg_cuting_miss;
 extern char *msg_prog_finished;
-extern char *msg_set_rpm;
+
 
 extern char *msg_thread_calc_time;
 extern char *msg_thread_feed_number;
 extern char *msg_thread_spindle_max;
 extern char *msg_thread_cut_speed_max;
 extern char *msg_thread_m_standard;
-extern char *msg_thread_diameter;
+extern char *msg_thread_diameter_start;
+extern char *msg_thread_diameter_end;
 extern char *msg_thread_max_depth;
 extern char *msg_thread_steps;
+extern char *msg_thread_depth;
+extern char *msg_thread_rpm_not_correct;
 
 #endif /* MSG_RUS_H_ */

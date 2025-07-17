@@ -9,7 +9,7 @@
 #define UI_MOVE_TO_H_
 
 struct ui_move_to {
-    struct list *ui_scope;
+    struct ui_scope *ui_scope;
     struct ui_item *left_arrow;
     struct ui_item *right_arrow;
     struct ui_item *up_arrow;

@@ -26,56 +26,38 @@ potentiometer_register(char *name, ADC_HandleTypeDef *hadc, int adc_offset)
     pm->name = name;
     pm->hadc = hadc;
     pm->adc_offset = adc_offset;
-///    HAL_ADC_Start_IT(hadc);
-    // TODO
     return pm;
 }
 
-static u16 integrator(u16 *buf, size_t size)
+void potentiometer_handler(struct potentiometer *pm)
 {
-    u32 i;
-    u16 val;
-    u16 sz = (size - 1);
+    int val;
+    if ((now() - pm->start_time) < 10)
+        return;
 
-    bool changed = FALSE;
-    do {
-        changed = FALSE;
-        for (i = 0; i < sz - 1; i++) {
-            if (buf[i] <= buf[i + 1])
-                continue;
+    pm->start_time = now();
+    HAL_ADC_Start(&hadc1);
 
-            val = buf[i];
-            buf[i] = buf[i + 1];
-            buf[i + 1] = val;
-            changed = TRUE;
-        }
-    } while (changed);
-
-    val = buf[(size / 2)];
-    return val;
-}
-
-int potentiometer_val(struct potentiometer *pm)
-{
-    irq_disable();
-    u16 val = integrator(pm->buf, ARRAY_SIZE(pm->buf));
-    irq_enable();
+    val = HAL_ADC_GetValue(&hadc1);
     if (val > pm->adc_offset)
         val -= pm->adc_offset;
     else
         val = 0;
 
-    return val * 100 / 4096;
+    if (pm->val != val) {
+        pm->val = val;
+        pm->is_changed = TRUE;
+    }
+}
+
+int potentiometer_val(struct potentiometer *pm)
+{
+    return pm->val * 100 / 4096;
 }
 
 bool is_potentiometer_changed(struct potentiometer *pm)
 {
-    int val = potentiometer_val(pm);
-    if (abs(val - pm->last_val) > 1) {
-        pm->last_val = val;
-        return TRUE;
-    }
-    return FALSE;
+    return pm->is_changed;
 }
 
 

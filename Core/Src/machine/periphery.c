@@ -222,7 +222,7 @@ void periphery_init(void)
 
     m->pm_move_speed = potentiometer_register("pm_move_speed", &hadc1, 50);
 
-    m->sm_longitudial_feed =
+    m->sm_longitudial =
             stepper_motor_register("longitudial_feed_motor",
                                    &htim2, &htim1, TIM_CHANNEL_1,
                                    &gpio_longitudal_feed_dir,
@@ -231,7 +231,7 @@ void periphery_init(void)
                                    LINEAR_LONGITUDAL_RESOLUTION,
                                    15000, 17600);
 
-    m->sm_cross_feed =
+    m->sm_cross =
             stepper_motor_register("cross_feed_motor",
                                    &htim5, &htim3, TIM_CHANNEL_3,
                                    &gpio_cross_feed_dir,
@@ -245,9 +245,6 @@ void periphery_init(void)
 
     panel_encoder_init();
     spindle_encoder_init();
-
-//    HAL_TIM_Base_Start_IT(&htim12);
-    //HAL_TIM_IC_Start(&htim12, TIM_CHANNEL_1); // Spindle Encoder
 }
 
 // IRQ context
@@ -270,10 +267,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     if (htim == &htim6) { // Period = 1ms (1000Hz)
         spindle_speed_irq();
 
-        if (m->sm_longitudial_feed)
-            stepper_motor_timer_isr(m->sm_longitudial_feed);
-        if (m->sm_cross_feed)
-            stepper_motor_timer_isr(m->sm_cross_feed);
+        if (m->sm_longitudial)
+            stepper_motor_timer_isr(m->sm_longitudial);
+        if (m->sm_cross)
+            stepper_motor_timer_isr(m->sm_cross);
         return;
     }
 
@@ -283,26 +280,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     }
 
     if (htim == &htim2) { // longitudial feed counter
-        stepper_motor_stop_isr(m->sm_longitudial_feed);
+        stepper_motor_stop_isr(m->sm_longitudial);
         return;
     }
 
     if (htim == &htim5) { // cross feed counter
-        stepper_motor_stop_isr(m->sm_cross_feed);
-        return;
-    }
-
-/*    if (htim == &htim8) { // Spendle encoder 360 degree interrupt
-        printf("360\r\n");
-        return;
-    }*/
-}
-
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
-    struct machine *m = &machine;
-
-    if (hadc == &hadc1) {
-        potentiometer_irq(m->pm_move_speed);
+        stepper_motor_stop_isr(m->sm_cross);
         return;
     }
 }
+
+

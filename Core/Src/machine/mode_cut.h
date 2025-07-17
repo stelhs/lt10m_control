@@ -52,7 +52,7 @@ struct mode_cut_settings {
 };
 
 struct mode_cut {
-    struct list *ui_status_scope;
+    struct ui_scope *ui_status_scope;
     struct ui_item *status_text;
     struct mode_cut_settings settings;
     struct mode_cut_stat stat;

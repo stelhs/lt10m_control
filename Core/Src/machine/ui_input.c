@@ -11,7 +11,7 @@
 
 struct ui_input {
     char *text;
-    struct list *ui_scope;
+    struct ui_scope *ui_scope;
     int *val;
     int min;
     int max;
@@ -64,7 +64,7 @@ static void input_show(struct ui_item *ut)
               ut->y + 15, &input_ts);
 }
 
-static void input_onclick(struct ui_item *ut)
+static int input_onclick(struct ui_item *ut)
 {
     struct ui_input *input = (struct ui_input *)ut->priv;
 
@@ -76,13 +76,14 @@ static void input_onclick(struct ui_item *ut)
     if (input->onchanged)
         input->onchanged(input->priv);
     ui_scope_show(input->ui_scope);
+    return FALSE;
 }
 
 
 
 struct ui_item *
 ui_input_register(char *name,
-                  struct list *ui_scope,
+                  struct ui_scope *ui_scope,
                   char *input_text,
                   int x, int y,
                   int *val,
@@ -110,6 +111,10 @@ ui_input_register(char *name,
     ut->priv = input;
     input->ui_scope = ui_scope;
     input->text = input_text;
+    if (*val < min || *val > max)
+        *val = min;
+    if (*val % step)
+        *val -= (*val % step);
     input->val = val;
     input->min = min;
     input->max = max;

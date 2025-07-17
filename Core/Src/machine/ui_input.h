@@ -13,7 +13,7 @@ extern struct text_style input_ts;
 
 struct ui_item *
 ui_input_register(char *name,
-                  struct list *ui_scope,
+                  struct ui_scope *ui_scope,
                   char *input_text,
                   int x, int y,
                   int *val,

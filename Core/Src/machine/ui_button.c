@@ -16,29 +16,21 @@ static struct list disp_buttons_list = LIST_INIT;
 struct ui_button {
     struct le le;
     struct touch_area *ta;
-    void (*on_click)(struct ui_item *);
+    int (*on_click)(struct ui_item *);
     struct ui_item *ut;
     void *data;
     void (*show)(struct ui_item *);
     char *name;
-};
-/*
-struct ui_scope_updater {
-    struct le le;
-    struct list ui_scope;
-    void (*update)(void *);
-    void *priv;
+    bool is_lock;
 };
 
-struct list ui_scope_updater_list = LIST_INIT;
-*/
 static struct ui_item *action_confirmation_ut = NULL;
 struct ui_button_confirmation_args {
     void (*onclick)(struct ui_item *);
 };
 
 
-void ui_button_confirmation_handler(void)
+static void ui_button_confirmation_handler(void)
 {
     struct machine *m = &machine;
     struct ui_button_confirmation_args *args;
@@ -49,17 +41,18 @@ void ui_button_confirmation_handler(void)
         return;
 
     args = (struct ui_button_confirmation_args *)action_confirmation_ut->data;
-    args->onclick(action_confirmation_ut->priv);
+    args->onclick(action_confirmation_ut);
+    ui_item_blink_stop(action_confirmation_ut);
     action_confirmation_ut = NULL;
 }
 
-static void onclick_action_confirmation(struct ui_item *ut)
+static int onclick_action_confirmation(struct ui_item *ut)
 {
     struct machine *m = &machine;
     if (ut == action_confirmation_ut) {
         ui_item_blink_stop(ut);
         action_confirmation_ut = NULL;
-        return;
+        return FALSE;
     }
 
     if (action_confirmation_ut)
@@ -68,6 +61,7 @@ static void onclick_action_confirmation(struct ui_item *ut)
     button_reset(m->btn_ok);
     action_confirmation_ut = ut;
     ui_item_blink(ut, 300);
+    return FALSE;
 }
 
 
@@ -98,11 +92,42 @@ static void button_hide(struct ui_item *ut)
     ui_item_hide_default_cb(ut);
 }
 
+void ui_button_lock(struct ui_item *ut)
+{
+    struct ui_button *ub = (struct ui_button *)ut->data;
+    ub->is_lock = TRUE;
+}
+
+void ui_button_unlock(struct ui_item *ut)
+{
+    struct ui_button *ub = (struct ui_button *)ut->data;
+    ub->is_lock = FALSE;
+}
+
+void ui_buttons_lock(struct ui_scope *ui_scope)
+{
+    struct le *le;
+    LIST_FOREACH(&ui_scope->items, le) {
+        struct ui_item *ut = (struct ui_item *)list_ledata(le);
+        ui_button_lock(ut);
+    }
+}
+
+void ui_buttons_unlock(struct ui_scope *ui_scope)
+{
+    struct le *le;
+    LIST_FOREACH(&ui_scope->items, le) {
+        struct ui_item *ut = (struct ui_item *)list_ledata(le);
+        ui_button_unlock(ut);
+    }
+}
+
+
 struct ui_item *
-ui_button_register(char *name, struct list *ui_scope,
+ui_button_register(char *name, struct ui_scope *ui_scope,
                    int x, int y, int width, int height,
                    void (*show)(struct ui_item *),
-                   void (*on_click)(struct ui_item *), void *priv,
+                   int (*on_click)(struct ui_item *), void *priv,
                    size_t data_size)
 {
     struct machine *m = &machine;
@@ -129,7 +154,7 @@ ui_button_register(char *name, struct list *ui_scope,
 }
 
 struct ui_item *
-ui_button_confirmation_register(char *name, struct list *ui_scope,
+ui_button_confirmation_register(char *name, struct ui_scope *ui_scope,
                                 int x, int y, int width, int height,
                                 void (*show)(struct ui_item *),
                                 void (*onclick)(struct ui_item *),
@@ -156,13 +181,20 @@ bool is_ui_button_touched(struct ui_item *ut)
 void ui_button_handler(void)
 {
     struct le *le, *le2;
+
+    ui_button_confirmation_handler();
+
     LIST_FOREACH_SAFE(&disp_buttons_list, le, le2) {
         struct ui_button *ub = (struct ui_button *)list_ledata(le);
         if (!ub->on_click)
             continue;
         if (is_area_touched(ub->ta)) {
-            if (ui_item_is_show(ub->ut))
-                ub->on_click(ub->ut);
+            if (ui_item_is_show(ub->ut) && (!ub->is_lock)) {
+                struct ui_scope *us = ub->ut->ui_scope;
+                int rc = ub->on_click(ub->ut);
+                if (!rc && us && us->onchange)
+                    us->onchange(ub->ut);
+            }
             return;
         }
     }

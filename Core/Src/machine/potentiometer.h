@@ -15,9 +15,9 @@ struct potentiometer {
     char *name;
     ADC_HandleTypeDef *hadc;
     int adc_offset;
-    u16 buf[192];
-    int buf_index;
-    int last_val;
+    int val;
+    int start_time;
+    bool is_changed;
 };
 
 struct potentiometer *
@@ -26,14 +26,7 @@ potentiometer_register(char *name, ADC_HandleTypeDef *hadc,
 
 int potentiometer_val(struct potentiometer *pm);
 bool is_potentiometer_changed(struct potentiometer *pm);
-
-static inline void potentiometer_irq(struct potentiometer *pm)
-{
-    pm->buf[pm->buf_index] = HAL_ADC_GetValue(pm->hadc);
-    pm->buf_index ++;
-    if (pm->buf_index >= ARRAY_SIZE(pm->buf))
-        pm->buf_index = 0;
-}
+void potentiometer_handler(struct potentiometer *pm);
 
 
 #endif /* POTENTIOMETER_H_ */

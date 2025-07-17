@@ -18,16 +18,17 @@ char *msg_end = "Стоп";
 char *msg_readiness = "Готовность %";
 char *msg_cuting_miss = "Промах:";
 char *msg_prog_finished = "Готово";
-char *msg_set_rpm = "Установите обороты\n"
-                    "шпинделя в интервале\n"
-                    "от %.1f до %.1f";
 
 char *msg_thread_calc_time = "Расчётное время: %s";
 char *msg_thread_feed_number = "Количество проходов: %d";
-char *msg_thread_spindle_max = "Максимальная скорость шпинделя: %d";
-char *msg_thread_cut_speed_max = "Максимальная скорость резания: %.2f";
+char *msg_thread_spindle_max = "Макс. скорость шпинделя, об/мин: %d";
+char *msg_thread_cut_speed_max = "Макс. скорость резания, м/мин: %.2f";
 char *msg_thread_m_standard = "Стандарт: %s";
-char *msg_thread_diameter = "Диаметер: %.3f (%.3f-%.3f)";
-char *msg_thread_max_depth = "Глубина: %.3f (%.3f-%.3f)";
+char *msg_thread_diameter_start = "D нач., мм: ";
+char *msg_thread_diameter_end = "D кон., мм: %.3f (%.3f-%.3f)";
+char *msg_thread_max_depth = "Глубина, мм: %.3f (%.3f-%.3f)";
 char *msg_thread_steps = "Шаги: %s";
+char *msg_thread_depth = "Заглубление, мм:";
+char *msg_thread_rpm_not_correct = "Не подходящая\n"
+                                   "скорость шпинделя";
 

@@ -69,9 +69,9 @@ int abs_cross(struct abs_position *ap, int tool_num)
     int val;
     int offset = ap->offset_tools[tool_num].cross;
     if (ap->is_cross_inc_down)
-        val = (int)(0xFFFFFFFF - ap->raw.cross) + 1 + offset;
-    else
         val = ap->raw.cross - offset;
+    else
+        val = (int)(0xFFFFFFFF - ap->raw.cross) + 1 + offset;
 
     return val;
 }
@@ -84,11 +84,11 @@ int abs_cross_curr_tool(struct abs_position *ap)
 void abs_cross_set(struct abs_position *ap, int tool_num, int val)
 {
     if (ap->is_cross_inc_down) {
-        ap->offset_tools[tool_num].cross =
-            val - (int)(0xFFFFFFFF - ap->raw.cross + 1);
+        ap->offset_tools[tool_num].cross = ap->raw.cross - val;
         return;
     }
-    ap->offset_tools[tool_num].cross = ap->raw.cross - val;
+    ap->offset_tools[tool_num].cross =
+        val - (int)(0xFFFFFFFF - ap->raw.cross + 1);
 }
 
 void abs_longitudal_set(struct abs_position *ap, int tool_num, int val)

@@ -50,12 +50,50 @@ char *interval_to_str(int time_sec)
     return kref_sprintf("%dh,%dm,%ds", hour, min, sec);
 }
 
-// mm per minute
-int cut_speed_calculate(int diameter, int rpm)
+void ui_main_lock(void)
 {
-    int circumference = (3141 * diameter) / 1000; // 3141 это Pi 3.141*1000
-    return (circumference * rpm) / 1000;
+    struct machine *m = &machine;
+    struct ui_main *um = m->ui_main;
+
+    ui_buttons_lock(um->ui_scope);
+
+    switch (m->prog) {
+    case PROG_FEED_LEFT:
+    case PROG_FEED_RIGHT:
+    case PROG_FEED_LEFT_UP:
+    case PROG_FEED_RIGHT_UP:
+    case PROG_FEED_LEFT_DOWN:
+    case PROG_FEED_RIGHT_DOWN:
+    case PROG_FEED_UP_LEFT:
+    case PROG_FEED_UP_RIGHT:
+    case PROG_FEED_DOWN_LEFT:
+    case PROG_FEED_DOWN_RIGHT:
+    case PROG_FEED_UP:
+    case PROG_FEED_DOWN:
+        ui_button_unlock(um->feed_return_mode);
+        ui_button_unlock(um->feed_repeate);
+        ui_button_unlock(um->feed_limit);
+        ui_button_unlock(um->cross_or_diameter_val);
+        ui_button_unlock(um->feed_step);
+        break;
+
+    case PROG_THREAD_LEFT:
+    case PROG_THREAD_RIGHT:
+        ui_button_unlock(um->thread_repeate);
+        ui_button_unlock(um->thread_depth);
+        ui_button_unlock(um->thread_offset);
+        ui_button_unlock(um->feed_step);
+        break;
+    }
 }
+
+void ui_main_unlock(void)
+{
+    struct machine *m = &machine;
+    struct ui_main *um = m->ui_main;
+    ui_buttons_unlock(um->ui_scope);
+}
+
 
 static void key_prog_sel_show(struct ui_item *ut)
 {
@@ -287,7 +325,7 @@ static void key_thread_repeate_show(struct ui_item *ut)
     kmem_deref(&string);
 }
 
-static void onclick_thread_repeate(struct ui_item *ut)
+static int onclick_thread_repeate(struct ui_item *ut)
 {
     struct ui_main *um = (struct ui_main *)ut->priv;
     struct mode_thread *mt = um->mt;
@@ -297,27 +335,34 @@ static void onclick_thread_repeate(struct ui_item *ut)
     if (mt_settings->last_repeate_number >= 5)
         mt_settings->last_repeate_number = 0;
     ui_item_show(um->thread_repeate);
+    return FALSE;
 }
 
-static void key_thread_moveto_show(struct ui_item *ut)
+static void key_thread_moveto_start_show(struct ui_item *ut)
 {
-    struct img *img = img_thread_moveto();
+    struct img *img = img_thread_moveto_start();
 
     disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 1, DARK_GRAY);
     if (img) {
-        disp_fill_img(ut->disp, ut->x + 7, ut->y + 10, img);
+        disp_fill_img(ut->disp, ut->x + 3, ut->y + 10, img);
         kmem_deref(&img);
     }
 }
 
-static void onclick_key_thread_moveto(struct ui_item *ut)
+static void onclick_key_thread_moveto_start(struct ui_item *ut)
 {
+    struct machine *m = &machine;
     struct ui_main *um = (struct ui_main *)ut->priv;
     struct mode_thread *mt = um->mt;
-    struct mode_thread_settings *mt_settings = &mt->settings;
-    UNUSED(mt_settings); // TODO
 
-    printf("onclick_key_thread_moveto\r\n");
+    if (m->is_busy)
+        return;
+
+    ui_item_hide(um->thread_moveto_start);
+    set_normal_acceleration();
+    longitudal_move_to(mt->last_start_longitudal_pos, TRUE, 0, NULL, NULL);
+    buttons_reset();
+    ui_item_show(um->thread_moveto_start);
 }
 
 
@@ -347,21 +392,21 @@ static void key_thread_set_point_show(struct ui_item *ut)
     img = img_thread_start_point();
     disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 1, DARK_GRAY);
     if (img) {
-        disp_fill_img(ut->disp, ut->x + 7, ut->y + 18, img);
+        disp_fill_img(ut->disp, ut->x + 7, ut->y + 22, img);
         kmem_deref(&img);
     }
 
-    snprintf(str, 9, "%d/%.1f`",
+    snprintf(str, 12, "%d/%.1f`",
              mt_settings->spindle_start,
              (float)spindle_raw_to_angle(mt_settings->spindle_start) / 1000);
-    disp_text(ut->disp, str, ut->x + 30, ut->y + 6, &spindle_ts);
+    disp_text(ut->disp, str, ut->x + 30, ut->y + 8, &spindle_ts);
 
-    snprintf(str, 8, "%d", mt_settings->longitudal_start);
-    disp_text(ut->disp, str, ut->x + 30, ut->y + 30, &longitudal_ts);
+    snprintf(str, 9, "%.3f", (float)mt_settings->longitudal_start / 1000);
+    disp_text(ut->disp, str, ut->x + 30, ut->y + 32, &longitudal_ts);
 }
 
 
-static void onclick_key_thread_set_point(struct ui_item *ut)
+static int onclick_key_thread_set_point(struct ui_item *ut)
 {
     struct machine *m = &machine;
     struct ui_main *um = (struct ui_main *)ut->priv;
@@ -371,6 +416,7 @@ static void onclick_key_thread_set_point(struct ui_item *ut)
     mt_settings->spindle_start = spindle_raw_angle();
     mt_settings->longitudal_start = abs_longitudal_curr_tool(m->ap);
     ui_item_show(ut);
+    return FALSE;
 }
 
 
@@ -394,7 +440,7 @@ static void key_thread_type_show(struct ui_item *ut)
     }
 }
 
-static void onclick_key_thread_type(struct ui_item *ut)
+static int onclick_key_thread_type(struct ui_item *ut)
 {
     struct ui_main *um = (struct ui_main *)ut->priv;
     struct mode_thread *mt = um->mt;
@@ -408,6 +454,7 @@ static void onclick_key_thread_type(struct ui_item *ut)
         ui_item_hide(um->thread_standard_m);
     }
     ui_item_show(um->thread_type);
+    return FALSE;
 }
 
 static void key_feed_repeate_show(struct ui_item *ut)
@@ -510,31 +557,35 @@ static void key_cross_or_diameter_value_show(struct ui_item *ut)
 
 
 
-static void on_click_prog_sel(struct ui_item *ut)
+static int on_click_prog_sel(struct ui_item *ut)
 {
     struct machine *m = &machine;
     struct ui_main *um = (struct ui_main *)ut->priv;
     if (is_switch_on(m->switch_run))
-        return;
+        return TRUE;
+    ui_message_hide();
     kmem_deref(&um->ui_scope);
     m->prog = ui_sel_prog_run();
     mode_cut_settings_validate();
     ui_scope_init(um);
+    return TRUE;
 }
 
-static void on_click_set_xy(struct ui_item *ut)
+static int on_click_set_xy(struct ui_item *ut)
 {
     struct machine *m = &machine;
     struct ui_main *um = (struct ui_main *)ut->priv;
     if (is_switch_on(m->switch_run))
-        return;
+        return FALSE;
 
+    ui_message_hide();
     kmem_deref(&um->ui_scope);
     ui_set_xy_run();
     ui_scope_init(um);
+    return TRUE;
 }
 
-static void onclick_feed_return_longitudal(struct ui_item *ut)
+static int onclick_feed_return_longitudal(struct ui_item *ut)
 {
     struct machine *m = &machine;
     struct ui_main *um = (struct ui_main *)ut->priv;
@@ -543,7 +594,7 @@ static void onclick_feed_return_longitudal(struct ui_item *ut)
 
     if (m->prog != PROG_FEED_LEFT &&
             m->prog != PROG_FEED_RIGHT) {
-        return;
+        return FALSE;
     }
 
     mc_settings->longitudal_ret_mode++;
@@ -557,9 +608,10 @@ static void onclick_feed_return_longitudal(struct ui_item *ut)
 
     ui_item_show(um->feed_return_mode);
     ui_item_show(um->feed_repeate);
+    return FALSE;
 }
 
-static void onclick_key_thread_arrow(struct ui_item *ut)
+static int onclick_key_thread_arrow(struct ui_item *ut)
 {
     struct machine *m = &machine;
     struct ui_main *um = (struct ui_main *)ut->priv;
@@ -568,7 +620,7 @@ static void onclick_key_thread_arrow(struct ui_item *ut)
 
     if (m->prog != PROG_THREAD_LEFT &&
             m->prog != PROG_THREAD_RIGHT) {
-        return;
+        return FALSE;
     }
 
     if (mt_settings->is_internal)
@@ -577,10 +629,11 @@ static void onclick_key_thread_arrow(struct ui_item *ut)
         mt_settings->is_internal = TRUE;
 
     ui_item_show(um->thread_arrow);
+    return FALSE;
 }
 
 
-static void onclick_feed_return_cross(struct ui_item *ut)
+static int onclick_feed_return_cross(struct ui_item *ut)
 {
     struct machine *m = &machine;
     struct ui_main *um = (struct ui_main *)ut->priv;
@@ -589,7 +642,7 @@ static void onclick_feed_return_cross(struct ui_item *ut)
 
     if (m->prog != PROG_FEED_UP &&
             m->prog != PROG_FEED_DOWN) {
-        return;
+        return FALSE;
     }
 
     mc_settings->cross_ret_mode++;
@@ -597,10 +650,11 @@ static void onclick_feed_return_cross(struct ui_item *ut)
         mc_settings->cross_ret_mode = 0;
 
     ui_item_show(um->feed_return_mode);
+    return FALSE;
 }
 
 
-static void onclick_feed_repeate(struct ui_item *ut)
+static int onclick_feed_repeate(struct ui_item *ut)
 {
     struct machine *m = &machine;
     struct ui_main *um = (struct ui_main *)ut->priv;
@@ -613,7 +667,7 @@ static void onclick_feed_repeate(struct ui_item *ut)
                 mc_settings->longitudal_ret_mode != CUT_LONGITUDAL_RETURN_DOWN) {
             mc_settings->last_repeate_number = 0;
             ui_item_show(um->feed_repeate);
-            return;
+            return FALSE;
         }
     }
 
@@ -621,9 +675,10 @@ static void onclick_feed_repeate(struct ui_item *ut)
     if (mc_settings->last_repeate_number >= 5)
         mc_settings->last_repeate_number = 0;
     ui_item_show(um->feed_repeate);
+    return FALSE;
 }
 
-static void onclick_cross_or_diameter(struct ui_item *ut)
+static int onclick_cross_or_diameter(struct ui_item *ut)
 {
     struct ui_main *um = (struct ui_main *)ut->priv;
     struct mode_cut *mc = um->mc;
@@ -638,9 +693,10 @@ static void onclick_cross_or_diameter(struct ui_item *ut)
     }
     mode_cut_settings_validate();
     ui_scope_init(um);
+    return FALSE;
 }
 
-static void onclick_cross_or_diameter_val(struct ui_item *ut)
+static int onclick_cross_or_diameter_val(struct ui_item *ut)
 {
     struct ui_main *um = (struct ui_main *)ut->priv;
     struct mode_cut *mc = um->mc;
@@ -656,6 +712,7 @@ static void onclick_cross_or_diameter_val(struct ui_item *ut)
                         LINEAR_CROSS_RESOLUTION * 2, 1000 * 1000,
                         LINEAR_CROSS_RESOLUTION * 2, FALSE);
     ui_scope_show(um->ui_scope);
+    return FALSE;
 }
 
 void show_longitudal(struct ui_main *um)
@@ -670,13 +727,14 @@ void show_longitudal(struct ui_main *um)
                                key_sel_feed_return_longitudal_show,
                                onclick_feed_return_longitudal, um, 0);
 
-    ui_input_register("input_feed_limit", um->ui_scope,
-                      "longitudial feed limit:",
-                      77, 90,
-                      &mc_settings->longitudal_distance,
-                      LINEAR_LONGITUDAL_RESOLUTION, 1500 * 1000,
-                      LINEAR_LONGITUDAL_RESOLUTION, FALSE,
-                      8, "%.3f", NULL, NULL);
+    um->feed_limit =
+            ui_input_register("input_feed_limit", um->ui_scope,
+                              "longitudial feed limit:",
+                              77, 90,
+                              &mc_settings->longitudal_distance,
+                              LINEAR_LONGITUDAL_RESOLUTION, 1500 * 1000,
+                              LINEAR_LONGITUDAL_RESOLUTION, FALSE,
+                              8, "%.3f", NULL, NULL);
 
     um->feed_repeate =
             ui_button_register("key_feed_repeate", um->ui_scope,
@@ -694,17 +752,19 @@ void show_longitudal(struct ui_main *um)
                              key_cross_or_diameter_show,
                              onclick_cross_or_diameter, um, 0);
 
-        ui_button_register("key_cross_or_diameter_val", um->ui_scope,
-                             77, 90 + (55 + 15) * 1, 155, 55,
-                             key_cross_or_diameter_value_show,
-                             onclick_cross_or_diameter_val, um, 0);
+        um->cross_or_diameter_val =
+                ui_button_register("key_cross_or_diameter_val", um->ui_scope,
+                                   77, 90 + (55 + 15) * 1, 155, 55,
+                                   key_cross_or_diameter_value_show,
+                                   onclick_cross_or_diameter_val, um, 0);
 
-        ui_input_register("input_cut_depth", um->ui_scope,
-                          "feed step:",
-                          0, 90 + (55 + 15) * 2,
-                          &mc_settings->cut_depth_step,
-                          5, 10 * 1000, 5, FALSE,
-                          6, "%.3f", NULL, img_step);
+        um->feed_step =
+                ui_input_register("input_feed_step", um->ui_scope,
+                                  "feed step:",
+                                  0, 90 + (55 + 15) * 2,
+                                  &mc_settings->cut_depth_step,
+                                  5, 10 * 1000, 5, FALSE,
+                                  6, "%.3f", NULL, img_step);
     }
 }
 
@@ -719,10 +779,11 @@ void show_cross(struct ui_main *um)
                          key_cross_or_diameter_show,
                          onclick_cross_or_diameter, um, 0);
 
-    ui_button_register("key_cross_or_diameter_val", um->ui_scope,
-                         77, 90, 155, 55,
-                         key_cross_or_diameter_value_show,
-                         onclick_cross_or_diameter_val, um, 0);
+    um->cross_or_diameter_val =
+            ui_button_register("key_cross_or_diameter_val", um->ui_scope,
+                               77, 90, 155, 55,
+                               key_cross_or_diameter_value_show,
+                               onclick_cross_or_diameter_val, um, 0);
 
     um->feed_return_mode =
             ui_button_register("key_feed_return_mode", um->ui_scope,
@@ -760,12 +821,14 @@ void show_cross(struct ui_main *um)
 
 static void thread_standard_onchanged(void *priv)
 {
+    struct machine *m = &machine;
     struct ui_main *um = (struct ui_main *)priv;
     struct mode_thread *mt = um->mt;
     struct mode_thread_settings *mt_settings = &mt->settings;
     const struct thread_metric *found_tm = NULL;
     const struct thread_metric *default_tm = NULL;
     const struct thread_metric *tm;
+    mt_settings->tm = NULL;
 
     for (tm = thread_metric_table; tm->diameter; tm++) {
         if (tm->diameter != mt_settings->standart_diameter)
@@ -786,6 +849,54 @@ static void thread_standard_onchanged(void *priv)
         mt_settings->tm = default_tm;
         ui_item_show(um->thread_size);
     }
+
+    if (mt_settings->tm) {
+        int diameter = abs_cross_curr_tool(m->ap) * 2;
+        struct thread_metric_info tmi;
+        standart_thread_info(mt_settings->tm,
+                             mt_settings->is_internal,
+                             diameter, &tmi);
+        mt_settings->max_cut_depth = tmi.depth;
+        ui_item_show(um->thread_depth);
+    }
+}
+
+
+static void thread_size_onchanged(void *priv)
+{
+    struct machine *m = &machine;
+    struct ui_main *um = (struct ui_main *)priv;
+    struct mode_thread *mt = um->mt;
+    struct mode_thread_settings *mt_settings = &mt->settings;
+    const struct thread_metric *tm;
+    mt_settings->tm = NULL;
+
+    if (mt_settings->is_type_inch)
+        return;
+
+    if (!mt_settings->standart_diameter)
+        return;
+
+    if(!standart_steps_list(mt_settings->standart_diameter, NULL))
+        return;
+
+    for (tm = thread_metric_table; tm->diameter; tm++) {
+        if (tm->diameter != mt_settings->standart_diameter)
+            continue;
+
+        if (tm->step == mt_settings->thread_size) {
+            mt_settings->tm = tm;
+            break;
+        }
+    }
+
+    if (mt_settings->tm) {
+        int diameter = abs_cross_curr_tool(m->ap) * 2;
+        struct thread_metric_info tmi;
+        standart_thread_info(tm, mt_settings->is_internal, diameter, &tmi);
+        mt_settings->max_cut_depth = tmi.depth;
+        ui_item_show(um->thread_depth);
+    }
 }
 
 static void ui_thread_info(struct ui_item *ut)
@@ -804,60 +915,67 @@ static void ui_thread_info(struct ui_item *ut)
             .fontsize = 2,
     };
 
+    struct text_style ts_red = {
+            .bg_color = BLACK,
+            .color = RED,
+            .font = font_rus,
+            .fontsize = 2,
+    };
+
+    struct text_style ts_green = {
+            .bg_color = BLACK,
+            .color = GREEN,
+            .font = font_rus,
+            .fontsize = 2,
+    };
+
     int text_height = disp_text_height(&ts);
     int row_height = text_height + 2;
     const int row_start = 120;
     int row = 0;
 
-    char *calc_time_str = interval_to_str(mt->calc_time);
+    int calc_time = thread_calc_work_time(mt_settings->length,
+                                          mt->calc_cut_pass_num,
+                                          m->sm_longitudial->max_freq);
+    char *calc_time_str = interval_to_str(calc_time);
     snprintf(str, sizeof str, msg_thread_calc_time, calc_time_str);
     kmem_deref(&calc_time_str);
     disp_text(disp, str, 0, row_start + row_height * row, &ts);
     row ++;
 
-    snprintf(str, sizeof str, msg_thread_feed_number, mt->calc_passes);
+    snprintf(str, sizeof str, msg_thread_feed_number, mt->calc_cut_pass_num);
     disp_text(disp, str, 0, row_start + row_height * row, &ts);
     row ++;
 
-    snprintf(str, sizeof str, msg_thread_spindle_max, mt->krpm_max);
+    snprintf(str, sizeof str, msg_thread_spindle_max, mt->krpm_max / 1000);
     disp_text(disp, str, 0, row_start + row_height * row, &ts);
     row ++;
 
-    cut_speed = cut_speed_calculate(abs_cross_curr_tool(m->ap) * 2, mt->krpm_max);
+    cut_speed = cut_speed_calculate(abs_cross_curr_tool(m->ap) * 2,
+                                    mt->krpm_max / 1000);
     snprintf(str, sizeof str, msg_thread_cut_speed_max, (float)cut_speed / 1000);
     disp_text(disp, str, 0, row_start + row_height * row, &ts);
     row ++;
 
+    if (mt_settings->is_type_inch)
+        return;
+
     if (mt_settings->tm) {
         const struct thread_metric *tm = mt_settings->tm;
         char name[32];
-        int diameter, diameter_max, diameter_min;
-        int depth, depth_max, depth_min;
+        struct text_style *diameter_ts;
+        int x_offset;
+        int diameter = abs_cross_curr_tool(m->ap) * 2;
+        struct thread_metric_info tmi;
 
-        if (mt_settings->is_internal) {
-            diameter_max = tm->internal_minor.max;
-            diameter_min = tm->internal_minor.min;
-            diameter = diameter_min + (diameter_max - diameter_min) / 2;
-
-            depth_max = (tm->internal_major.max - tm->internal_minor.max) / 2;
-            depth_min = (tm->internal_major.min - tm->internal_minor.min) / 2;
-            depth = depth_min + (depth_max - depth_min) / 2;
-        } else {
-            depth_max = (tm->bolt_major.max - tm->bolt_minor.max) / 2;
-            depth_min = (tm->bolt_major.min - tm->bolt_minor.min) / 2;
-            depth = depth_min + (depth_max - depth_min) / 2;
-
-            diameter_max = tm->bolt_major.max;
-            diameter_min = tm->bolt_major.min;
-            diameter = diameter_min + (diameter_max - diameter_min) / 2;
-        }
+        standart_thread_info(tm, mt_settings->is_internal, diameter, &tmi);
 
         if (tm->is_default) {
-            snprintf(name, sizeof name, "М%d (%dx%.2f) d%.2f",
+            snprintf(name, sizeof name, "M%d (%dx%.2f) d%.2f",
                      tm->diameter, tm->diameter, (float)tm->step / 1000,
                      (float)tm->drill_size / 1000);
         } else {
-            snprintf(name, sizeof name, "М%dx%.2f d%.2f",
+            snprintf(name, sizeof name, "M%dx%.2f d%.2f",
                      tm->diameter, (float)tm->step / 1000,
                      (float)tm->drill_size / 1000);
         }
@@ -866,15 +984,33 @@ static void ui_thread_info(struct ui_item *ut)
         disp_text(disp, str, 0, row_start + row_height * row, &ts);
         row ++;
 
-        snprintf(str, sizeof str, msg_thread_diameter,
-                 (float)diameter / 1000, (float)diameter_min / 1000,
-                 (float)diameter_max / 1000);
+        if (diameter >= tmi.diameter_min && diameter <= tmi.diameter_max)
+            diameter_ts = &ts_green;
+        else
+            diameter_ts = &ts_red;
+
+        disp_text(disp, msg_thread_diameter_start, 0,
+                  row_start + row_height * row, &ts);
+        snprintf(str, sizeof str, "%.3f", (float)tmi.diameter / 1000);
+        x_offset = disp_text_width(&ts, strlen(msg_thread_diameter_start));
+        disp_text(disp, str, x_offset, row_start + row_height * row, diameter_ts);
+        x_offset += disp_text_width(&ts, strlen(str));
+
+        snprintf(str, sizeof str, " (%.3f-%.3f)", (float)tmi.diameter_min / 1000,
+                 (float)tmi.diameter_max / 1000);
+        disp_text(disp, str, x_offset, row_start + row_height * row, &ts);
+        row ++;
+
+        snprintf(str, sizeof str, msg_thread_diameter_end,
+                 (float)tmi.end_diameter / 1000,
+                 (float)tmi.end_diameter_min / 1000,
+                 (float)tmi.end_diameter_max / 1000);
         disp_text(disp, str, 0, row_start + row_height * row, &ts);
         row ++;
 
         snprintf(str, sizeof str, msg_thread_max_depth,
-                 (float)depth / 1000, (float)depth_min / 1000,
-                 (float)depth_max / 1000);
+                 (float)tmi.depth / 1000, (float)tmi.depth_min / 1000,
+                 (float)tmi.depth_max / 1000);
         disp_text(disp, str, 0, row_start + row_height * row, &ts);
         row ++;
     }
@@ -901,6 +1037,16 @@ static void ui_thread_info(struct ui_item *ut)
 
 }
 
+static void thread_settings_onchange_cb(struct ui_item *ut)
+{
+    struct machine *m = &machine;
+    struct ui_main *um = m->ui_main;
+    if (is_switch_on(m->switch_run))
+        return;
+    thread_state_init();
+    ui_item_update(um->thread_info);
+}
+
 
 void show_thread(struct ui_main *um)
 {
@@ -910,14 +1056,14 @@ void show_thread(struct ui_main *um)
 
     um->thread_arrow =
             ui_button_register("key_thread_arrow", um->ui_scope,
-                               0, 90 + (55 + 15) * 0, 70, 55,
+                               0, 90 + (55 + 10) * 0, 70, 55,
                                key_thread_arrow_show,
                                onclick_key_thread_arrow, um, 0);
 
 
     ui_input_register("input_thread_length", um->ui_scope,
                       "thread length:",
-                      77, 90 + (55 + 15) * 0,
+                      77, 90 + (55 + 10) * 0,
                       &mt_settings->length,
                       LINEAR_LONGITUDAL_RESOLUTION, 1500 * 1000,
                       LINEAR_LONGITUDAL_RESOLUTION, FALSE,
@@ -925,31 +1071,34 @@ void show_thread(struct ui_main *um)
 
     um->thread_repeate =
             ui_button_register("key_thread_repeate", um->ui_scope,
-                               235, 90 + (55 + 15) * 0, 75, 55,
+                               235, 90 + (55 + 10) * 0, 75, 55,
                                key_thread_repeate_show,
                                onclick_thread_repeate, um, 0);
 
     um->thread_type =
             ui_button_register("key_thread_type", um->ui_scope,
-                               0, 90 + (55 + 15) * 1, 70, 55,
+                               0, 90 + (55 + 10) * 1, 70, 55,
                                key_thread_type_show,
                                onclick_key_thread_type, um, 0);
 
     um->thread_size =
             ui_input_register("input_thread_size", um->ui_scope,
                              "thread size:",
-                              77, 90 + (55 + 15) * 1,
+                              77, 90 + (55 + 10) * 1,
                               &mt_settings->thread_size,
-                              LINEAR_LONGITUDAL_RESOLUTION, 1500 * 1000,
+                              200, 15000,
                               LINEAR_LONGITUDAL_RESOLUTION, FALSE,
                               8, "%.3f", NULL, NULL);
+
+    ui_input_set_onchanged_cb(um->thread_size,
+                              thread_size_onchanged, um);
 
     um->thread_standard_m =
             ui_input_register("input_standart_diameter", um->ui_scope,
                               "M",
-                              235, 90 + (55 + 15) * 1,
+                              235, 90 + (55 + 10) * 1,
                               &mt_settings->standart_diameter,
-                              5, 600, 1, TRUE,
+                              6, 600, 1, TRUE,
                               4, "%d", "M", NULL);
 
     ui_input_set_onchanged_cb(um->thread_standard_m,
@@ -958,57 +1107,53 @@ void show_thread(struct ui_main *um)
     if (mt_settings->is_type_inch)
         ui_item_hide(um->thread_standard_m);
 
-    ui_input_register("input_cut_depth_step", um->ui_scope,
-                      "cut depth step:",
-                      0, 90 + (55 + 15) * 2,
-                      &mt_settings->cut_depth_step,
-                      10, 10 * 1000, 10, FALSE,
-                      6, "%.3f", NULL, img_step);
+    um->feed_step =
+            ui_input_register("input_cut_depth_step", um->ui_scope,
+                              "cut depth step:",
+                              0, 90 + (55 + 10) * 2,
+                              &mt_settings->cut_depth_step,
+                              5, 10 * 1000, 5, FALSE,
+                              6, "%.3f", NULL, img_step);
 
-    ui_input_register("input_max_cut_depth", um->ui_scope,
-                      "max cut depth:",
-                      0, 90 + (55 + 15) * 3,
-                      &mt_settings->max_cut_depth,
-                      10, 10 * 1000, 10, FALSE,
-                      6, "%.3f", NULL, img_thread_depth);
+    um->thread_depth =
+            ui_input_register("input_max_cut_depth", um->ui_scope,
+                              "max cut depth:",
+                              0, 90 + (55 + 10) * 3,
+                              &mt_settings->max_cut_depth,
+                              10, 10 * 1000, 10, FALSE,
+                              6, "%.3f", NULL, img_thread_depth);
 
     ui_input_register("input_thread_offset", um->ui_scope,
                       "thread offset:",
-                      0, 90 + (55 + 15) * 4,
+                      0, 90 + (55 + 10) * 4,
                       &mt_settings->thread_offset,
-                      10, 10 * 1000, 10, FALSE,
+                      -20000, 20000, 5, FALSE,
                       6, "%.3f", NULL, img_thread_offset);
 
     ui_button_register("key_thread_set_point", um->ui_scope,
-                       170, 90 + (55 + 15) * 4, 145, 55,
+                       0, 90 + (55 + 10) * 5, 180, 55,
                        key_thread_set_point_show,
                        onclick_key_thread_set_point, um, 0);
 
-    um->thread_moveto =
-            ui_button_confirmation_register("key_thread_moveto", um->ui_scope,
-                    0, 90 + (55 + 15) * 5, 70, 55,
-                    key_thread_moveto_show, onclick_key_thread_moveto, um);
-
-    ui_input_register("input_thread_number", um->ui_scope,
-                      "thread number:",
-                      75, 90 + (55 + 15) * 5,
-                      &mt->moveto_thread_num,
-                      -100, 100, 1, TRUE,
-                      3, "%d", NULL, NULL);
+    um->thread_moveto_start =
+            ui_button_confirmation_register("key_thread_moveto_start",
+                    um->ui_scope, 235, 90 + (55 + 10) * 5, 70, 55,
+                    key_thread_moveto_start_show,
+                    onclick_key_thread_moveto_start, um);
 
     um->thread_info =
-            ui_item_register("ui_thread_info", um->ui_scope, m->disp2,
+            ui_item_register("ui_thread_info", NULL, m->disp2,
                              0, 120, 480, 200,
                              ui_thread_info, NULL, NULL, 0);
-
+    
+    ui_scope_set_onchange_handler(um->ui_scope, thread_settings_onchange_cb);
 }
-
 
 
 static void ui_scope_init(struct ui_main *um)
 {
     struct machine *m = &machine;
-    um->ui_scope = list_create("ui_main_scope");
+    um->ui_scope = ui_scope_create("ui_main_scope");
 
     disp_clear(um->disp);
 
@@ -1132,6 +1277,18 @@ void ui_message_show(char *msg, enum msg_type mt)
     kmem_deref(&msg_buf);
 }
 
+void program_finished_show(void)
+{
+    struct machine *m = &machine;
+    struct text_style ts = {
+            .bg_color = BLACK,
+            .color = GREEN,
+            .font = font_rus,
+            .fontsize = 3,
+    };
+    disp_text(m->disp2, msg_prog_finished, 184, 270, &ts);
+}
+
 static void ui_main_destructor(void *mem)
 {
     struct ui_main *um = (struct ui_main *)mem;
@@ -1166,7 +1323,7 @@ static void ui_main_thread(void *priv)
 
         if (is_switch_on(m->switch_move_to)) {
             buttons_reset();
-            kmem_deref(&um->ui_scope);
+            kmem_deref(&um->ui_scope); // TODO clean disp2
             ui_move_to_run();
             ui_scope_init(um);
         }

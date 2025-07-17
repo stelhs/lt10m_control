@@ -25,27 +25,49 @@ struct mode_thread_settings {
 
 struct mode_thread {
     struct mode_thread_settings settings;
+    struct ui_scope *ui_status_scope;
+    struct ui_item *status_text;
     bool cross_dir;
     bool longitudal_dir;
     int step_size;
-    int cut_depth_step;
     int curr_depth;
     int max_depth;
     int cut_offset;
     int krpm_min;
     int krpm_max;
     int start_longitudal_pos;
+    int last_start_longitudal_pos;
     int end_longitudal_pos;
     int start_angle;
     int start_cross_pos;
     int end_cross_pos;
     int repeate_number;
-    int moveto_thread_num;
     int calc_time;
-    int calc_passes;
+    int start_time;
+    int calc_cut_pass_num;
+    int cut_pass_cnt;
+    int cut_pass_rest;
+    int curr_depth_step;
 };
 
-int mode_thread_run(void);
+struct thread_metric_info {
+    int diameter_max;
+    int diameter_min;
+    int diameter;
+    int depth_max;
+    int depth_min;
+    int depth;
+    int end_diameter;
+    int end_diameter_max;
+    int end_diameter_min;
+};
+
+
+void mode_thread_run(void);
 int standart_steps_list(int diameter, u32 *list);
+void thread_state_init(void);
+void standart_thread_info(const struct thread_metric *tm, bool is_internal,
+                          int diameter, struct thread_metric_info *tmi);
+int thread_calc_work_time(int length, int pass_number, int sm_freq);
 
 #endif /* MODE_THREAD_H_ */

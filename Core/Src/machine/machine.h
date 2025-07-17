@@ -8,6 +8,7 @@
 #include "stm32_lib/types.h"
 #include "timestamp.h"
 #include "ui_status.h"
+#include "ui_move_to.h"
 #include "mode_cut.h"
 #include "mode_thread.h"
 
@@ -56,15 +57,15 @@ struct machine {
     struct disp *disp2;
     struct disp *disp1;
 
-    struct stepper_motor *sm_longitudial_feed;
-    struct stepper_motor *sm_cross_feed;
+    struct stepper_motor *sm_longitudial;
+    struct stepper_motor *sm_cross;
 
     struct potentiometer *pm_move_speed;
 
     struct abs_position *ap;
     struct ui_status ui_stat;
     struct ui_main *ui_main;
-    struct ui_move_to *ui_move_to;
+    struct ui_move_to ui_move_to;
 
     struct mode_cut mc;
     struct mode_thread mt;
@@ -78,8 +79,10 @@ extern struct machine machine;
 
 void panic(char *reason);
 void machine_init(void);
-int cross_move_to(int pos, bool is_accurate);
-int longitudal_move_to(int pos, bool is_accurate, int max_freq);
+int cross_move_to(int target_pos, bool is_accurate,
+                  void (*periodic_cb)(void *), void *priv);
+int longitudal_move_to(int target_pos, bool is_accurate, int max_freq,
+                       void (*periodic_cb)(void *), void *priv);
 void buttons_reset(void);
 int cross_up_new_position(int distance);
 int cross_down_new_position(int distance);
@@ -90,6 +93,7 @@ int calc_cross_position(int position, int distance, bool dir);
 int calc_longitudal_position(int position, int distance, bool dir);
 int calc_longitudal_to_target(int curr_pos, int target_pos, bool *dir);
 void set_normal_acceleration(void);
+int cut_speed_calculate(int diameter, int rpm);
 
 // IRQ context
 void sm_normal_acceleration_changer(struct stepper_motor *sm, bool is_init);
