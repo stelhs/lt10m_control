@@ -598,6 +598,8 @@ int longitudal_cut_run(struct mode_cut *mc, bool dir)
     struct stepper_motor *sm = m->sm_longitudial;
     int cur_pos = abs_longitudal_curr_tool(m->ap);
 
+    set_normal_acceleration();
+
     do {
         prev_feed_rate = feed_rate_to_freq(sm, spindle_speed(),
                                            mc_settings->feed_rate);
@@ -738,8 +740,10 @@ int longitudal_return_run(struct mode_cut *mc)
         panic("longitudal_return() incrorrect program");
     }
 
+    set_high_acceleration();
+
     if (parking_cross_pos != mc->cross_pos) {
-        rc = cross_move_to(parking_cross_pos, TRUE,
+        rc = cross_move_to(parking_cross_pos, FALSE,
                                 longitudal_process_handler, mc);
         if(rc)
             return rc;
@@ -751,6 +755,7 @@ int longitudal_return_run(struct mode_cut *mc)
         if(rc)
             return rc;
 
+        set_normal_acceleration();
         if (parking_cross_pos != mc->cross_pos) {
             rc = cross_move_to(mc->cross_pos, TRUE,
                                 longitudal_process_handler, mc);

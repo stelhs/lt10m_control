@@ -93,6 +93,7 @@ int calc_cross_position(int position, int distance, bool dir);
 int calc_longitudal_position(int position, int distance, bool dir);
 int calc_longitudal_to_target(int curr_pos, int target_pos, bool *dir);
 void set_normal_acceleration(void);
+void set_high_acceleration(void);
 int cut_speed_calculate(int diameter, int rpm);
 
 // IRQ context

@@ -123,10 +123,14 @@ static void gap_work_out(void)
     int max_freq = target_longitudal_freq(mt);
     int pos;
 
+    set_high_acceleration();
+
     pos = calc_longitudal_position(mt->start_longitudal_pos,
                                    1000, !mt->longitudal_dir);
     longitudal_move_to(pos, FALSE, max_freq, thread_process_handler, mt);
     sleep(300);
+
+    set_normal_acceleration();
     longitudal_move_to(mt->start_longitudal_pos, FALSE, max_freq,
                        thread_process_handler, mt);
     sleep(300);
@@ -164,6 +168,8 @@ static int thread_return_run(struct mode_thread *mt)
     int parking_cross_pos;
     int rc;
 
+    set_high_acceleration();
+
     parking_cross_pos =
             calc_cross_position(mt->start_cross_pos,
                                 mt->step_size + 500, !mt->cross_dir);
@@ -176,6 +182,8 @@ static int thread_return_run(struct mode_thread *mt)
                             thread_process_handler, mt);
     if(rc)
         return rc;
+
+    set_normal_acceleration();
 
     if (parking_cross_pos != mt->start_cross_pos) {
         rc = cross_move_to(mt->start_cross_pos, TRUE,

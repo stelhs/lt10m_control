@@ -51,68 +51,6 @@ static void move_buttons_move_to_handler(void)
     }
 }
 
-// IRQ context
-static void
-sm_cross_high_acceleration_changer(struct stepper_motor *sm, bool is_init)
-{
-    int freq = sm->freq;
-    if (sm->freq < sm->target_freq) {
-        if (sm->freq < 1000)
-            freq += 10;
-        else if (sm->freq < 2000)
-            freq += 15;
-        else if (sm->freq < 5000)
-            freq += 20;
-        else if (sm->freq < 8000)
-            freq += 10;
-        else if (sm->freq < 10000)
-            freq += 5;
-        else
-            freq ++;
-        if (freq > sm->target_freq)
-            freq = sm->target_freq;
-    }
-
-    if (freq != sm->freq)
-        stepper_motor_set_freq(sm, freq);
-}
-
-// IRQ context
-void
-sm_longitudial_high_acceleration_changer(struct stepper_motor *sm, bool is_init)
-{
-    int freq = sm->freq;
-    if (sm->freq < sm->target_freq) {
-        if (sm->freq < 1000)
-            freq += 25;
-        else if (sm->freq < 2000)
-            freq += 200;
-        else if (sm->freq < 6000)
-            freq += 150;
-        else if (sm->freq < 12000)
-            freq += 50;
-        else
-            freq += 10;
-        if (freq > sm->target_freq)
-            freq = sm->target_freq;
-    }
-
-    if (freq != sm->freq)
-        stepper_motor_set_freq(sm, freq);
-}
-
-
-static void set_high_acceleration(void)
-{
-    struct machine *m = &machine;
-    stepper_motor_disable(m->sm_cross);
-    stepper_motor_disable(m->sm_longitudial);
-    stepper_motor_set_freq_changer_handler(m->sm_cross,
-                                      sm_cross_high_acceleration_changer);
-    stepper_motor_set_freq_changer_handler(m->sm_longitudial,
-                                sm_longitudial_high_acceleration_changer);
-}
-
 
 static void move_button_high_speed_handler(void)
 {
