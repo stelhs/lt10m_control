@@ -152,13 +152,13 @@ static int thread_cut_run(struct mode_thread *mt, int distance, int freq)
         if (!is_switch_on(m->switch_run)) {
             stepper_motor_stop(sm);
             stepper_motor_set_freq_changer_handler(m->sm_longitudial,
-                                                    sm_normal_acceleration_changer);
+                                    sm_longitudal_normal_acceleration_changer);
             sm->is_allow_run_out = FALSE;
             return -1;
         }
     }
     stepper_motor_set_freq_changer_handler(m->sm_longitudial,
-                                            sm_normal_acceleration_changer);
+                                    sm_longitudal_normal_acceleration_changer);
     sm->is_allow_run_out = FALSE;
     return 0;
 }
@@ -211,24 +211,6 @@ static int calc_longitudal_error(struct mode_thread *mt,
     }
     return error;
 }
-
-static int add_raw_angle(int start, int add)
-{
-    start %= SPINDLE_ENC_RESOLUTION;
-    add %= SPINDLE_ENC_RESOLUTION;
-    start += add;
-    if (start < 0)
-        return SPINDLE_ENC_RESOLUTION + start;
-    return start % SPINDLE_ENC_RESOLUTION;
-}
-
-
-static int length_to_raw_angle(int length, int step_size)
-{
-    length %= step_size;
-    return (length * SPINDLE_ENC_RESOLUTION) / step_size;
-}
-
 
 static bool calculate_thread(struct mode_thread *mt)
 {
@@ -348,7 +330,6 @@ void thread_state_init(void)
     struct mode_thread *mt = &m->mt;
     struct mode_thread_settings *mt_settings = &mt->settings;
     int max_speed = speed_by_freq(sm_longitudal, sm_longitudal->max_freq);
-    int error, error_raw_angle;
 
     switch (m->prog) {
     case PROG_THREAD_LEFT:
@@ -395,11 +376,6 @@ void thread_state_init(void)
                                   mt->calc_cut_pass_num,
                                   sm_longitudal->max_freq);
 
-    error = calc_longitudal_error(mt, mt_settings->longitudal_start,
-                                  mt->start_longitudal_pos);
-    error_raw_angle = length_to_raw_angle(error, mt->step_size);
-    mt->start_angle = add_raw_angle(mt_settings->spindle_start,
-                                    error_raw_angle * -1);
     mt->cut_pass_cnt = 0;
 }
 
@@ -436,9 +412,6 @@ static int thread_cutting_run(void)
 
     i = 0;
     while (calculate_thread(mt)) {
-        int error_raw_angle;
-        int error_fix_raw_angle;
-        int offset_raw_angle;
         int entry_raw_angle;
         int curr_pos;
         int curr_angle;
@@ -473,17 +446,14 @@ static int thread_cutting_run(void)
         printf("2 distance = %d\r\n", distance);
 
         // вычисление угла входа
-        error_raw_angle = length_to_raw_angle(error, mt->step_size);
-        printf("2 error_raw_angle = %d\r\n", error_raw_angle);
+        int xb = mt->start_longitudal_pos;
+        int xa = mt_settings->longitudal_start +
+                    mt_settings->thread_offset + mt->cut_offset;
+        entry_raw_angle =
+                (mt_settings->spindle_start + ((xb - xa)/mt->step_size) * 3000) % 3000;
+        if (entry_raw_angle < 0)
+            entry_raw_angle = 3000 + entry_raw_angle;
 
-        error_fix_raw_angle = add_raw_angle(mt->start_angle,
-                                            error_raw_angle * -1);
-        offset_raw_angle = length_to_raw_angle(mt_settings->thread_offset +
-                                               mt->cut_offset, mt->step_size);
-        entry_raw_angle = add_raw_angle(error_fix_raw_angle, offset_raw_angle);
-
-        printf("error_fix_raw_angle = %d\r\n", error_fix_raw_angle);
-        printf("offset_raw_angle = %d\r\n", offset_raw_angle);
         printf("entry_raw_angle = %d\r\n", entry_raw_angle);
 
         // ждём угол входа
@@ -517,12 +487,15 @@ void mode_thread_run(void)
     struct mode_thread *mt = &m->mt;
     thread_cutting_run();
     ui_scope_update(m->ui_main->ui_scope);
+    if (is_switch_on(m->switch_run))
+        spindle_power_off();
     program_finished_show();
     beep_blink_start(500, 1000, 0);
     while(is_switch_on(m->switch_run)) {
         yield();
     }
     beep_blink_stop();
+    spindle_power_on();
     ui_message_hide();
     kmem_deref(&mt->status_text);
     kmem_deref(&mt->ui_status_scope);

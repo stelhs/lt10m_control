@@ -38,7 +38,6 @@ struct mode_thread {
     int start_longitudal_pos;
     int last_start_longitudal_pos;
     int end_longitudal_pos;
-    int start_angle;
     int start_cross_pos;
     int end_cross_pos;
     int repeate_number;

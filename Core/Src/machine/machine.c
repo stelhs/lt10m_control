@@ -270,16 +270,16 @@ int longitudal_move_to(int target_pos, bool is_accurate, int max_freq,
         }
 
         if (attempts == 2)
-            freq /= 2;
+            freq /= 4;
 
         if (attempts == 3)
-            freq /= 2;
+            freq /= 3;
 
         if (attempts == 4)
-            freq /= 2;
+            freq /= 3;
 
         if (attempts == 5)
-            freq /= 2;
+            freq /= 3;
 
         if (attempts >= 6) {
             attempts = 0;
@@ -315,7 +315,7 @@ int longitudal_move_to(int target_pos, bool is_accurate, int max_freq,
 
 
 // IRQ context
-void sm_normal_acceleration_changer(struct stepper_motor *sm, bool is_init)
+void sm_cross_normal_acceleration_changer(struct stepper_motor *sm, bool is_init)
 {
     int freq = sm->freq;
     int pos;
@@ -395,6 +395,87 @@ void sm_normal_acceleration_changer(struct stepper_motor *sm, bool is_init)
         stepper_motor_set_freq(sm, freq);
 }
 
+// IRQ context
+void sm_longitudal_normal_acceleration_changer(struct stepper_motor *sm, bool is_init)
+{
+    int freq = sm->freq;
+    int pos;
+    static int cnt = 0;
+
+    if (is_init) {
+        cnt = 0;
+        // Length of acceleration section
+        sm->start_acceleration = 1;
+        u32 accel_distance = (((sm->target_freq - sm->start_freq) *
+                               (sm->target_freq - sm->start_freq))) /
+                                      (sm->start_acceleration * 10 * 1000);
+        sm->acceleration = sm->start_acceleration;
+
+        if (accel_distance > sm->distance_um / 2)
+            accel_distance = sm->distance_um / 2;
+        // braking start point
+        sm->start_braking_point = sm->distance_um - accel_distance;
+        sm->accel_prescaller_cnt = 0;
+        return;
+    }
+
+    pos = stepper_motor_pos(sm);
+
+    if (cnt == 500) {
+        if (pos < sm->start_braking_point) {
+            sm->start_acceleration = 10;
+            sm->acceleration = 10;
+        }
+    }
+    cnt++;
+
+    if (pos >= sm->start_braking_point) { // braking
+        sm->accel_prescaller_cnt++;
+        if (sm->accel_prescaller_cnt >= 1) {
+            sm->accel_prescaller_cnt = 0;
+            if ((sm->distance_um - pos) > 0)
+                sm->acceleration = ((freq * freq) /
+                                        (sm->distance_um - pos)) / 1000;
+            else
+                sm->acceleration = sm->start_acceleration * 2;
+            if (sm->acceleration > sm->start_acceleration * 2)
+                sm->acceleration = sm->start_acceleration * 2;
+        }
+
+        freq -= sm->acceleration * 2;
+        if (freq <= sm->start_freq)
+            freq = sm->start_freq;
+        if (freq != sm->freq) {
+            stepper_motor_set_freq(sm, freq);
+        }
+        return;
+    }
+
+    if (sm->freq < sm->target_freq) { // acceleration
+        sm->accel_prescaller_cnt++;
+        if (sm->accel_prescaller_cnt >= 10) {
+            sm->accel_prescaller_cnt = 0;
+            sm->acceleration = (sm->start_acceleration /
+                                (sm->max_freq / (sm->target_freq - freq)));
+            if (!sm->acceleration)
+                sm->acceleration = 1;
+        }
+
+
+        freq += sm->acceleration;
+        if (freq >= sm->target_freq) {
+            freq = sm->target_freq;
+            sm->accel_prescaller_cnt = 0;
+        }
+    }
+
+    if (freq > sm->target_freq)
+        freq = sm->target_freq;
+
+    if (freq != sm->freq)
+        stepper_motor_set_freq(sm, freq);
+}
+
 
 void set_normal_acceleration(void)
 {
@@ -402,9 +483,9 @@ void set_normal_acceleration(void)
     stepper_motor_enable(m->sm_cross);
     stepper_motor_enable(m->sm_longitudial);
     stepper_motor_set_freq_changer_handler(m->sm_cross,
-                                      sm_normal_acceleration_changer);
+                                      sm_cross_normal_acceleration_changer);
     stepper_motor_set_freq_changer_handler(m->sm_longitudial,
-                                      sm_normal_acceleration_changer);
+                                      sm_longitudal_normal_acceleration_changer);
     m->sm_cross->is_allow_run_out = FALSE;
     m->sm_longitudial->is_allow_run_out = FALSE;
 }
@@ -442,13 +523,13 @@ sm_longitudial_high_acceleration_changer(struct stepper_motor *sm, bool is_init)
     int freq = sm->freq;
     if (sm->freq < sm->target_freq) {
         if (sm->freq < 1000)
-            freq += 25;
+            freq += 10;
         else if (sm->freq < 2000)
-            freq += 200;
+            freq += 60;
         else if (sm->freq < 6000)
-            freq += 150;
-        else if (sm->freq < 12000)
-            freq += 50;
+            freq += 40;
+        else if (sm->freq < 8000)
+            freq += 20;
         else
             freq += 10;
         if (freq > sm->target_freq)
@@ -653,6 +734,7 @@ static void main_thread(void *priv)
             ui_main_lock();
             program_run();
         } else {
+            spindle_power_on();
             ui_main_unlock();
             mode_idle_run();
         }

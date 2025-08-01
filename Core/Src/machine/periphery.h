@@ -28,4 +28,8 @@ u32 spindle_raw_angle(void);
 u32 spindle_raw_to_angle(u32 raw);
 u32 spindle_speed(void);
 
+void spindle_power_on(void);
+void spindle_power_off(void);
+
+
 #endif /* PERIPHERY_H_ */

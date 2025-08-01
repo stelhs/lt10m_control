@@ -41,6 +41,19 @@ static struct gpio gpio_abs_pos_cs = {ABS_POS_CS_GPIO_Port,
                                           ABS_POS_CS_Pin};
 static struct gpio gpio_speaker = {SPEAKER_GPIO_Port, SPEAKER_Pin};
 
+static struct gpio gpio_motor_power = {MOTOR_POWER_GPIO_Port, MOTOR_POWER_Pin};
+
+void spindle_power_on(void)
+{
+    gpio_up(&gpio_motor_power);
+}
+
+void spindle_power_off(void)
+{
+    gpio_down(&gpio_motor_power);
+}
+
+
 struct beep_blinker {
     u32 cnt;
     u32 target;
@@ -227,9 +240,9 @@ void periphery_init(void)
                                    &htim2, &htim1, TIM_CHANNEL_1,
                                    &gpio_longitudal_feed_dir,
                                    &gpio_longitudal_feed_en,
-                                   1000000, 18, 15000,
+                                   1000000, 18, 10000,
                                    LINEAR_LONGITUDAL_RESOLUTION,
-                                   15000, 17600);
+                                   12000, 70000);
 
     m->sm_cross =
             stepper_motor_register("cross_feed_motor",

@@ -298,9 +298,9 @@ void ui_move_to_run(void)
 {
     struct machine *m = &machine;
     struct ui_move_to *umt = &m->ui_move_to;
-
     umt->disp_touch = m->disp1;
     umt->disp_info = m->disp2;
+    umt->move_step = 100;
 
     ui_scope_init();
 

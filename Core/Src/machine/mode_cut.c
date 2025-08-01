@@ -1057,11 +1057,14 @@ void mode_cut_run(void)
         break;
     }
 
+    if (is_switch_on(m->switch_run))
+        spindle_power_off();
     program_finished_show();
     beep_blink_start(500, 1000, 0);
     while(is_switch_on(m->switch_run)) {
         yield();
     }
+    spindle_power_on();
     beep_blink_stop();
     ui_message_hide();
     kmem_deref(&mc->status_text);

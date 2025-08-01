@@ -97,7 +97,8 @@ void set_high_acceleration(void);
 int cut_speed_calculate(int diameter, int rpm);
 
 // IRQ context
-void sm_normal_acceleration_changer(struct stepper_motor *sm, bool is_init);
+void sm_cross_normal_acceleration_changer(struct stepper_motor *sm, bool is_init);
+void sm_longitudal_normal_acceleration_changer(struct stepper_motor *sm, bool is_init);
 // IRQ context
 void sm_longitudial_high_acceleration_changer(struct stepper_motor *sm,
                                               bool is_init);
