@@ -488,13 +488,13 @@ sm_cross_high_acceleration_changer(struct stepper_motor *sm, bool is_init)
         if (sm->freq < 1000)
             freq += 10;
         else if (sm->freq < 2000)
-            freq += 15;
+            freq += 25;
         else if (sm->freq < 5000)
-            freq += 20;
+            freq += 30;
         else if (sm->freq < 8000)
-            freq += 10;
+            freq += 20;
         else if (sm->freq < 10000)
-            freq += 5;
+            freq += 10;
         else
             freq ++;
         if (freq > sm->target_freq)
