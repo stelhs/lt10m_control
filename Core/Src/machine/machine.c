@@ -50,6 +50,7 @@ static void dbg_os_stat(void *priv)
     printlog("timer: %lu\r\n", osKernelGetTickCount());
 }
 
+#if MACHINE_DEBUG
 void key_d(void *priv)
 {
 	struct machine *m = (struct machine *)priv;
@@ -64,24 +65,14 @@ void key_f(void *priv)
     struct machine *m = (struct machine *)priv;
     printf("key_f\r\n");
 
-    printf("run 2 turn cross\r\n");
-
-/*    __HAL_TIM_SET_PRESCALER(&htim5, 10 - 1);
-    htim5.Instance->EGR |= TIM_EGR_UG;
-    __HAL_TIM_SET_COUNTER(&htim5, 0);
-    __HAL_TIM_SET_AUTORELOAD(f&htim5, 1000);
-    HAL_TIM_Base_Start_IT(&htim5);*/
-
-    stepper_motor_run(m->sm_cross, 18, 10000, MOVE_DOWN, 75000);
+    spindle_power_on();
 }
 
 void key_g(void *priv)
 {
     struct machine *m = (struct machine *)priv;
     printf("key_g\r\n");
-    printf("stop");
-    stepper_motor_stop(m->sm_cross);
-    stepper_motor_stop(m->sm_longitudial);
+    spindle_power_off();
 }
 
 void key_j(void *priv)
@@ -102,16 +93,9 @@ void key_k(void *priv)
 
 void key_l(void *priv)
 {
-//    struct machine *m = (struct machine *)priv;
-    printf("key_l\r\n");
-
-    int val = (int)__HAL_TIM_GET_COUNTER(&htim8);
-    printf("val = %d\r\n", val);
-    __HAL_TIM_SET_COUNTER(&htim8, 0);
-//    __HAL_TIM_SET_AUTORELOAD(&htim8, 5000);
-//    HAL_TIM_Base_Start_IT(&htim12);
 
 }
+#endif // MACHINE_DEBUG
 
 // mm per minute
 int cut_speed_calculate(int diameter, int rpm)
@@ -264,24 +248,27 @@ int longitudal_move_to(int target_pos, bool is_accurate, int max_freq,
         yield();
         int curr_pos = abs_longitudal_curr_tool(m->ap);
         distance = calc_longitudal_to_target(curr_pos, target_pos, &dir);
-        if (!distance) {
+        if (distance <= 5) {
             m->is_busy = FALSE;
             return 0;
         }
+
+        if (attempts == 1)
+            freq /= 4;
 
         if (attempts == 2)
             freq /= 4;
 
         if (attempts == 3)
-            freq /= 3;
+            freq /= 4;
 
         if (attempts == 4)
-            freq /= 3;
+            freq /= 4;
 
         if (attempts == 5)
-            freq /= 3;
+            freq /= 4;
 
-        if (attempts >= 6) {
+        if (attempts >= 7) {
             attempts = 0;
             freq = max_freq;
         }
@@ -289,6 +276,8 @@ int longitudal_move_to(int target_pos, bool is_accurate, int max_freq,
 
         if (freq < sm->min_freq)
             freq = sm->min_freq;
+
+        printf("freq = %d\r\n", freq);
 
         stepper_motor_run(sm, 500, freq, dir, distance);
         while (is_stepper_motor_run(sm)) {
@@ -699,12 +688,14 @@ static void main_thread(void *priv)
     uart_debug_plug(&huart1);
     uart_dbg_key_register("os_status", 's', dbg_os_stat, m);
 
+#if MACHINE_DEBUG
     uart_dbg_key_register("d_key", 'd', key_d, m);
     uart_dbg_key_register("f_key", 'f', key_f, m);
     uart_dbg_key_register("g_key", 'g', key_g, m);
     uart_dbg_key_register("j_key", 'j', key_j, m);
     uart_dbg_key_register("k_key", 'k', key_k, m);
     uart_dbg_key_register("l_key", 'l', key_l, m);
+#endif // MACHINE_DEBUG
 
     printf("\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n");
     periphery_init();

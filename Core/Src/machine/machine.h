@@ -12,7 +12,8 @@
 #include "mode_cut.h"
 #include "mode_thread.h"
 
-#define BUILD_VERSION "0.4"
+#define BUILD_VERSION "1.0"
+#define MACHINE_DEBUG 0
 
 extern struct machine machine;
 
