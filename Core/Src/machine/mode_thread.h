@@ -36,7 +36,6 @@ struct mode_thread {
     int krpm_min;
     int krpm_max;
     int start_longitudal_pos;
-    int last_start_longitudal_pos;
     int end_longitudal_pos;
     int start_cross_pos;
     int end_cross_pos;

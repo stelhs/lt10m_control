@@ -360,7 +360,7 @@ static void onclick_key_thread_moveto_start(struct ui_item *ut)
 
     ui_item_hide(um->thread_moveto_start);
     set_normal_acceleration();
-    longitudal_move_to(mt->last_start_longitudal_pos, TRUE, 0, NULL, NULL);
+    longitudal_move_to(mt->start_longitudal_pos, TRUE, 0, NULL, NULL);
     buttons_reset();
     ui_item_show(um->thread_moveto_start);
 }

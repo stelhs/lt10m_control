@@ -93,6 +93,39 @@ void key_k(void *priv)
 
 void key_l(void *priv)
 {
+    struct machine *m = &machine;
+    struct mode_thread *mt = &m->mt;
+    struct mode_thread_settings *mt_settings = &mt->settings;
+    int curr_pos;
+    int error_distance;
+    int distance;
+    int entry_raw_angle;
+
+    curr_pos = abs_longitudal_curr_tool(m->ap);
+    error_distance = calc_longitudal_error(mt, mt->start_longitudal_pos, curr_pos);
+    distance = mt_settings->length + error_distance;
+
+    // вычисление угла входа
+    int xa = curr_pos;
+    int xb = mt_settings->longitudal_start + mt_settings->thread_offset;
+    entry_raw_angle =
+            ((((xa - xb) * 3000)/mt->step_size) + mt_settings->spindle_start) % 3000;
+    if (entry_raw_angle < 0)
+        entry_raw_angle = 3000 + entry_raw_angle;
+
+    printf("xa = %d\r\n", xa);
+    printf("xb = %d\r\n", xb);
+    printf("mt_settings->length = %d\r\n", mt_settings->length);
+    printf("mt_settings->longitudal_start = %d\r\n", mt_settings->longitudal_start);
+    printf("mt_settings->thread_offset = %d\r\n", mt_settings->thread_offset);
+    printf("mt_settings->spindle_start = %d\r\n", mt_settings->spindle_start);
+    printf("spindle_raw_angle = %d\r\n", spindle_raw_angle());
+    printf("error_distance = %d\r\n", error_distance);
+    printf("curr_pos = %d\r\n", curr_pos);
+    printf("distance = %d\r\n", distance);
+    printf("entry_raw_angle = %d\r\n", entry_raw_angle);
+    printf("mt->step_size = %d\r\n", mt->step_size);
+    printf("((xa - xb)/mt->step_size) = %d\r\n", ((xa - xb)/mt->step_size));
 
 }
 #endif // MACHINE_DEBUG
@@ -648,11 +681,16 @@ static void monitoring_thread(void *priv)
 
         val = panel_encoder_val();
         if (val) {
-            mc_settings->feed_rate += val * 10;
-            if (mc_settings->feed_rate < 10)
-                mc_settings->feed_rate = 10;
-            if (mc_settings->feed_rate > 10000)
-                mc_settings->feed_rate = 10000;
+            if (mc_settings->feed_rate <= 20) {
+                mc_settings->feed_rate += val;
+                if (mc_settings->feed_rate <= 1)
+                    mc_settings->feed_rate = 1;
+            }
+            else
+                mc_settings->feed_rate += val * 10;
+
+            if (mc_settings->feed_rate > 5000)
+                mc_settings->feed_rate = 5000;
         }
 
         potentiometer_handler(m->pm_move_speed);
@@ -679,7 +717,7 @@ static void main_thread(void *priv)
     struct mode_cut *mc = &m->mc;
     struct mode_cut_settings *mc_settings = &mc->settings;
 
-    mc_settings->feed_rate = 50;
+    mc_settings->feed_rate = 100;
     mc_settings->longitudal_distance = 50 * 1000;
     mc_settings->target_diameter = 42 * 1000;
     mc_settings->cross_distance = 21 * 1000;

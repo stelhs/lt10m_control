@@ -126,7 +126,7 @@ static void gap_work_out(void)
     set_high_acceleration();
 
     pos = calc_longitudal_position(mt->start_longitudal_pos,
-                                   1000, !mt->longitudal_dir);
+                                   3000, !mt->longitudal_dir);
     longitudal_move_to(pos, FALSE, max_freq, thread_process_handler, mt);
     sleep(300);
 
@@ -195,7 +195,7 @@ static int thread_return_run(struct mode_thread *mt)
 }
 
 
-static int calc_longitudal_error(struct mode_thread *mt,
+int calc_longitudal_error(struct mode_thread *mt,
                                  int start_pos, int curr_pos)
 {
     struct machine *m = &machine;
@@ -215,8 +215,7 @@ static int calc_longitudal_error(struct mode_thread *mt,
 static bool calculate_thread(struct mode_thread *mt)
 {
     struct mode_thread_settings *mt_settings = &mt->settings;
-    mt->cut_offset -= mt_settings->cut_depth_step / 2;
-    mt_settings->longitudal_start += mt_settings->cut_depth_step / 2;
+    mt_settings->longitudal_start -= mt_settings->cut_depth_step / 2;
     mt->curr_depth += mt_settings->cut_depth_step;
     mt->curr_depth_step = mt_settings->cut_depth_step;
 
@@ -347,7 +346,6 @@ void thread_state_init(void)
 
     mt->max_depth = mt_settings->max_cut_depth;
     mt->curr_depth = 0;
-    mt->cut_offset = 0;
 
     if (mt_settings->is_type_inch) {
         mt->step_size = 25400 / (mt_settings->thread_size / 1000);
@@ -394,7 +392,6 @@ static int thread_cutting_run(void)
     thread_status_init(mt);
 
     mt->start_time = now();
-    mt->last_start_longitudal_pos = mt->start_longitudal_pos;
 
     set_normal_acceleration();
 
@@ -412,22 +409,28 @@ static int thread_cutting_run(void)
 
     i = 0;
     while (calculate_thread(mt)) {
-        int entry_raw_angle;
         int curr_pos;
-        int curr_angle;
-        int error;
         int distance;
+        int error_distance;
+        int entry_raw_angle;
+        int curr_raw_angle;
 
-        i++;
         mt->cut_pass_cnt++;
         mt->calc_time =
                 thread_calc_work_time(mt_settings->length,
                                       mt->calc_cut_pass_num, cut_freq);
 
-        printf("iteration: %d\r\n", i);
-        printf("mt->curr_depth = %d\r\n", mt->curr_depth);
-        printf("mt->cut_offset = %d\r\n", mt->cut_offset);
-        printf("mt->step_size = %d\r\n", mt->step_size);
+        if (!is_switch_on(m->switch_run)) {
+            new_cross_pos =
+                    calc_cross_position(mt->start_cross_pos,
+                                        mt->curr_depth -
+                                            mt_settings->cut_depth_step,
+                                        mt->cross_dir);
+            cross_move_to(new_cross_pos, TRUE, thread_process_handler, mt);
+            longitudal_move_to(mt->start_longitudal_pos, TRUE, 0,
+                               thread_process_handler, mt);
+            return -1;
+        }
 
         new_cross_pos = calc_cross_position(mt->start_cross_pos,
                                             mt->curr_depth,
@@ -439,45 +442,36 @@ static int thread_cutting_run(void)
         gap_work_out();
 
         curr_pos = abs_longitudal_curr_tool(m->ap);
-        error = calc_longitudal_error(mt, mt->start_longitudal_pos, curr_pos);
-        distance = mt_settings->length + error;
-
-        printf("2 error = %d\r\n", error);
-        printf("2 distance = %d\r\n", distance);
+        error_distance = calc_longitudal_error(mt, mt->start_longitudal_pos, curr_pos);
+        distance = mt_settings->length + error_distance;
 
         // вычисление угла входа
-        int xb = mt->start_longitudal_pos;
-        int xa = mt_settings->longitudal_start +
-                    mt_settings->thread_offset + mt->cut_offset;
+        int xa = curr_pos;
+        int xb = mt_settings->longitudal_start + mt_settings->thread_offset;
         entry_raw_angle =
-                (mt_settings->spindle_start + ((xb - xa)/mt->step_size) * 3000) % 3000;
+                (((xa - xb)/mt->step_size) * 3000 + mt_settings->spindle_start) % 3000;
         if (entry_raw_angle < 0)
             entry_raw_angle = 3000 + entry_raw_angle;
 
-        printf("entry_raw_angle = %d\r\n", entry_raw_angle);
-
         // ждём угол входа
         do {
-            curr_angle = spindle_raw_angle();
-        } while (curr_angle != entry_raw_angle);
+            curr_raw_angle = spindle_raw_angle();
+        } while (curr_raw_angle != entry_raw_angle);
 
-        rc = thread_cut_run(mt, distance, cut_freq);
-        if (rc)
-            return -1; // TODO
+        thread_cut_run(mt, distance, cut_freq);
 
         rc = thread_return_run(mt);
         if (rc)
-            return -1; // TODO
+            return -1;
     }
 
     new_cross_pos = calc_cross_position(mt->start_cross_pos,
-                                        mt->curr_depth,
+                                        mt->curr_depth -
+                                            mt_settings->cut_depth_step,
                                         mt->cross_dir);
-
-    rc = cross_move_to(new_cross_pos, TRUE, thread_process_handler, mt);
-    if(rc)
-        return rc;
-
+    cross_move_to(new_cross_pos, TRUE, thread_process_handler, mt);
+    longitudal_move_to(mt->start_longitudal_pos, TRUE, 0,
+                       thread_process_handler, mt);
     return 0;
 }
 
