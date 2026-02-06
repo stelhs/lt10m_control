@@ -338,9 +338,9 @@ static int onclick_thread_repeate(struct ui_item *ut)
     return FALSE;
 }
 
-static void key_thread_moveto_start_show(struct ui_item *ut)
+static void key_thread_calibrate_show(struct ui_item *ut)
 {
-    struct img *img = img_thread_moveto_start();
+    struct img *img = img_thread_calibtare();
 
     disp_rect(ut->disp, ut->x, ut->y, ut->width, ut->height, 1, DARK_GRAY);
     if (img) {
@@ -349,7 +349,7 @@ static void key_thread_moveto_start_show(struct ui_item *ut)
     }
 }
 
-static void onclick_key_thread_moveto_start(struct ui_item *ut)
+static void onclick_key_thread_calibrate(struct ui_item *ut)
 {
     struct machine *m = &machine;
     struct ui_main *um = (struct ui_main *)ut->priv;
@@ -358,11 +358,8 @@ static void onclick_key_thread_moveto_start(struct ui_item *ut)
     if (m->is_busy)
         return;
 
-    ui_item_hide(um->thread_moveto_start);
-    set_normal_acceleration();
-    longitudal_move_to(mt->start_longitudal_pos, TRUE, 0, NULL, NULL);
-    buttons_reset();
-    ui_item_show(um->thread_moveto_start);
+    thread_calibrate_entry_point();
+    ui_item_show(um->thread_set_point);
 }
 
 
@@ -853,7 +850,7 @@ static void thread_standard_onchanged(void *priv)
     if (mt_settings->tm) {
         int diameter = abs_cross_curr_tool(m->ap) * 2;
         struct thread_metric_info tmi;
-        standart_thread_info(mt_settings->tm,
+        thread_standart_info(mt_settings->tm,
                              mt_settings->is_internal,
                              diameter, &tmi);
         mt_settings->max_cut_depth = tmi.depth;
@@ -877,7 +874,7 @@ static void thread_size_onchanged(void *priv)
     if (!mt_settings->standart_diameter)
         return;
 
-    if(!standart_steps_list(mt_settings->standart_diameter, NULL))
+    if(!thread_standart_steps_list(mt_settings->standart_diameter, NULL))
         return;
 
     for (tm = thread_metric_table; tm->diameter; tm++) {
@@ -893,7 +890,7 @@ static void thread_size_onchanged(void *priv)
     if (mt_settings->tm) {
         int diameter = abs_cross_curr_tool(m->ap) * 2;
         struct thread_metric_info tmi;
-        standart_thread_info(tm, mt_settings->is_internal, diameter, &tmi);
+        thread_standart_info(tm, mt_settings->is_internal, diameter, &tmi);
         mt_settings->max_cut_depth = tmi.depth;
         ui_item_show(um->thread_depth);
     }
@@ -968,7 +965,7 @@ static void ui_thread_info(struct ui_item *ut)
         int diameter = abs_cross_curr_tool(m->ap) * 2;
         struct thread_metric_info tmi;
 
-        standart_thread_info(tm, mt_settings->is_internal, diameter, &tmi);
+        thread_standart_info(tm, mt_settings->is_internal, diameter, &tmi);
 
         if (tm->is_default) {
             snprintf(name, sizeof name, "M%d (%dx%.2f) d%.2f",
@@ -1020,7 +1017,7 @@ static void ui_thread_info(struct ui_item *ut)
         u32 list[7];
         int count;
 
-        count = standart_steps_list(mt_settings->standart_diameter, list);
+        count = thread_standart_steps_list(mt_settings->standart_diameter, list);
         if (count) {
             int i;
             int pos = 0;
@@ -1123,23 +1120,17 @@ void show_thread(struct ui_main *um)
                               10, 10 * 1000, 10, FALSE,
                               6, "%.3f", NULL, img_thread_depth);
 
-    ui_input_register("input_thread_offset", um->ui_scope,
-                      "thread offset:",
-                      0, 90 + (55 + 10) * 4,
-                      &mt_settings->thread_offset,
-                      -20000, 20000, 5, FALSE,
-                      6, "%.3f", NULL, img_thread_offset);
+    um->thread_set_point =
+        ui_button_register("key_thread_set_point", um->ui_scope,
+                           0, 90 + (55 + 10) * 5, 180, 55,
+                           key_thread_set_point_show,
+                           onclick_key_thread_set_point, um, 0);
 
-    ui_button_register("key_thread_set_point", um->ui_scope,
-                       0, 90 + (55 + 10) * 5, 180, 55,
-                       key_thread_set_point_show,
-                       onclick_key_thread_set_point, um, 0);
-
-    um->thread_moveto_start =
-            ui_button_confirmation_register("key_thread_moveto_start",
+    um->thread_calibrate =
+            ui_button_confirmation_register("key_thread_calibrate",
                     um->ui_scope, 235, 90 + (55 + 10) * 5, 70, 55,
-                    key_thread_moveto_start_show,
-                    onclick_key_thread_moveto_start, um);
+                    key_thread_calibrate_show,
+                    onclick_key_thread_calibrate, um);
 
     um->thread_info =
             ui_item_register("ui_thread_info", NULL, m->disp2,

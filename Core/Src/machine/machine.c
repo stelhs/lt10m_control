@@ -107,7 +107,7 @@ void key_l(void *priv)
 
     // вычисление угла входа
     int xa = curr_pos;
-    int xb = mt_settings->longitudal_start + mt_settings->thread_offset;
+    int xb = mt_settings->longitudal_start;
     entry_raw_angle =
             ((((xa - xb) * 3000)/mt->step_size) + mt_settings->spindle_start) % 3000;
     if (entry_raw_angle < 0)
@@ -117,7 +117,6 @@ void key_l(void *priv)
     printf("xb = %d\r\n", xb);
     printf("mt_settings->length = %d\r\n", mt_settings->length);
     printf("mt_settings->longitudal_start = %d\r\n", mt_settings->longitudal_start);
-    printf("mt_settings->thread_offset = %d\r\n", mt_settings->thread_offset);
     printf("mt_settings->spindle_start = %d\r\n", mt_settings->spindle_start);
     printf("spindle_raw_angle = %d\r\n", spindle_raw_angle());
     printf("error_distance = %d\r\n", error_distance);

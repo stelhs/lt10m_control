@@ -151,6 +151,8 @@ void ui_item_blink(struct ui_item *ut, int interval)
 {
     if (ut->tw)
         return;
+    ut->is_blink_hide = TRUE;
+    ut->hide(ut);
     ut->tw = set_periodic("ui_item_periodic", interval,
                           on_periodic, ut, sizeof *ut);
 }

@@ -22,7 +22,8 @@ struct ui_main {
     struct mode_cut *mc;
     struct mode_thread *mt;
     struct ui_scope *ui_scope;
-    struct ui_item *thread_moveto_start;
+    struct ui_item *thread_set_point;
+    struct ui_item *thread_calibrate;
     struct ui_item *thread_size;
     struct ui_item *thread_standard_m;
     struct ui_item *thread_depth;

@@ -9,7 +9,6 @@
 #define MODE_THREAD_H_
 
 struct mode_thread_settings {
-    int thread_offset;
     int thread_size;
     int cut_depth_step;
     int max_cut_depth;
@@ -62,10 +61,11 @@ struct thread_metric_info {
 
 
 void mode_thread_run(void);
-int standart_steps_list(int diameter, u32 *list);
+int thread_standart_steps_list(int diameter, u32 *list);
 void thread_state_init(void);
-void standart_thread_info(const struct thread_metric *tm, bool is_internal,
+void thread_standart_info(const struct thread_metric *tm, bool is_internal,
                           int diameter, struct thread_metric_info *tmi);
 int thread_calc_work_time(int length, int pass_number, int sm_freq);
+void thread_calibrate_entry_point(void);
 
 #endif /* MODE_THREAD_H_ */

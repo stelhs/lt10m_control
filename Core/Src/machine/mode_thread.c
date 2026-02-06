@@ -26,7 +26,7 @@ static struct text_style normal_text_style = {
         .fontsize = 2,
 };
 
-void standart_thread_info(const struct thread_metric *tm, bool is_internal,
+void thread_standart_info(const struct thread_metric *tm, bool is_internal,
                           int diameter, struct thread_metric_info *tmi)
 {
     if (is_internal) {
@@ -74,7 +74,7 @@ void standart_thread_info(const struct thread_metric *tm, bool is_internal,
     return;
 }
 
-int standart_steps_list(int diameter, u32 *list)
+int thread_standart_steps_list(int diameter, u32 *list)
 {
     const struct thread_metric *tm;
     int cnt = 0;
@@ -377,6 +377,22 @@ void thread_state_init(void)
     mt->cut_pass_cnt = 0;
 }
 
+static int
+calc_entry_raw_angle(int step_size, int longitudal_start_pos,
+                     int spindle_start_raw_angle, int longitudal_curr_pos)
+{
+    int entry_raw_angle;
+    int xa = longitudal_curr_pos;
+    int xb = longitudal_start_pos;
+
+    entry_raw_angle =
+            (((((xa - xb) * 1000) / step_size) * 3000) / 1000 +
+                    spindle_start_raw_angle) % 3000;
+    if (entry_raw_angle < 0)
+        entry_raw_angle = 3000 + entry_raw_angle;
+    return entry_raw_angle;
+}
+
 static int thread_cutting_run(void)
 {
     struct machine *m = &machine;
@@ -385,7 +401,6 @@ static int thread_cutting_run(void)
     int new_cross_pos;
     int cut_freq;
     int rc;
-    int i;
 
     m->is_disp2_needs_redraw = TRUE;
     thread_state_init();
@@ -407,7 +422,6 @@ static int thread_cutting_run(void)
 
     cut_freq = target_longitudal_freq(mt);
 
-    i = 0;
     while (calculate_thread(mt)) {
         int curr_pos;
         int distance;
@@ -445,13 +459,10 @@ static int thread_cutting_run(void)
         error_distance = calc_longitudal_error(mt, mt->start_longitudal_pos, curr_pos);
         distance = mt_settings->length + error_distance;
 
-        // вычисление угла входа
-        int xa = curr_pos;
-        int xb = mt_settings->longitudal_start + mt_settings->thread_offset;
-        entry_raw_angle =
-                (((xa - xb)/mt->step_size) * 3000 + mt_settings->spindle_start) % 3000;
-        if (entry_raw_angle < 0)
-            entry_raw_angle = 3000 + entry_raw_angle;
+        entry_raw_angle = calc_entry_raw_angle(mt->step_size,
+                                               mt_settings->longitudal_start,
+                                               mt_settings->spindle_start,
+                                               curr_pos);
 
         // ждём угол входа
         do {
@@ -473,6 +484,113 @@ static int thread_cutting_run(void)
     longitudal_move_to(mt->start_longitudal_pos, TRUE, 0,
                        thread_process_handler, mt);
     return 0;
+}
+
+void thread_calibrate_entry_point(void)
+{
+    struct machine *m = &machine;
+    struct mode_thread *mt = &m->mt;
+    struct mode_thread_settings *mt_settings = &mt->settings;
+    struct stepper_motor *sm;
+    int curr_pos, entry_raw_angle, cut_freq;
+    int error_distance, distance;
+
+    m->is_disp2_needs_redraw = TRUE;
+    thread_state_init();
+    thread_status_init(mt);
+
+    cut_freq = target_longitudal_freq(mt);
+
+    int aside_cross_pos =
+            calc_cross_position(mt->start_cross_pos,
+                                mt_settings->cut_depth_step * 2,
+                                !mt->cross_dir);
+
+    printf("cut_freq: %d\r\n", cut_freq);
+    printf("mt->start_cross_pos: %d\r\n", mt->start_cross_pos);
+    printf("mt_settings->cut_depth_step: %d\r\n", mt_settings->cut_depth_step);
+    printf("move to aside_cross_pos: %d\r\n", aside_cross_pos);
+    set_normal_acceleration();
+    cross_move_to(aside_cross_pos, TRUE, thread_process_handler, mt);
+
+    gap_work_out();
+
+    curr_pos = abs_longitudal_curr_tool(m->ap);
+    printf("curr_pos: %d\r\n", curr_pos);
+
+    entry_raw_angle = calc_entry_raw_angle(mt->step_size,
+                                           mt_settings->longitudal_start,
+                                           mt_settings->spindle_start,
+                                           curr_pos);
+    printf("mt->step_size: %d\r\n", mt->step_size);
+    printf("mt_settings->longitudal_start: %d\r\n", mt_settings->longitudal_start);
+    printf("mt_settings->spindle_start: %d\r\n", mt_settings->spindle_start);
+    printf("curr_pos: %d\r\n", curr_pos);
+    printf("mt->start_longitudal_pos: %d\r\n", mt->start_longitudal_pos);
+    printf("entry_raw_angle: %d\r\n", entry_raw_angle);
+
+    error_distance = calc_longitudal_error(mt, mt->start_longitudal_pos, curr_pos);
+    printf("error_distance: %d\r\n", error_distance);
+    printf("mt_settings->length: %d\r\n", mt_settings->length);
+    distance = mt_settings->length + error_distance;
+    printf("distance: %d\r\n", distance);
+
+    sm = m->sm_longitudial;
+    stepper_motor_set_freq_changer_handler(sm, sm_longitudial_high_acceleration_changer);
+    sm->is_allow_run_out = TRUE;
+
+    // ждём угол входа
+    while (spindle_raw_angle() != entry_raw_angle);
+
+    stepper_motor_run(sm, 500, cut_freq,
+                      mt->longitudal_dir, distance);
+    button_reset(m->btn_enc);
+
+    int relative_pos = abs(mt_settings->longitudal_start - mt->start_longitudal_pos);
+    printf("relative_pos = %d\r\n", relative_pos);
+
+    while(is_stepper_motor_run(sm)) {
+        int pos = stepper_motor_pos(sm);
+
+        if (pos > relative_pos - 5 && pos < relative_pos + 5) {
+            int curr_raw_angle = spindle_raw_angle();
+            int spindle_delta;
+            spindle_delta = (mt_settings->spindle_start - curr_raw_angle) % 3000;
+            if (spindle_delta < 0)
+                spindle_delta = 3000 + spindle_delta;
+
+            int spindle_start = (mt_settings->spindle_start + spindle_delta) % 3000;
+            if (spindle_start < 0)
+                spindle_start = 3000 + spindle_start;
+
+            mt_settings->spindle_start = spindle_start;
+            stepper_motor_stop(sm);
+            printf("CATCHED!\r\n");
+            printf("pos: %d\r\n", pos);
+            printf("curr_raw_angle: %d\r\n", curr_raw_angle);
+            printf("spindle_delta: %d\r\n", spindle_delta);
+            printf("fixed spindle_start: %d\r\n", spindle_start);
+            printf("mt_settings->spindle_start: %d\r\n",
+                    mt_settings->spindle_start);
+            break;
+        }
+
+        if (is_button_clicked(m->btn_enc)) {
+            stepper_motor_stop(sm);
+            printf("BREAK\r\n");
+            break;
+        }
+    }
+    stepper_motor_set_freq_changer_handler(m->sm_longitudial,
+                                    sm_longitudal_normal_acceleration_changer);
+    sm->is_allow_run_out = FALSE;
+
+    thread_return_run(mt);
+
+    cross_move_to(mt->start_cross_pos, TRUE, thread_process_handler, mt);
+    longitudal_move_to(mt->start_longitudal_pos, TRUE, 0,
+                       thread_process_handler, mt);
+    printf("FINISHED\r\n");
 }
 
 void mode_thread_run(void)
