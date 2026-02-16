@@ -113,8 +113,8 @@ static void move_button_low_speed_handler(void)
 {
     struct machine *m = &machine;
 
-    int cross_freq = potentiometer_val(m->pm_move_speed) * 5;
-    int longitudal_freq = potentiometer_val(m->pm_move_speed) * 10;
+    int cross_freq = potentiometer_val(m->pm_move_speed) * 10;
+    int longitudal_freq = potentiometer_val(m->pm_move_speed) * 4;
     if (cross_freq < m->sm_cross->min_freq)
         cross_freq = m->sm_cross->min_freq;
     if (longitudal_freq < m->sm_longitudial->min_freq)

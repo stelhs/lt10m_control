@@ -96,36 +96,8 @@ void key_l(void *priv)
     struct machine *m = &machine;
     struct mode_thread *mt = &m->mt;
     struct mode_thread_settings *mt_settings = &mt->settings;
-    int curr_pos;
-    int error_distance;
-    int distance;
-    int entry_raw_angle;
 
-    curr_pos = abs_longitudal_curr_tool(m->ap);
-    error_distance = calc_longitudal_error(mt, mt->start_longitudal_pos, curr_pos);
-    distance = mt_settings->length + error_distance;
-
-    // вычисление угла входа
-    int xa = curr_pos;
-    int xb = mt_settings->longitudal_start;
-    entry_raw_angle =
-            ((((xa - xb) * 3000)/mt->step_size) + mt_settings->spindle_start) % 3000;
-    if (entry_raw_angle < 0)
-        entry_raw_angle = 3000 + entry_raw_angle;
-
-    printf("xa = %d\r\n", xa);
-    printf("xb = %d\r\n", xb);
-    printf("mt_settings->length = %d\r\n", mt_settings->length);
-    printf("mt_settings->longitudal_start = %d\r\n", mt_settings->longitudal_start);
-    printf("mt_settings->spindle_start = %d\r\n", mt_settings->spindle_start);
-    printf("spindle_raw_angle = %d\r\n", spindle_raw_angle());
-    printf("error_distance = %d\r\n", error_distance);
-    printf("curr_pos = %d\r\n", curr_pos);
-    printf("distance = %d\r\n", distance);
-    printf("entry_raw_angle = %d\r\n", entry_raw_angle);
-    printf("mt->step_size = %d\r\n", mt->step_size);
-    printf("((xa - xb)/mt->step_size) = %d\r\n", ((xa - xb)/mt->step_size));
-
+    printf("spindle_speed = %d\n", spindle_speed());
 }
 #endif // MACHINE_DEBUG
 
@@ -308,8 +280,6 @@ int longitudal_move_to(int target_pos, bool is_accurate, int max_freq,
 
         if (freq < sm->min_freq)
             freq = sm->min_freq;
-
-        printf("freq = %d\r\n", freq);
 
         stepper_motor_run(sm, 500, freq, dir, distance);
         while (is_stepper_motor_run(sm)) {

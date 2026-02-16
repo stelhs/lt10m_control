@@ -110,7 +110,7 @@ static void thread_process_handler(void *priv)
 static int target_longitudal_freq(struct mode_thread *mt)
 {
     struct machine *m = &machine;
-    return feed_rate_to_freq(m->sm_longitudial, spindle_speed(),
+    return feed_rate_to_freq(m->sm_longitudial, mt->spindle_speed,
                              mt->step_size);
 }
 
@@ -413,13 +413,13 @@ static int thread_cutting_run(void)
     int krpm = spindle_speed();
     if (krpm < mt->krpm_min || krpm > mt->krpm_max) {
         ui_message_show(msg_thread_rpm_not_correct, MSG_ERR);
-        while(is_switch_on(m->switch_run)) {
+        while(is_switch_on(m->switch_run))
             yield();
-        }
         ui_message_hide();
         return -1;
     }
 
+    mt->spindle_speed = krpm;
     cut_freq = target_longitudal_freq(mt);
 
     while (calculate_thread(mt)) {
@@ -434,16 +434,14 @@ static int thread_cutting_run(void)
                 thread_calc_work_time(mt_settings->length,
                                       mt->calc_cut_pass_num, cut_freq);
 
-        if (!is_switch_on(m->switch_run)) {
-            new_cross_pos =
-                    calc_cross_position(mt->start_cross_pos,
-                                        mt->curr_depth -
-                                            mt_settings->cut_depth_step,
-                                        mt->cross_dir);
-            cross_move_to(new_cross_pos, TRUE, thread_process_handler, mt);
-            longitudal_move_to(mt->start_longitudal_pos, TRUE, 0,
-                               thread_process_handler, mt);
-            return -1;
+        krpm = spindle_speed();
+        if (!is_switch_on(m->switch_run))
+            goto out;
+
+        if (mt->spindle_speed < krpm - 2000 ||
+                mt->spindle_speed > krpm + 2000) {
+            rc = -2;
+            goto out;
         }
 
         new_cross_pos = calc_cross_position(mt->start_cross_pos,
@@ -476,13 +474,22 @@ static int thread_cutting_run(void)
             return -1;
     }
 
-    new_cross_pos = calc_cross_position(mt->start_cross_pos,
-                                        mt->curr_depth -
-                                            mt_settings->cut_depth_step,
-                                        mt->cross_dir);
+out:
+    new_cross_pos =
+            calc_cross_position(mt->start_cross_pos,
+                                mt->curr_depth -
+                                    mt_settings->cut_depth_step,
+                                mt->cross_dir);
     cross_move_to(new_cross_pos, TRUE, thread_process_handler, mt);
     longitudal_move_to(mt->start_longitudal_pos, TRUE, 0,
                        thread_process_handler, mt);
+
+    if (rc == -2) {
+        ui_message_show(msg_thread_rpm_error, MSG_ERR);
+        while(is_switch_on(m->switch_run))
+            yield();
+        ui_message_hide();
+    }
     return 0;
 }
 
@@ -536,7 +543,8 @@ void thread_calibrate_entry_point(void)
     printf("distance: %d\r\n", distance);
 
     sm = m->sm_longitudial;
-    stepper_motor_set_freq_changer_handler(sm, sm_longitudial_high_acceleration_changer);
+    stepper_motor_set_freq_changer_handler(sm,
+                sm_longitudial_high_acceleration_changer);
     sm->is_allow_run_out = TRUE;
 
     // ждём угол входа
@@ -546,7 +554,8 @@ void thread_calibrate_entry_point(void)
                       mt->longitudal_dir, distance);
     button_reset(m->btn_enc);
 
-    int relative_pos = abs(mt_settings->longitudal_start - mt->start_longitudal_pos);
+    int relative_pos = abs(mt_settings->longitudal_start -
+                           mt->start_longitudal_pos);
     printf("relative_pos = %d\r\n", relative_pos);
 
     while(is_stepper_motor_run(sm)) {
@@ -555,11 +564,13 @@ void thread_calibrate_entry_point(void)
         if (pos > relative_pos - 5 && pos < relative_pos + 5) {
             int curr_raw_angle = spindle_raw_angle();
             int spindle_delta;
-            spindle_delta = (mt_settings->spindle_start - curr_raw_angle) % 3000;
+            spindle_delta = (mt_settings->spindle_start -
+                             curr_raw_angle) % 3000;
             if (spindle_delta < 0)
                 spindle_delta = 3000 + spindle_delta;
 
-            int spindle_start = (mt_settings->spindle_start + spindle_delta) % 3000;
+            int spindle_start = (mt_settings->spindle_start +
+                                 spindle_delta) % 3000;
             if (spindle_start < 0)
                 spindle_start = 3000 + spindle_start;
 
@@ -581,8 +592,8 @@ void thread_calibrate_entry_point(void)
             break;
         }
     }
-    stepper_motor_set_freq_changer_handler(m->sm_longitudial,
-                                    sm_longitudal_normal_acceleration_changer);
+//    stepper_motor_set_freq_changer_handler(m->sm_longitudial,
+  //                                  sm_longitudal_normal_acceleration_changer);
     sm->is_allow_run_out = FALSE;
 
     thread_return_run(mt);

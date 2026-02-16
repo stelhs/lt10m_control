@@ -31,4 +31,6 @@ char *msg_thread_steps = "Шаги: %s";
 char *msg_thread_depth = "Заглубление, мм:";
 char *msg_thread_rpm_not_correct = "Не подходящая\n"
                                    "скорость шпинделя";
+char *msg_thread_rpm_error = "Изменилась\n"
+                             "скорость шпинделя";
 

@@ -34,5 +34,6 @@ extern char *msg_thread_max_depth;
 extern char *msg_thread_steps;
 extern char *msg_thread_depth;
 extern char *msg_thread_rpm_not_correct;
+extern char *msg_thread_rpm_error;
 
 #endif /* MSG_RUS_H_ */

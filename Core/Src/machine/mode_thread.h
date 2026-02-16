@@ -45,6 +45,7 @@ struct mode_thread {
     int cut_pass_cnt;
     int cut_pass_rest;
     int curr_depth_step;
+    int spindle_speed;
 };
 
 struct thread_metric_info {

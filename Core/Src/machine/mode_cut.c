@@ -804,16 +804,16 @@ static int cross_return_run(struct mode_cut *mc)
     }
 
     case PROG_FEED_UP_RIGHT:
-        start_cross_pos = mc->start_cross_pos;
     case PROG_FEED_DOWN_RIGHT:
+        start_cross_pos = mc->start_cross_pos;
         parking_longitudal_pos =
                 calc_longitudal_position(mc->longitudal_pos,
                                          LONGITUDAL_RETRACTION, MOVE_LEFT);
         break;
 
     case PROG_FEED_UP_LEFT:
-        start_cross_pos = mc->start_cross_pos;
     case PROG_FEED_DOWN_LEFT:
+        start_cross_pos = mc->start_cross_pos;
         parking_longitudal_pos =
                 calc_longitudal_position(mc->longitudal_pos,
                                          LONGITUDAL_RETRACTION, MOVE_RIGHT);
@@ -1002,7 +1002,10 @@ void cross_cut_auto_run(void)
             return;
         mc->longitudal_pos = new_pos;
 
-        cross_cut_run(mc, mc->cross_pass_dir);
+        rc = cross_cut_run(mc, mc->cross_pass_dir);
+        if (rc)
+            return;
+
         calc_cross_cut_passes(mc);
         rc = cross_return_run(mc);
         if (rc)

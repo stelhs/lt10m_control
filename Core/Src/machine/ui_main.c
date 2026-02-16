@@ -353,8 +353,6 @@ static void onclick_key_thread_calibrate(struct ui_item *ut)
 {
     struct machine *m = &machine;
     struct ui_main *um = (struct ui_main *)ut->priv;
-    struct mode_thread *mt = um->mt;
-
     if (m->is_busy)
         return;
 
