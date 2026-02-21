@@ -14,13 +14,13 @@
 static struct list disp_buttons_list = LIST_INIT;
 
 struct ui_button {
+    char *name;
     struct le le;
     struct touch_area *ta;
     int (*on_click)(struct ui_item *);
     struct ui_item *ut;
     void *data;
     void (*show)(struct ui_item *);
-    char *name;
     bool is_lock;
 };
 
@@ -109,7 +109,8 @@ void ui_buttons_lock(struct ui_scope *ui_scope)
     struct le *le;
     LIST_FOREACH(&ui_scope->items, le) {
         struct ui_item *ut = (struct ui_item *)list_ledata(le);
-        ui_button_lock(ut);
+        if (ut->is_button)
+            ui_button_lock(ut);
     }
 }
 
@@ -118,7 +119,8 @@ void ui_buttons_unlock(struct ui_scope *ui_scope)
     struct le *le;
     LIST_FOREACH(&ui_scope->items, le) {
         struct ui_item *ut = (struct ui_item *)list_ledata(le);
-        ui_button_unlock(ut);
+        if (ut->is_button)
+            ui_button_unlock(ut);
     }
 }
 
@@ -138,6 +140,7 @@ ui_button_register(char *name, struct ui_scope *ui_scope,
                               x, y, width, height,
                               button_show, button_hide, priv,
                               (sizeof *ub) + data_size);
+    ut->is_button = TRUE;
     ub = (struct ui_button *)ut->data;
     ub->data = (void *)(ub + 1);
     ub->ta = touch_area_register(m->disp1->touch, "disp_butt_touch",

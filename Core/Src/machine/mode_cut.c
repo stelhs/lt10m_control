@@ -363,8 +363,10 @@ static void calc_estimate_cut_longitudal_time(struct mode_cut *mc)
 static void calc_estimate_cut_cross_time(struct mode_cut *mc)
 {
     struct mode_cut_settings *mc_settings = &mc->settings;
+    int one_pass = 0;
     int feed_per_turn = ((spindle_speed() / 60) * mc_settings->feed_rate) / 1000;
-    int one_pass = mc->cross_distance / feed_per_turn +
+    if (feed_per_turn)
+        one_pass = mc->cross_distance / feed_per_turn +
             7 + // longitudal return time sec
             + mc->cross_distance / 1000 / 8; // cross return time sec
     mc->stat.calc_time = one_pass * (mc->cut_pass_rest + 1) -
@@ -1034,7 +1036,6 @@ void mode_cut_run(void)
     mc->cut_pass_cnt = 0;
 
     cut_status_init(mc);
-
     set_normal_acceleration();
 
     switch (m->prog) {

@@ -54,37 +54,12 @@ void ui_main_lock(void)
 {
     struct machine *m = &machine;
     struct ui_main *um = m->ui_main;
+    struct ui_item *ut;
 
-    ui_buttons_lock(um->ui_scope);
-
-    switch (m->prog) {
-    case PROG_FEED_LEFT:
-    case PROG_FEED_RIGHT:
-    case PROG_FEED_LEFT_UP:
-    case PROG_FEED_RIGHT_UP:
-    case PROG_FEED_LEFT_DOWN:
-    case PROG_FEED_RIGHT_DOWN:
-    case PROG_FEED_UP_LEFT:
-    case PROG_FEED_UP_RIGHT:
-    case PROG_FEED_DOWN_LEFT:
-    case PROG_FEED_DOWN_RIGHT:
-    case PROG_FEED_UP:
-    case PROG_FEED_DOWN:
-        ui_button_unlock(um->feed_return_mode);
-        ui_button_unlock(um->feed_repeate);
-        ui_button_unlock(um->feed_limit);
-        ui_button_unlock(um->cross_or_diameter_val);
-        ui_button_unlock(um->feed_step);
-        break;
-
-    case PROG_THREAD_LEFT:
-    case PROG_THREAD_RIGHT:
-        ui_button_unlock(um->thread_repeate);
-        ui_button_unlock(um->thread_depth);
-        ui_button_unlock(um->thread_offset);
-        ui_button_unlock(um->feed_step);
-        break;
-    }
+    ut = ui_scope_item_by_name(um->ui_scope, "key_prog_sel");
+    ui_button_lock(ut);
+    ut = ui_scope_item_by_name(um->ui_scope, "key_set_xy");
+    ui_button_lock(ut);
 }
 
 void ui_main_unlock(void)

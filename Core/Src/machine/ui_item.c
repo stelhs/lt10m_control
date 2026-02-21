@@ -198,6 +198,26 @@ void ui_scope_show(struct ui_scope *ui_scope)
     }
 }
 
+void ui_scope_print_items(struct ui_scope *ui_scope)
+{
+    struct le *le;
+    printf("------\r\n");
+    LIST_FOREACH(&ui_scope->items, le) {
+        struct ui_item *ut = (struct ui_item *)list_ledata(le);
+        printf("item: %s\r\n", ut->name);
+    }
+}
+
+struct ui_item *ui_scope_item_by_name(struct ui_scope *ui_scope, char *name)
+{
+    struct le *le;
+    LIST_FOREACH(&ui_scope->items, le) {
+        struct ui_item *ut = (struct ui_item *)list_ledata(le);
+        if (strcmp(ut->name, name) == 0)
+            return ut;
+    }
+}
+
 void ui_scope_hide(struct ui_scope *ui_scope)
 {
     struct le *le;

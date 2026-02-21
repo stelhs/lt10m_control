@@ -56,8 +56,7 @@ void key_d(void *priv)
 	struct machine *m = (struct machine *)priv;
     printf("key_d\r\n");
 
-    printf("run 1 turn cross\r\n");
-    stepper_motor_run(m->sm_cross, 0, 10000, MOVE_UP, 75000);
+    ui_main_lock();
 }
 
 void key_f(void *priv)
@@ -94,10 +93,7 @@ void key_k(void *priv)
 void key_l(void *priv)
 {
     struct machine *m = &machine;
-    struct mode_thread *mt = &m->mt;
-    struct mode_thread_settings *mt_settings = &mt->settings;
-
-    printf("spindle_speed = %d\n", spindle_speed());
+    ui_main_unlock();
 }
 #endif // MACHINE_DEBUG
 

@@ -27,6 +27,7 @@ struct ui_item {
     bool is_blink_hide;
     bool is_show;
     bool is_redraw_needed;
+    bool is_button;
     struct timer_worker *tw;
     void *data;
     void (*data_destructor)(void *);
@@ -67,5 +68,5 @@ void ui_item_hide_default_cb(struct ui_item *ut);
 struct ui_scope *ui_scope_create(char *name);
 void ui_scope_set_onchange_handler(struct ui_scope *us,
                                    void (*onchange)(struct ui_item *));
-
+void ui_scope_print_items(struct ui_scope *ui_scope);
 #endif /* UI_ITEM_H_ */
